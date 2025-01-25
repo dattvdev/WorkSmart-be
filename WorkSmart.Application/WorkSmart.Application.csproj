@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MailKit" Version="4.9.0" />
+    <PackageReference Include="MimeKit" Version="4.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\WorkSmart.Core\WorkSmart.Core.csproj" />
     <ProjectReference Include="..\WorkSmart.Repository\WorkSmart.Repository.csproj" />
   </ItemGroup>

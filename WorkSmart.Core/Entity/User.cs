@@ -11,9 +11,12 @@ namespace WorkSmart.Core.Entity
     public class User
     {
         public int UserID { get; set; }
+        public string UserName { get; set; }
         public string Email { get; set; }
         public string Role { get; set; }
         public string PasswordHash { get; set; }
+        public string? ConfirmationCode { get; set; }
+        public bool IsEmailConfirmed { get; set; }
         public bool IsBanned { get; set; } = false;
         public double Amount { get; set; } = 0;
         public string? BankName { get; set; }

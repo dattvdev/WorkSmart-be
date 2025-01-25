@@ -13,5 +13,6 @@ namespace WorkSmart.Core.Interface
         Task Add(T entity);
         void Update(T entity);
         void Delete(int id);
+        Task Save();
     }
 }

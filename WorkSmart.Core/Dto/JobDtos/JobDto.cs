@@ -13,7 +13,7 @@ namespace WorkSmart.Core.Dto.JobDtos
         public string Description { get; set; }
         public string? Location { get; set; }
         public double? Salary { get; set; }
-        public string Status { get; set; }
+        public string? Status { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

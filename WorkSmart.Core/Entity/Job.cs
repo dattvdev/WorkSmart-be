@@ -18,7 +18,7 @@ namespace WorkSmart.Core.Entity
         public string Description { get; set; }
         public string? Location { get; set; }
         public double? Salary { get; set; }
-        public JobStatus Status { get; set; }
+        public JobStatus? Status { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public User User { get; set; }

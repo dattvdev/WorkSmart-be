@@ -61,7 +61,7 @@ namespace WorkSmart.API.Controllers
                     if (!existingUser.IsEmailConfirmed)
                     {
                         return BadRequest(new { Error = "Verification code has been sent to your email, please verify your account." });
-                        }
+                    }
 
                     return BadRequest(new { Error = "The email address is already in use. Please choose a different one." });
                 }

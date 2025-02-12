@@ -149,7 +149,7 @@ namespace WorkSmart.API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var user = _accountRepository.GetByEmail(request.UserName);
+                var user = _accountRepository.GetByEmail(request.Email);
 
                 if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
                 {
@@ -253,7 +253,7 @@ namespace WorkSmart.API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var user = _accountRepository.GetByEmail(request.UserName);
+                var user = _accountRepository.GetByEmail(request.Email);
 
                 if (user == null || !BCrypt.Net.BCrypt.Verify(request.OldPassword, user.PasswordHash))
                 {
@@ -293,6 +293,7 @@ namespace WorkSmart.API.Controllers
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim("userId", user.UserID.ToString()),
             new Claim("Purpose", "purpose"),
+            new Claim("Role", user.Role)
         };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
@@ -302,7 +303,7 @@ namespace WorkSmart.API.Controllers
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddSeconds(5),
+                expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

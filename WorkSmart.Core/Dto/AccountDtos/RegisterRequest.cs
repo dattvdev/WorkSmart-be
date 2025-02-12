@@ -10,7 +10,7 @@ namespace WorkSmart.Core.Dto.AccountDtos
     public class RegisterRequest
     {
         [Required(ErrorMessage = "Fullname is required.")]
-        [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "Fullname can only contain letters, numbers, and underscores.")]
+        [RegularExpression(@"^[a-zA-Z_ ]+$", ErrorMessage = "Fullname can only contain letters, numbers, and underscores.")]
         [Display(Name = "Fullname")]
         public string FullName { get; set; }
 

@@ -36,8 +36,8 @@ namespace WorkSmart.API.Controllers
             _cache = cache;
         }
 
-        [HttpPost("signUp")]
-        public async Task<IActionResult> SignUp([FromBody] SignUpRequest request)
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             try
             {
@@ -49,17 +49,43 @@ namespace WorkSmart.API.Controllers
                 //var random = new Random();
                 //var confirmationCode = random.Next(100000, 999999).ToString();
 
+                // Kiểm tra Role hợp lệ (1 = Candidate, 2 = Employer)
+                if (request.Role != "1" && request.Role != "2")
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var existingUser = _accountRepository.GetByEmail(request.Email);
+                if (existingUser != null)
+                {
+                    if (!existingUser.IsEmailConfirmed)
+                    {
+                        return BadRequest(new { Error = "Verification code has been sent to your email, please verify your account." });
+                        }
+
+                    return BadRequest(new { Error = "The email address is already in use. Please choose a different one." });
+                }
+
                 var confirmationCode = Guid.NewGuid().ToString();
 
                 var user = new User
                 {
-                    UserName = request.UserName,
+                    FullName = request.FullName,
                     Email = request.Email,
-                    Role = "1",
+                    Role = request.Role,
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
                     ConfirmationCode = confirmationCode,
-                    IsEmailConfirmed = false
+                    IsEmailConfirmed = false,
+                    CreatedAt = DateTime.Now,
                 };
+
+                if(request.Role == "2")
+                {
+                    user.PhoneNumber = request.PhoneNumber;
+                    user.Gender = request.Gender;
+                    user.CompanyName = request.CompanyName;
+                    user.WorkLocation = request.WorkLocation;
+                }
 
                 await _accountRepository.Add(user);
                 await _accountRepository.Save();
@@ -87,7 +113,6 @@ namespace WorkSmart.API.Controllers
 
                 return StatusCode(500, new { Error = "An error occurred while processing your request." });
             }
-
         }
 
         [HttpPost("confirmEmail")]
@@ -130,6 +155,7 @@ namespace WorkSmart.API.Controllers
                 {
                     return Unauthorized(new { Error = "Invalid email or password. Please try again" });
                 }
+
                 if (!user.IsEmailConfirmed)
                 {
                     return Unauthorized(new { Error = "Email not confirmed. Please check your email for the confirmation code." });
@@ -276,7 +302,7 @@ namespace WorkSmart.API.Controllers
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddHours(1),
+                expires: DateTime.Now.AddSeconds(5),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

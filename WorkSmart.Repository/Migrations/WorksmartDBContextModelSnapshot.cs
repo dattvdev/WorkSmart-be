@@ -22,21 +22,6 @@ namespace WorkSmart.Repository.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("JobTagUser", b =>
-                {
-                    b.Property<int>("JobTagsJobTagID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UsersUserID")
-                        .HasColumnType("int");
-
-                    b.HasKey("JobTagsJobTagID", "UsersUserID");
-
-                    b.HasIndex("UsersUserID");
-
-                    b.ToTable("JobTagUser");
-                });
-
             modelBuilder.Entity("WorkSmart.Core.Entity.Application", b =>
                 {
                     b.Property<int>("ApplicationID")
@@ -323,9 +308,8 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<double?>("Salary")
                         .HasColumnType("float");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("Status")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -392,6 +376,36 @@ namespace WorkSmart.Repository.Migrations
                     b.HasIndex("UserID");
 
                     b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("WorkSmart.Core.Entity.NotificationJobTag", b =>
+                {
+                    b.Property<int>("NotificationJobTagID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationJobTagID"));
+
+                    b.Property<DateTime>("CreateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("JobTagID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("NotificationJobTagID");
+
+                    b.HasIndex("JobTagID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("NotificationJobTag");
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.Package", b =>
@@ -644,21 +658,6 @@ namespace WorkSmart.Repository.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("JobTagUser", b =>
-                {
-                    b.HasOne("WorkSmart.Core.Entity.JobTag", null)
-                        .WithMany()
-                        .HasForeignKey("JobTagsJobTagID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WorkSmart.Core.Entity.User", null)
-                        .WithMany()
-                        .HasForeignKey("UsersUserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("WorkSmart.Core.Entity.Application", b =>
                 {
                     b.HasOne("WorkSmart.Core.Entity.CV", "CV")
@@ -809,6 +808,25 @@ namespace WorkSmart.Repository.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("WorkSmart.Core.Entity.NotificationJobTag", b =>
+                {
+                    b.HasOne("WorkSmart.Core.Entity.JobTag", "JobTag")
+                        .WithMany("NotificationJobTags")
+                        .HasForeignKey("JobTagID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WorkSmart.Core.Entity.User", "User")
+                        .WithMany("NotificationJobTags")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("JobTag");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("WorkSmart.Core.Entity.PersonalMessage", b =>
                 {
                     b.HasOne("WorkSmart.Core.Entity.User", "Receiver")
@@ -918,6 +936,11 @@ namespace WorkSmart.Repository.Migrations
                     b.Navigation("ReportPosts");
                 });
 
+            modelBuilder.Entity("WorkSmart.Core.Entity.JobTag", b =>
+                {
+                    b.Navigation("NotificationJobTags");
+                });
+
             modelBuilder.Entity("WorkSmart.Core.Entity.Package", b =>
                 {
                     b.Navigation("Subscriptions");
@@ -938,6 +961,8 @@ namespace WorkSmart.Repository.Migrations
                     b.Navigation("MessagesReceived");
 
                     b.Navigation("MessagesSent");
+
+                    b.Navigation("NotificationJobTags");
 
                     b.Navigation("Notifications");
 

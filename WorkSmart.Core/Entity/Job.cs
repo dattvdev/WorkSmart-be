@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
+using WorkSmart.Core.Enums;
 
 namespace WorkSmart.Core.Entity
 {
+    
     public class Job
     {
         public int JobID { get; set; }
@@ -16,7 +18,7 @@ namespace WorkSmart.Core.Entity
         public string Description { get; set; }
         public string? Location { get; set; }
         public double? Salary { get; set; }
-        public string Status { get; set; }
+        public JobStatus? Status { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public User User { get; set; }

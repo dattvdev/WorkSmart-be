@@ -47,6 +47,6 @@ namespace WorkSmart.Core.Entity
         public ICollection<PersonalMessage>? MessagesReceived { get; set; }
         public ICollection<Job>? PostedJobs { get; set; }
         public ICollection<ReportPost>? ReportPosts { get; set; }
-        public ICollection<JobTag>? JobTags { get; set; }
+        public ICollection<NotificationJobTag>? NotificationJobTags { get; set; }
     }
 }

@@ -361,3 +361,34 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+
+# Configurations
+appsettings.json
+appsettings.*.json
+secrets.json
+*.config
+# Logs and database files
+*.log
+*.tlog
+*.cache
+*.pdb
+*.db
+*.mdb
+*.ldf
+*.mdf
+# Build and output directories
+bin/
+obj/
+out/
+debug/
+release/
+TestResults/
+build/
+publish/
+coverage/
+
+# Dependency folders
+node_modules/
+packages/
+dist/

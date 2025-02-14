@@ -11,7 +11,7 @@ namespace WorkSmart.Core.Entity
         public int JobTagID { get; set; }
         public string TagName { get; set; }
 
-        public ICollection<User>? Users { get; set; }
+        public ICollection<NotificationJobTag>? NotificationJobTags { get; set; }
     }
 }
     

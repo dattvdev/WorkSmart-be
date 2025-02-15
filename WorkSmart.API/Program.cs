@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using WorkSmart.API.Extension;
@@ -10,6 +10,17 @@ using WorkSmart.Repository.Repository;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy =>
+        {
+            policy.AllowAnyOrigin() // Cho phép tất cả các nguồn
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        });
+});
+
 
 builder.Services.AddControllers();
 builder.Services.AddScopeCollection(builder.Configuration.GetConnectionString("DefaultConnection").ToString());
@@ -49,7 +60,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors(options => options.AllowAnyOrigin());
+//app.UseCors("AllowAll"); // Áp dụng chính sách AllowAll
+app.UseCors("AllowAll"); // Áp dụng chính sách AllowAll
+
 
 app.UseHttpsRedirection();
 

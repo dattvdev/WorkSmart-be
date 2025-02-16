@@ -46,11 +46,8 @@ namespace WorkSmart.API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                //var random = new Random();
-                //var confirmationCode = random.Next(100000, 999999).ToString();
-
-                // Kiểm tra Role hợp lệ (1 = Candidate, 2 = Employer)
-                if (request.Role != "1" && request.Role != "2")
+                // Kiểm tra Role hợp lệ (Candidate, Employer)
+                if (request.Role != "Candidate" && request.Role != "Employer")
                 {
                     return BadRequest(ModelState);
                 }
@@ -66,7 +63,8 @@ namespace WorkSmart.API.Controllers
                     return BadRequest(new { Error = "The email address is already in use. Please choose a different one." });
                 }
 
-                var confirmationCode = Guid.NewGuid().ToString();
+                var random = new Random();
+                var confirmationCode = random.Next(100000, 999999).ToString();
 
                 var user = new User
                 {
@@ -79,7 +77,7 @@ namespace WorkSmart.API.Controllers
                     CreatedAt = DateTime.Now,
                 };
 
-                if(request.Role == "2")
+                if(request.Role == "Employer")
                 {
                     user.PhoneNumber = request.PhoneNumber;
                     user.Gender = request.Gender;
@@ -159,6 +157,11 @@ namespace WorkSmart.API.Controllers
                 if (!user.IsEmailConfirmed)
                 {
                     return Unauthorized(new { Error = "Email not confirmed. Please check your email for the confirmation code." });
+                }
+
+                if (user.IsBanned)
+                {
+                    return Unauthorized(new { Error = "Your account is banned. Contact fanpage to get more information" });
                 }
 
                 var token = GenerateJwtToken(user);
@@ -293,7 +296,7 @@ namespace WorkSmart.API.Controllers
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim("userId", user.UserID.ToString()),
             new Claim("Purpose", "purpose"),
-            new Claim("Role", user.Role)
+            new Claim(ClaimTypes.Role, user.Role),
         };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));

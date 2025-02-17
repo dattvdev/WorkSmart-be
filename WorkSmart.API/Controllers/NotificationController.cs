@@ -20,6 +20,13 @@ namespace WorkSmart.API.Controllers
         {
             return await _notificationService.GetByUserId(userId);
         }
-        
+        // POST: api/CreateNotification
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody] CreateNotificationDto createNotificationDto)
+        {
+            await _notificationService.CreateNotification(createNotificationDto);
+            return Ok();
+        }
+
     }
 }

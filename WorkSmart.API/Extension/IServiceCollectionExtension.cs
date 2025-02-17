@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WorkSmart.Application.Mapper;
+using WorkSmart.Application.Services;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository;
 using WorkSmart.Repository.Repository;
@@ -14,6 +15,7 @@ namespace WorkSmart.API.Extension
             services.AddDbContext<WorksmartDBContext>(options =>
             options.UseSqlServer(Connectionstring));
             services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<NotificationService>();
             services.AddAutoMapper(typeof(NotificationProfile));
             return services;
         }

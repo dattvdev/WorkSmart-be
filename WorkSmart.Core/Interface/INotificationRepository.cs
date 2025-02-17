@@ -7,7 +7,8 @@ using WorkSmart.Core.Entity;
 
 namespace WorkSmart.Core.Interface
 {
-    public interface IUserRepository : IBaseRepository<User>
+    public interface INotificationRepository : IBaseRepository<Notification>
     {
+        Task<IEnumerable<Notification>> GetByUserId(int userId);
     }
 }

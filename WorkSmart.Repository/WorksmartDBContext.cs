@@ -34,7 +34,7 @@ namespace WorkSmart.Repository
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<Package> Packages { get; set; }
         public DbSet<Subscription> Subscriptions { get; set; }
-        public DbSet<JobTag> JobTags { get; set; }
+        public DbSet<Tag> Tags { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

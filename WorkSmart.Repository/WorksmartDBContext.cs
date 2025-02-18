@@ -46,6 +46,24 @@ namespace WorkSmart.Repository
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            //base.OnModelCreating(modelBuilder);
+
+            //var adminPassword = BCrypt.Net.BCrypt.HashPassword("Admin@123"); // Mật khẩu mặc định
+
+            //modelBuilder.Entity<User>().HasData(
+            //    new User
+            //    {
+            //        UserID = 1, // ID cố định để tránh bị trùng
+            //        FullName = "Admin User",
+            //        Email = "admin@domain.com",
+            //        Role = "3", // Admin
+            //        PasswordHash = adminPassword,
+            //        IsEmailConfirmed = true,
+            //        IsBanned = false,
+            //        CreatedAt = DateTime.Now
+            //    }
+            //);
+
             modelBuilder.Entity<PersonalMessage>()
                 .HasOne(pm => pm.Sender)
                 .WithMany(u => u.MessagesSent)

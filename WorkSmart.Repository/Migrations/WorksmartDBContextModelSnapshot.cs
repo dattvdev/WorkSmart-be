@@ -87,7 +87,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("Applications");
+                    b.ToTable("Applications", (string)null);
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.CV", b =>
@@ -130,7 +130,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("CVs");
+                    b.ToTable("CVs", (string)null);
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.CV_Certification", b =>
@@ -158,7 +158,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("CVID");
 
-                    b.ToTable("CV_Certifications");
+                    b.ToTable("CV_Certifications", (string)null);
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.CV_Education", b =>
@@ -193,7 +193,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("CVID");
 
-                    b.ToTable("CV_Educations");
+                    b.ToTable("CV_Educations", (string)null);
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.CV_Experience", b =>
@@ -231,7 +231,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("CVID");
 
-                    b.ToTable("CV_Experiences");
+                    b.ToTable("CV_Experiences", (string)null);
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.CV_Skill", b =>
@@ -253,7 +253,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("CVID");
 
-                    b.ToTable("CV_Skills");
+                    b.ToTable("CV_Skills", (string)null);
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.FavoriteJob", b =>
@@ -279,7 +279,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("FavoriteJobs");
+                    b.ToTable("FavoriteJobs", (string)null);
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.Feedback", b =>
@@ -311,7 +311,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("SenderID");
 
-                    b.ToTable("Feedbacks");
+                    b.ToTable("Feedbacks", (string)null);
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.Job", b =>
@@ -373,9 +373,29 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("Jobs");
+                    b.ToTable("Jobs", (string)null);
                 });
 
+<<<<<<< HEAD
+            modelBuilder.Entity("WorkSmart.Core.Entity.JobTag", b =>
+                {
+                    b.Property<int>("JobTagID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("JobTagID"));
+
+                    b.Property<string>("TagName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("JobTagID");
+
+                    b.ToTable("JobTags", (string)null);
+                });
+
+=======
+>>>>>>> 9593ee87b36c2b60571a464d55aad36895e664e7
             modelBuilder.Entity("WorkSmart.Core.Entity.Notification", b =>
                 {
                     b.Property<int>("NotificationID")
@@ -407,7 +427,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.NotificationJobTag", b =>
@@ -437,7 +457,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("NotificationJobTag");
+                    b.ToTable("NotificationJobTag", (string)null);
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.Package", b =>
@@ -457,7 +477,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasKey("PackageID");
 
-                    b.ToTable("Packages");
+                    b.ToTable("Packages", (string)null);
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.PersonalMessage", b =>
@@ -489,7 +509,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("SenderID");
 
-                    b.ToTable("PersonalMessages");
+                    b.ToTable("PersonalMessages", (string)null);
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.ReportPost", b =>
@@ -519,7 +539,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("SenderID");
 
-                    b.ToTable("ReportPosts");
+                    b.ToTable("ReportPosts", (string)null);
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.ReportUser", b =>
@@ -549,7 +569,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("SenderID");
 
-                    b.ToTable("ReportUsers");
+                    b.ToTable("ReportUsers", (string)null);
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.Subscription", b =>
@@ -575,7 +595,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("Subscriptions");
+                    b.ToTable("Subscriptions", (string)null);
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.Tag", b =>
@@ -624,7 +644,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("Transactions");
+                    b.ToTable("Transactions", (string)null);
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.User", b =>
@@ -713,7 +733,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasKey("UserID");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("JobTag", b =>

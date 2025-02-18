@@ -16,7 +16,7 @@ namespace WorkSmart.Core.Entity
         public string? IdentityNumber { get; set; }
         public bool IdentityConfirmed { get; set; } = false;
         public string Email { get; set; } //candidate and employer
-        public string Role { get; set; } //candidate and employer
+        public string Role { get; set; } //candidate and employer and admin
         public string PasswordHash { get; set; } //candidate and employer
         public string? ConfirmationCode { get; set; }
         public bool IsEmailConfirmed { get; set; } //candidate and employer

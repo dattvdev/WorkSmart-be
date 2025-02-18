@@ -12,8 +12,8 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-    [Migration("20250217152137_dbv3")]
-    partial class dbv3
+    [Migration("20250218034308_dbv4")]
+    partial class dbv4
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,6 +38,21 @@ namespace WorkSmart.Repository.Migrations
                     b.HasIndex("TagsTagID");
 
                     b.ToTable("JobTag");
+                });
+
+            modelBuilder.Entity("TagUser", b =>
+                {
+                    b.Property<int>("TagsTagID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UsersUserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("TagsTagID", "UsersUserID");
+
+                    b.HasIndex("UsersUserID");
+
+                    b.ToTable("TagUser");
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.Application", b =>
@@ -578,12 +593,7 @@ namespace WorkSmart.Repository.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("UserID")
-                        .HasColumnType("int");
-
                     b.HasKey("TagID");
-
-                    b.HasIndex("UserID");
 
                     b.ToTable("Tags");
                 });
@@ -720,6 +730,21 @@ namespace WorkSmart.Repository.Migrations
                     b.HasOne("WorkSmart.Core.Entity.Tag", null)
                         .WithMany()
                         .HasForeignKey("TagsTagID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TagUser", b =>
+                {
+                    b.HasOne("WorkSmart.Core.Entity.Tag", null)
+                        .WithMany()
+                        .HasForeignKey("TagsTagID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WorkSmart.Core.Entity.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersUserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -961,13 +986,6 @@ namespace WorkSmart.Repository.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("WorkSmart.Core.Entity.Tag", b =>
-                {
-                    b.HasOne("WorkSmart.Core.Entity.User", null)
-                        .WithMany("Tags")
-                        .HasForeignKey("UserID");
-                });
-
             modelBuilder.Entity("WorkSmart.Core.Entity.Transaction", b =>
                 {
                     b.HasOne("WorkSmart.Core.Entity.User", "User")
@@ -1040,8 +1058,6 @@ namespace WorkSmart.Repository.Migrations
                     b.Navigation("ReportsSent");
 
                     b.Navigation("Subscriptions");
-
-                    b.Navigation("Tags");
 
                     b.Navigation("Transactions");
                 });

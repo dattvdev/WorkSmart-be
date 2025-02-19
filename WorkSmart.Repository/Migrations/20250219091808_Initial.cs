@@ -6,11 +6,26 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WorkSmart.Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class dbv4 : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "CVTemplates",
+                columns: table => new
+                {
+                    CVTemplateId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Thumbnail = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FilePath = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CVTemplates", x => x.CVTemplateId);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Packages",
                 columns: table => new
@@ -88,11 +103,18 @@ namespace WorkSmart.Repository.Migrations
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Link = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CVTemplateId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CVs", x => x.CVID);
+                    table.ForeignKey(
+                        name: "FK_CVs_CVTemplates_CVTemplateId",
+                        column: x => x.CVTemplateId,
+                        principalTable: "CVTemplates",
+                        principalColumn: "CVTemplateId",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_CVs_Users_UserID",
                         column: x => x.UserID,
@@ -577,6 +599,11 @@ namespace WorkSmart.Repository.Migrations
                 column: "CVID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CVs_CVTemplateId",
+                table: "CVs",
+                column: "CVTemplateId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CVs_UserID",
                 table: "CVs",
                 column: "UserID");
@@ -739,6 +766,9 @@ namespace WorkSmart.Repository.Migrations
 
             migrationBuilder.DropTable(
                 name: "Tags");
+
+            migrationBuilder.DropTable(
+                name: "CVTemplates");
 
             migrationBuilder.DropTable(
                 name: "Users");

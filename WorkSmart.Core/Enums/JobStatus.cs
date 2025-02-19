@@ -11,6 +11,7 @@ namespace WorkSmart.Core.Enums
         Pending,    
         Approved,    
         Rejected,    
-        Hidden       
+        Hidden,
+        Active
     }
 }

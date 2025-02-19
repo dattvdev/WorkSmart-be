@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using System.Text;
 using WorkSmart.API.Extension;
 using WorkSmart.Application.Services;
@@ -30,6 +31,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<ISendMailService, SendMailService>();
 builder.Services.AddTransient<ITokenRepository, TokenService>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddAuthentication(options =>
@@ -37,12 +39,13 @@ builder.Services.AddAuthentication(options =>
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
+
 .AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
-        ValidateAudience = true,
+        ValidAudiences = new List<string> {"admin", "employer", "candidate" },
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],

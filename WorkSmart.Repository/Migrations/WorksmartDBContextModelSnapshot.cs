@@ -101,6 +101,9 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("CVTemplateId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -127,6 +130,8 @@ namespace WorkSmart.Repository.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("CVID");
+
+                    b.HasIndex("CVTemplateId");
 
                     b.HasIndex("UserID");
 
@@ -254,6 +259,31 @@ namespace WorkSmart.Repository.Migrations
                     b.HasIndex("CVID");
 
                     b.ToTable("CV_Skills");
+                });
+
+            modelBuilder.Entity("WorkSmart.Core.Entity.CV_Template", b =>
+                {
+                    b.Property<int>("CVTemplateId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CVTemplateId"));
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Thumbnail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("CVTemplateId");
+
+                    b.ToTable("CVTemplates");
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.FavoriteJob", b =>
@@ -775,11 +805,19 @@ namespace WorkSmart.Repository.Migrations
 
             modelBuilder.Entity("WorkSmart.Core.Entity.CV", b =>
                 {
+                    b.HasOne("WorkSmart.Core.Entity.CV_Template", "CVTemplate")
+                        .WithMany("CVs")
+                        .HasForeignKey("CVTemplateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("WorkSmart.Core.Entity.User", "User")
                         .WithMany("CVs")
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("CVTemplate");
 
                     b.Navigation("User");
                 });
@@ -1005,6 +1043,11 @@ namespace WorkSmart.Repository.Migrations
                     b.Navigation("Experiences");
 
                     b.Navigation("Skills");
+                });
+
+            modelBuilder.Entity("WorkSmart.Core.Entity.CV_Template", b =>
+                {
+                    b.Navigation("CVs");
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.Job", b =>

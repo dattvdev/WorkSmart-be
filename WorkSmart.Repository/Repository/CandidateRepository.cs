@@ -16,9 +16,9 @@ namespace WorkSmart.Repository.Repository
         {
         }
 
-        public async Task<IEnumerable<User>> GetListSearch(int pageIndex = 1, int pageSize = 1, double? exp = null, List<int>? tagIds = null, string? address = null)
+        public async Task<IEnumerable<User>> GetListSearch(CandidateSearchRequestDto request)
         {
-            var query = _dbSet.AsQueryable();
+            /*var query = _dbSet.AsQueryable();
 
             if (exp.HasValue)
             {
@@ -39,7 +39,8 @@ namespace WorkSmart.Repository.Repository
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
-            return candidates;
+            return candidates;*/
+            return null;
         }
     }
 }

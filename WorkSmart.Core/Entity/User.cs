@@ -26,7 +26,7 @@ namespace WorkSmart.Core.Entity
         public string? BankNumber { get; set; }
         public string FullName { get; set; } //candidate and employer
         public string? PhoneNumber { get; set; } //employer
-        public string? Gender { get; set; } //employer
+        public string? Gender { get; set; } //employer & candidate
         public DateTime? DateOfBirth { get; set; }
         public string? Address { get; set; } // Candidate address || Company Location
         public double? Exp { get; set; }

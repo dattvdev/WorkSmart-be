@@ -18,6 +18,11 @@ namespace WorkSmart.API.Extension
             services.AddScoped<IJobRepository, JobRepository>();
             services.AddScoped<JobService>();
             services.AddAutoMapper(typeof(UserProfile) , typeof(JobProfile));
+            services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<NotificationService>();
+            services.AddAutoMapper(typeof(NotificationProfile));
+            services.AddScoped<CandidateProfile>();
+            services.AddAutoMapper(typeof(CandidateProfile));
             return services;
         }
     }

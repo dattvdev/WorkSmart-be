@@ -12,7 +12,7 @@ namespace WorkSmart.Core.Dto.AccountDtos
         [Required]
         [EmailAddress]
         [Display(Name = "Email")]
-        public string UserName { get; set; }
+        public string Email { get; set; }
 
         [Required]
         [DataType(DataType.Password)]

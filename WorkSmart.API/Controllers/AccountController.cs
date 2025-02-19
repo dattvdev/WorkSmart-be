@@ -36,8 +36,8 @@ namespace WorkSmart.API.Controllers
             _cache = cache;
         }
 
-        [HttpPost("signUp")]
-        public async Task<IActionResult> SignUp([FromBody] SignUpRequest request)
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             try
             {
@@ -46,20 +46,44 @@ namespace WorkSmart.API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                //var random = new Random();
-                //var confirmationCode = random.Next(100000, 999999).ToString();
+                // Kiểm tra Role hợp lệ (Candidate, Employer)
+                if (request.Role != "Candidate" && request.Role != "Employer")
+                {
+                    return BadRequest(ModelState);
+                }
 
-                var confirmationCode = Guid.NewGuid().ToString();
+                var existingUser = _accountRepository.GetByEmail(request.Email);
+                if (existingUser != null)
+                {
+                    if (!existingUser.IsEmailConfirmed)
+                    {
+                        return BadRequest(new { Error = "Verification code has been sent to your email, please verify your account." });
+                    }
+
+                    return BadRequest(new { Error = "The email address is already in use. Please choose a different one." });
+                }
+
+                var random = new Random();
+                var confirmationCode = random.Next(100000, 999999).ToString();
 
                 var user = new User
                 {
-                    UserName = request.UserName,
+                    FullName = request.FullName,
                     Email = request.Email,
-                    Role = "1",
+                    Role = request.Role,
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
                     ConfirmationCode = confirmationCode,
-                    IsEmailConfirmed = false
+                    IsEmailConfirmed = false,
+                    CreatedAt = DateTime.Now,
                 };
+
+                if(request.Role == "Employer")
+                {
+                    user.PhoneNumber = request.PhoneNumber;
+                    user.Gender = request.Gender;
+                    user.CompanyName = request.CompanyName;
+                    user.WorkLocation = request.WorkLocation;
+                }
 
                 await _accountRepository.Add(user);
                 await _accountRepository.Save();
@@ -87,7 +111,6 @@ namespace WorkSmart.API.Controllers
 
                 return StatusCode(500, new { Error = "An error occurred while processing your request." });
             }
-
         }
 
         [HttpPost("confirmEmail")]
@@ -124,15 +147,21 @@ namespace WorkSmart.API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var user = _accountRepository.GetByEmail(request.UserName);
+                var user = _accountRepository.GetByEmail(request.Email);
 
                 if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
                 {
                     return Unauthorized(new { Error = "Invalid email or password. Please try again" });
                 }
+
                 if (!user.IsEmailConfirmed)
                 {
                     return Unauthorized(new { Error = "Email not confirmed. Please check your email for the confirmation code." });
+                }
+
+                if (user.IsBanned)
+                {
+                    return Unauthorized(new { Error = "Your account is banned. Contact fanpage to get more information" });
                 }
 
                 var token = GenerateJwtToken(user);
@@ -227,7 +256,7 @@ namespace WorkSmart.API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var user = _accountRepository.GetByEmail(request.UserName);
+                var user = _accountRepository.GetByEmail(request.Email);
 
                 if (user == null || !BCrypt.Net.BCrypt.Verify(request.OldPassword, user.PasswordHash))
                 {
@@ -267,6 +296,7 @@ namespace WorkSmart.API.Controllers
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim("userId", user.UserID.ToString()),
             new Claim("Purpose", "purpose"),
+            new Claim(ClaimTypes.Role, user.Role),
         };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
@@ -276,7 +306,7 @@ namespace WorkSmart.API.Controllers
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddHours(1),
+                expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

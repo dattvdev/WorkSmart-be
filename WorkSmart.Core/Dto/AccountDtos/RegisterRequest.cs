@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace WorkSmart.Core.Dto.AccountDtos
 {
-    public class SignUpRequest
+    public class RegisterRequest
     {
-        [Required(ErrorMessage = "Username is required.")]
-        [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "Username can only contain letters, numbers, and underscores.")]
-        [Display(Name = "Username")]
-        public string UserName { get; set; }
+        [Required(ErrorMessage = "Fullname is required.")]
+        [RegularExpression(@"^[a-zA-Z_ ]+$", ErrorMessage = "Fullname can only contain letters, numbers, and underscores.")]
+        [Display(Name = "Fullname")]
+        public string FullName { get; set; }
 
         [Required(ErrorMessage = "Email is required.")]
         [StringLength(100, ErrorMessage = "Email cannot be longer than 100 characters.")]
@@ -27,9 +27,13 @@ namespace WorkSmart.Core.Dto.AccountDtos
         [Display(Name = "Password")]
         public string Password { get; set; }
 
-        [DataType(DataType.Password)]
-        [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
-        public string ConfirmPassword { get; set; }
+        [Required]
+        public string Role { get; set; } //candidate and employer
+
+        //employer
+        public string? PhoneNumber { get; set; }
+        public string? Gender { get; set; }
+        public string? CompanyName { get; set; }
+        public string? WorkLocation { get; set; }
     }
 }

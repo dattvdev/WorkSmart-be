@@ -13,7 +13,7 @@ namespace WorkSmart.Core.Entity
         public int JobID { get; set; }
         public string Title { get; set; }
         public string? Content { get; set; }
-
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         public User Sender { get; set; }
         public Job Job { get; set; }
     }

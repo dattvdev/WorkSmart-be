@@ -18,12 +18,9 @@ namespace WorkSmart.Application.Services
             _candidateRepository = candidateRepository;
             _mapper = mapper;
         }
-        public async Task<IEnumerable<GetListSearchCandidateDto>> GetListSearchCandidate(
-            int pageIndex, int pageSize,
-            double? exp = null, List<int>? tagIds = null,
-            string? address = null)
+        public async Task<IEnumerable<GetListSearchCandidateDto>> GetListSearchCandidate(CandidateSearchRequestDto request)
         {
-            var candidates = await _candidateRepository.GetListSearch(pageIndex, pageSize, exp, tagIds, address);
+            var candidates = await _candidateRepository.GetListSearch(request);
             return _mapper.Map<IEnumerable<GetListSearchCandidateDto>>(candidates);
         }
     }

@@ -13,13 +13,14 @@ namespace WorkSmart.Core.Entity
         public int CVTemplateId { get; set; }
         public string FullName { get; set; }
         public string? JobPosition { get; set; }
+        public string? WorkType { get; set; }
         public string? Summary { get; set; }
         public string? Address { get; set; }
         public string? Phone { get; set; }
         public string? Email { get; set; }
         public string? Link { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
-
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
         public User User { get; set; }
         public CV_Template CVTemplate { get; set; }
         public ICollection<Application>? Applications { get; set; }

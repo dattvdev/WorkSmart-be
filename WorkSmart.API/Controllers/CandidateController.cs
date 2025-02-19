@@ -17,8 +17,7 @@ namespace WorkSmart.API.Controllers
         [HttpGet]
         public async Task<IEnumerable<GetListSearchCandidateDto>> GetListSearchCandidate(CandidateSearchRequestDto request)
         {
-            return await _candidateService.GetListSearchCandidate(
-        request.PageIndex, request.PageSize, request.Exp, request.TagIds, request.Address);
+            return await _candidateService.GetListSearchCandidate(request);
         }
     }
 }

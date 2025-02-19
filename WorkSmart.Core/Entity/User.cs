@@ -29,13 +29,11 @@ namespace WorkSmart.Core.Entity
         public string? Gender { get; set; } //employer & candidate
         public DateTime? DateOfBirth { get; set; }
         public string? Address { get; set; } // Candidate address || Company Location
-        public double? Exp { get; set; }
-        public string? Skills { get; set; }
         public string? CompanyName { get; set; } //employer
         public string? CompanyDescription { get; set; }
         public string? WorkLocation {  get; set; } //employer
         public DateTime CreatedAt { get; set; } = DateTime.Now;
-       
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
         public ICollection<Notification>? Notifications { get; set; }
         public ICollection<CV>? CVs { get; set; }
         public ICollection<FavoriteJob>? FavoriteJobs { get; set; }

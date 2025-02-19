@@ -24,6 +24,7 @@ namespace WorkSmart.Repository
         public DbSet<CV_Education> CV_Educations { get; set; }
         public DbSet<CV_Certification> CV_Certifications { get; set; }
         public DbSet<CV_Skill> CV_Skills { get; set; }
+        public DbSet<CV_Template> CVTemplates { get; set; }
         public DbSet<FavoriteJob> FavoriteJobs { get; set; }
         public DbSet<Application> Applications { get; set; }
         public DbSet<Notification> Notifications { get; set; }
@@ -46,6 +47,12 @@ namespace WorkSmart.Repository
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<CV>()
+            .HasOne(cv => cv.CVTemplate)
+            .WithMany(template => template.CVs)
+            .HasForeignKey(cv => cv.CVTemplateId)
+            .OnDelete(DeleteBehavior.Restrict); //Do not delete template when CV still exists
+
             modelBuilder.Entity<PersonalMessage>()
                 .HasOne(pm => pm.Sender)
                 .WithMany(u => u.MessagesSent)

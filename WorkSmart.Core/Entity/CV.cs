@@ -25,5 +25,7 @@ namespace WorkSmart.Core.Entity
         public ICollection<CV_Experience>? Experiences { get; set; }
         public ICollection<CV_Certification>? Certifications { get; set; }
         public ICollection<CV_Skill>? Skills { get; set; }
+        public int CVTemplateId { get; set; }
+        public CV_Template CVTemplate { get; set; }
     }
 }

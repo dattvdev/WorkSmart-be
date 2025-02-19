@@ -10,6 +10,7 @@ namespace WorkSmart.Core.Entity
     {
         public int CVID { get; set; }
         public int UserID { get; set; }
+        public int CVTemplateId { get; set; }
         public string FullName { get; set; }
         public string? JobPosition { get; set; }
         public string? Summary { get; set; }
@@ -20,12 +21,13 @@ namespace WorkSmart.Core.Entity
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public User User { get; set; }
+        public CV_Template CVTemplate { get; set; }
         public ICollection<Application>? Applications { get; set; }
         public ICollection<CV_Education>? Educations { get; set; }
         public ICollection<CV_Experience>? Experiences { get; set; }
         public ICollection<CV_Certification>? Certifications { get; set; }
         public ICollection<CV_Skill>? Skills { get; set; }
-        public int CVTemplateId { get; set; }
-        public CV_Template CVTemplate { get; set; }
+       
+        
     }
 }

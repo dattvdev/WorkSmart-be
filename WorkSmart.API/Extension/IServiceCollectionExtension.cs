@@ -14,6 +14,10 @@ namespace WorkSmart.API.Extension
             //Add extentions here
             services.AddDbContext<WorksmartDBContext>(options =>
             options.UseSqlServer(Connectionstring));
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IJobRepository, JobRepository>();
+            services.AddScoped<JobService>();
+            services.AddAutoMapper(typeof(UserProfile) , typeof(JobProfile));
             services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<NotificationService>();
             services.AddAutoMapper(typeof(NotificationProfile));

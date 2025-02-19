@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WorkSmart.Application.Mapper;
+using WorkSmart.Application.Services;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository;
 using WorkSmart.Repository.Repository;
@@ -13,8 +14,11 @@ namespace WorkSmart.API.Extension
             //Add extentions here
             services.AddDbContext<WorksmartDBContext>(options =>
             options.UseSqlServer(Connectionstring));
-            services.AddScoped<IUserRepository, UserRepository>();
-            services.AddAutoMapper(typeof(UserProfile));
+            services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<NotificationService>();
+            services.AddAutoMapper(typeof(NotificationProfile));
+            services.AddScoped<CandidateProfile>();
+            services.AddAutoMapper(typeof(CandidateProfile));
             return services;
         }
     }

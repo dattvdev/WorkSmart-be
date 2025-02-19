@@ -4,16 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using WorkSmart.Core.Dto.UserDto;
+using WorkSmart.Core.Dto.CandidateDtos;
 using WorkSmart.Core.Entity;
 
 namespace WorkSmart.Application.Mapper
 {
-    public class UserProfile : Profile
+    public class CandidateProfile : Profile
     {
-        public UserProfile()
+        public CandidateProfile()
         {
-            CreateMap<User, GetUserDto>().ReverseMap();
+            CreateMap<User, GetListSearchCandidateDto>().ReverseMap();
         }
     }
 }

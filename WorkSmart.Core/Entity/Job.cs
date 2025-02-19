@@ -13,18 +13,25 @@ namespace WorkSmart.Core.Entity
     {
         public int JobID { get; set; }
         public int UserID { get; set; }
-        public int JobTagID { get; set; }
+        public int TagID { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
+        public string? Level { get; set; }
+        public string? Education { get; set; }
+        public int? NumberOfRecruitment { get; set; }
+        public string? WorkType { get; set; }
         public string? Location { get; set; }
         public double? Salary { get; set; }
+        public int? Exp { get; set; }
+        public bool Priority { get; set; } = false;
+        public DateTime? Deadline { get; set; }
         public JobStatus? Status { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public User User { get; set; }
         public ICollection<Application>? Applications { get; set; }
         public ICollection<FavoriteJob>? FavoriteJobs { get; set; }
-        public JobTag JobTag { get; set; }
+        public ICollection<Tag>? Tags { get; set; }
         public ICollection<ReportPost>? ReportPosts { get; set; }
     }
 }

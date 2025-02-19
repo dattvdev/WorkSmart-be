@@ -6,22 +6,24 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WorkSmart.Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class updateDB : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "JobTags",
+                name: "CVTemplates",
                 columns: table => new
                 {
-                    JobTagID = table.Column<int>(type: "int", nullable: false)
+                    CVTemplateId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    TagName = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Thumbnail = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FilePath = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_JobTags", x => x.JobTagID);
+                    table.PrimaryKey("PK_CVTemplates", x => x.CVTemplateId);
                 });
 
             migrationBuilder.CreateTable(
@@ -39,12 +41,28 @@ namespace WorkSmart.Repository.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Tags",
+                columns: table => new
+                {
+                    TagID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TagName = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tags", x => x.TagID);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
                     UserID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Avatar = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IdentityNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IdentityConfirmed = table.Column<bool>(type: "bit", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -85,11 +103,18 @@ namespace WorkSmart.Repository.Migrations
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Link = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CVTemplateId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CVs", x => x.CVID);
+                    table.ForeignKey(
+                        name: "FK_CVs_CVTemplates_CVTemplateId",
+                        column: x => x.CVTemplateId,
+                        principalTable: "CVTemplates",
+                        principalColumn: "CVTemplateId",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_CVs_Users_UserID",
                         column: x => x.UserID,
@@ -132,23 +157,24 @@ namespace WorkSmart.Repository.Migrations
                     JobID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserID = table.Column<int>(type: "int", nullable: false),
-                    JobTagID = table.Column<int>(type: "int", nullable: false),
+                    TagID = table.Column<int>(type: "int", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Level = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Education = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NumberOfRecruitment = table.Column<int>(type: "int", nullable: true),
+                    WorkType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Location = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Salary = table.Column<double>(type: "float", nullable: true),
+                    Exp = table.Column<int>(type: "int", nullable: true),
+                    Priority = table.Column<bool>(type: "bit", nullable: false),
+                    Deadline = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Jobs", x => x.JobID);
-                    table.ForeignKey(
-                        name: "FK_Jobs_JobTags_JobTagID",
-                        column: x => x.JobTagID,
-                        principalTable: "JobTags",
-                        principalColumn: "JobTagID",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Jobs_Users_UserID",
                         column: x => x.UserID,
@@ -163,7 +189,7 @@ namespace WorkSmart.Repository.Migrations
                 {
                     NotificationJobTagID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    JobTagID = table.Column<int>(type: "int", nullable: false),
+                    TagID = table.Column<int>(type: "int", nullable: false),
                     UserID = table.Column<int>(type: "int", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -172,10 +198,10 @@ namespace WorkSmart.Repository.Migrations
                 {
                     table.PrimaryKey("PK_NotificationJobTag", x => x.NotificationJobTagID);
                     table.ForeignKey(
-                        name: "FK_NotificationJobTag_JobTags_JobTagID",
-                        column: x => x.JobTagID,
-                        principalTable: "JobTags",
-                        principalColumn: "JobTagID",
+                        name: "FK_NotificationJobTag_Tags_TagID",
+                        column: x => x.TagID,
+                        principalTable: "Tags",
+                        principalColumn: "TagID",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_NotificationJobTag_Users_UserID",
@@ -284,6 +310,30 @@ namespace WorkSmart.Repository.Migrations
                     table.ForeignKey(
                         name: "FK_Subscriptions_Users_UserID",
                         column: x => x.UserID,
+                        principalTable: "Users",
+                        principalColumn: "UserID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TagUser",
+                columns: table => new
+                {
+                    TagsTagID = table.Column<int>(type: "int", nullable: false),
+                    UsersUserID = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TagUser", x => new { x.TagsTagID, x.UsersUserID });
+                    table.ForeignKey(
+                        name: "FK_TagUser_Tags_TagsTagID",
+                        column: x => x.TagsTagID,
+                        principalTable: "Tags",
+                        principalColumn: "TagID",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TagUser_Users_UsersUserID",
+                        column: x => x.UsersUserID,
                         principalTable: "Users",
                         principalColumn: "UserID",
                         onDelete: ReferentialAction.Cascade);
@@ -463,6 +513,30 @@ namespace WorkSmart.Repository.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "JobTag",
+                columns: table => new
+                {
+                    JobsJobID = table.Column<int>(type: "int", nullable: false),
+                    TagsTagID = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_JobTag", x => new { x.JobsJobID, x.TagsTagID });
+                    table.ForeignKey(
+                        name: "FK_JobTag_Jobs_JobsJobID",
+                        column: x => x.JobsJobID,
+                        principalTable: "Jobs",
+                        principalColumn: "JobID",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_JobTag_Tags_TagsTagID",
+                        column: x => x.TagsTagID,
+                        principalTable: "Tags",
+                        principalColumn: "TagID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ReportPosts",
                 columns: table => new
                 {
@@ -525,6 +599,11 @@ namespace WorkSmart.Repository.Migrations
                 column: "CVID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CVs_CVTemplateId",
+                table: "CVs",
+                column: "CVTemplateId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CVs_UserID",
                 table: "CVs",
                 column: "UserID");
@@ -550,19 +629,19 @@ namespace WorkSmart.Repository.Migrations
                 column: "SenderID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Jobs_JobTagID",
-                table: "Jobs",
-                column: "JobTagID");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Jobs_UserID",
                 table: "Jobs",
                 column: "UserID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_NotificationJobTag_JobTagID",
+                name: "IX_JobTag_TagsTagID",
+                table: "JobTag",
+                column: "TagsTagID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_NotificationJobTag_TagID",
                 table: "NotificationJobTag",
-                column: "JobTagID");
+                column: "TagID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_NotificationJobTag_UserID",
@@ -615,6 +694,11 @@ namespace WorkSmart.Repository.Migrations
                 column: "UserID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TagUser_UsersUserID",
+                table: "TagUser",
+                column: "UsersUserID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Transactions_UserID",
                 table: "Transactions",
                 column: "UserID");
@@ -645,6 +729,9 @@ namespace WorkSmart.Repository.Migrations
                 name: "Feedbacks");
 
             migrationBuilder.DropTable(
+                name: "JobTag");
+
+            migrationBuilder.DropTable(
                 name: "NotificationJobTag");
 
             migrationBuilder.DropTable(
@@ -663,6 +750,9 @@ namespace WorkSmart.Repository.Migrations
                 name: "Subscriptions");
 
             migrationBuilder.DropTable(
+                name: "TagUser");
+
+            migrationBuilder.DropTable(
                 name: "Transactions");
 
             migrationBuilder.DropTable(
@@ -675,7 +765,10 @@ namespace WorkSmart.Repository.Migrations
                 name: "Packages");
 
             migrationBuilder.DropTable(
-                name: "JobTags");
+                name: "Tags");
+
+            migrationBuilder.DropTable(
+                name: "CVTemplates");
 
             migrationBuilder.DropTable(
                 name: "Users");

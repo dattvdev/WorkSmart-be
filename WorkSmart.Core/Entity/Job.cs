@@ -13,7 +13,6 @@ namespace WorkSmart.Core.Entity
     {
         public int JobID { get; set; }
         public int UserID { get; set; }
-        public int TagID { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public string? Level { get; set; }

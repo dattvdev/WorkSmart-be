@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
@@ -10,70 +8,66 @@ using WorkSmart.Core.Interface;
 
 namespace WorkSmart.Repository.Repository
 {
-    public class JobRepository : IJobRepository
+    public class JobRepository : BaseRepository<Job>, IJobRepository
     {
-        private readonly WorksmartDBContext _context;
-
-        public JobRepository(WorksmartDBContext context)
+        public JobRepository(WorksmartDBContext context) : base(context)
         {
-            _context = context;
         }
 
-        public async Task<Job> CreateJobAsync(Job job)
+        public Task<bool> ApproveJobAsync(int jobId)
         {
-            _context.Jobs.Add(job);
-            await _context.SaveChangesAsync();
-            return job;
+            throw new NotImplementedException();
         }
 
-        public async Task<Job> UpdateJobAsync(Job job)
+        public Task<Job> CreateJobAsync(Job job)
         {
-            _context.Jobs.Update(job);
-            await _context.SaveChangesAsync();
-            return job;
+            throw new NotImplementedException();
         }
 
-        public async Task<bool> DeleteJobAsync(int jobId)
+        public Task<bool> DeleteJobAsync(int jobId)
         {
-            var job = await _context.Jobs.FindAsync(jobId);
+            throw new NotImplementedException();
+        }
+
+        public Task<List<Job>> GetAllJobsAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Job> GetJobByIdAsync(int jobId)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public async Task<IEnumerable<Job>> GetJobsByEmployerId(int employerId)
+        {
+            return await _dbSet.Where(j => j.UserID == employerId).ToListAsync();
+        }
+
+
+        public async Task<IEnumerable<Job>> GetJobsByStatus(JobStatus status)
+        {
+            return await _dbSet.Where(j => j.Status == status).ToListAsync();
+        }
+
+        public Task<bool> HideJobAsync(int jobId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Job> UpdateJobAsync(Job job)
+        {
+            throw new NotImplementedException();
+        }
+
+        
+        public async Task<bool> UpdateJobStatus(int jobId, JobStatus newStatus)
+        {
+            var job = await _dbSet.FindAsync(jobId);
             if (job == null) return false;
 
-            _context.Jobs.Remove(job);
-            return await _context.SaveChangesAsync() > 0;
-        }
-
-        public async Task<Job> GetJobByIdAsync(int jobId)
-        {
-            return await _context.Jobs
-                .Include(j => j.User)
-                .Include(j => j.JobTag)
-                .FirstOrDefaultAsync(j => j.JobID == jobId);
-        }
-
-        public async Task<List<Job>> GetAllJobsAsync()
-        {
-            return await _context.Jobs
-                .Include(j => j.User)
-                .Include(j => j.JobTag)
-                .ToListAsync();
-        }
-
-        public async Task<bool> ApproveJobAsync(int jobId)
-        {
-            var job = await _context.Jobs.FindAsync(jobId);
-            if (job == null) return false;
-
-            job.Status = JobStatus.Approved;
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
-        public async Task<bool> HideJobAsync(int jobId)
-        {
-            var job = await _context.Jobs.FindAsync(jobId);
-            if (job == null) return false;
-
-            job.Status = JobStatus.Hidden;
+            job.Status = newStatus;
             await _context.SaveChangesAsync();
             return true;
         }

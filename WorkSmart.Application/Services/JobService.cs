@@ -1,9 +1,9 @@
-﻿using System;
+﻿using AutoMapper;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
+using WorkSmart.Core.Enums;
 using WorkSmart.Core.Interface;
 
 namespace WorkSmart.Application.Services
@@ -11,24 +11,37 @@ namespace WorkSmart.Application.Services
     public class JobService
     {
         private readonly IJobRepository _jobRepository;
+        private readonly IMapper _mapper;
 
-        public JobService(IJobRepository jobRepository)
+        public JobService(IJobRepository jobRepository, IMapper mapper)
         {
             _jobRepository = jobRepository;
+            _mapper = mapper;
         }
 
-        public async Task<Job> CreateJobAsync(Job job) => await _jobRepository.CreateJobAsync(job);
+        public async Task<JobDto> GetJobById(int jobId)
+        {
+            var job = await _jobRepository.GetById(jobId);
+            return job == null ? null : _mapper.Map<JobDto>(job);
+        }
 
-        public async Task<Job> UpdateJobAsync(Job job) => await _jobRepository.UpdateJobAsync(job);
+        public async Task CreateJobAsync(CreateJobDto jobDto)
+        {
+            var job = _mapper.Map<Job>(jobDto);
+            await _jobRepository.Add(job);
+        }
 
-        public async Task<bool> DeleteJobAsync(int jobId) => await _jobRepository.DeleteJobAsync(jobId);
+        public async Task<JobDto> UpdateJobAsync(int jobId, UpdateJobDto jobDto)
+        {
+            var job = await _jobRepository.GetById(jobId);
+            if (job == null) return null;
 
-        public async Task<Job> GetJobByIdAsync(int jobId) => await _jobRepository.GetJobByIdAsync(jobId);
+            _mapper.Map(jobDto, job);
+            await _jobRepository.Save();
+            return _mapper.Map<JobDto>(job);
+        }
 
-        public async Task<List<Job>> GetAllJobsAsync() => await _jobRepository.GetAllJobsAsync();
-
-        public async Task<bool> ApproveJobAsync(int jobId) => await _jobRepository.ApproveJobAsync(jobId);
-
-        public async Task<bool> HideJobAsync(int jobId) => await _jobRepository.HideJobAsync(jobId);
+        public async Task<bool> HideJob(int jobId) => await _jobRepository.UpdateJobStatus(jobId, JobStatus.Hidden);
+        public async Task<bool> UnhideJob(int jobId) => await _jobRepository.UpdateJobStatus(jobId, JobStatus.Active);
     }
 }

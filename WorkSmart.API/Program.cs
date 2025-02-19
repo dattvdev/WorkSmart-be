@@ -19,6 +19,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<ISendMailService, SendMailService>();
 builder.Services.AddTransient<ITokenRepository, TokenService>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddAuthentication(options =>
@@ -26,6 +27,7 @@ builder.Services.AddAuthentication(options =>
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
+
 .AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters

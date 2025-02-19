@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using WorkSmart.Application.Services;
-using WorkSmart.Core.Dto;
 using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
@@ -14,62 +15,142 @@ namespace WorkSmart.API.Controllers
     public class JobController : ControllerBase
     {
         private readonly JobService _jobService;
+        private readonly ILogger<JobController> _logger;
 
-        public JobController(JobService jobService)
+        public JobController(JobService jobService, ILogger<JobController> logger)
         {
             _jobService = jobService;
+            _logger = logger;
         }
 
+        /// Create a new job post
+        
         [HttpPost("create")]
         public async Task<IActionResult> CreateJob([FromBody] CreateJobDto createJobDto)
         {
-            var job = new Job
+            if (createJobDto == null)
+                return BadRequest(new { message = "Invalid job data." });
+            try
             {
-                UserID = createJobDto.EmployerID,
-                Title = createJobDto.Title,
-                Description = createJobDto.Description,
-                Location = createJobDto.Location,
-                Salary = (double?)createJobDto.Salary,
-                Status = JobStatus.Pending,
-                CreatedAt = DateTime.Now
-            };
-
-            var newJob = await _jobService.CreateJobAsync(job);
-            return Ok(new JobDto
+                await _jobService.CreateJobAsync(createJobDto);
+                return Ok();
+            }
+            catch (Exception ex)
             {
-                JobID = newJob.JobID,
-                Title = newJob.Title,
-                Description = newJob.Description,
-                Location = newJob.Location,
-                Salary = newJob.Salary,
-                Status = newJob.Status.ToString(),
-                CreatedAt = newJob.CreatedAt
-            });
+                _logger.LogError("Error creating job: {Message}", ex.Message);
+                return StatusCode(500, new { message = "An error occurred while creating the job." });
+            }
         }
 
+        /// Update an existing job post
         [HttpPut("update/{id}")]
         public async Task<IActionResult> UpdateJob(int id, [FromBody] UpdateJobDto updateJobDto)
         {
-            var existingJob = await _jobService.GetJobByIdAsync(id);
-            if (existingJob == null) return NotFound("Job not found");
+            if (updateJobDto == null)
+                return BadRequest(new { message = "Invalid job data." });
 
-            existingJob.Title = updateJobDto.Title;
-            existingJob.Description = updateJobDto.Description;
-            existingJob.Location = updateJobDto.Location;
-            existingJob.Salary = (double?)updateJobDto.Salary;
-            existingJob.Status = updateJobDto.Status;
-
-            var updatedJob = await _jobService.UpdateJobAsync(existingJob);
-            return Ok(new JobDto
+            try
             {
-                JobID = updatedJob.JobID,
-                Title = updatedJob.Title,
-                Description = updatedJob.Description,
-                Location = updatedJob.Location,
-                Salary = updatedJob.Salary,
-                Status = updatedJob.Status.ToString(),
-                CreatedAt = updatedJob.CreatedAt
-            });
+                var updatedJob = await _jobService.UpdateJobAsync(id, updateJobDto);
+                if (updatedJob == null)
+                    return NotFound(new { message = "Job not found." });
+
+                return Ok(updatedJob);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error updating job ID {JobID}: {Message}", id, ex.Message);
+                return StatusCode(500, new { message = "An error occurred while updating the job." });
+            }
         }
+
+        /// Hide a job post
+        [HttpPut("hide/{id}")]
+        public async Task<IActionResult> HideJob(int id)
+        {
+            try
+            {
+                var success = await _jobService.HideJob(id);
+                if (!success)
+                    return NotFound(new { message = "Job not found." });
+
+                return Ok(new { message = "Job post has been hidden successfully.", jobId = id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error hiding job ID {JobID}: {Message}", id, ex.Message);
+                return StatusCode(500, new { message = "An error occurred while hiding the job." });
+            }
+        }
+
+        /// Unhide a job post
+        [HttpPut("unhide/{id}")]
+        public async Task<IActionResult> UnhideJob(int id)
+        {
+            try
+            {
+                var success = await _jobService.UnhideJob(id);
+                if (!success)
+                    return NotFound(new { message = "Job not found." });
+
+                return Ok(new { message = "Job post has been unhidden successfully.", jobId = id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error unhiding job ID {JobID}: {Message}", id, ex.Message);
+                return StatusCode(500, new { message = "An error occurred while unhiding the job." });
+            }
+        }
+
+        /// Get job details by ID
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetJobById(int id)
+        {
+            try
+            {
+                var job = await _jobService.GetJobById(id);
+                if (job == null)
+                    return NotFound(new { message = "Job not found." });
+
+                return Ok(job);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error fetching job ID {JobID}: {Message}", id, ex.Message);
+                return StatusCode(500, new { message = "An error occurred while retrieving the job." });
+            }
+        }
+
+        ///// Get jobs by employer ID
+        //[HttpGet("employer/{employerId}")]
+        //public async Task<IActionResult> GetJobsByEmployerId(int employerId)
+        //{
+        //    try
+        //    {
+        //        var jobs = await _jobService.GetJobsByEmployerId(employerId);
+        //        return Ok(jobs);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError("Error fetching jobs for employer ID {EmployerID}: {Message}", employerId, ex.Message);
+        //        return StatusCode(500, new { message = "An error occurred while retrieving jobs." });
+        //    }
+        //}
+
+        ///// Get jobs by status
+        //[HttpGet("status/{status}")]
+        //public async Task<IActionResult> GetJobsByStatus(JobStatus status)
+        //{
+        //    try
+        //    {
+        //        var jobs = await _jobService.GetJobsByStatus(status);
+        //        return Ok(jobs);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError("Error fetching jobs with status {Status}: {Message}", status, ex.Message);
+        //        return StatusCode(500, new { message = "An error occurred while retrieving jobs." });
+        //    }
+        //}
     }
 }

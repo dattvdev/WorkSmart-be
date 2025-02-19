@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WorkSmart.Application.Mapper;
+using WorkSmart.Application.Services;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository;
 using WorkSmart.Repository.Repository;
@@ -14,7 +15,9 @@ namespace WorkSmart.API.Extension
             services.AddDbContext<WorksmartDBContext>(options =>
             options.UseSqlServer(Connectionstring));
             services.AddScoped<IUserRepository, UserRepository>();
-            services.AddAutoMapper(typeof(UserProfile));
+            services.AddScoped<IJobRepository, JobRepository>();
+            services.AddScoped<JobService>();
+            services.AddAutoMapper(typeof(UserProfile) , typeof(JobProfile));
             return services;
         }
     }

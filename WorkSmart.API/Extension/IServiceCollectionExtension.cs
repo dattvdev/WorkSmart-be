@@ -21,7 +21,9 @@ namespace WorkSmart.API.Extension
             services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<NotificationService>();
             services.AddAutoMapper(typeof(NotificationProfile));
+            services.AddScoped<ICandidateRepository, CandidateRepository>();
             services.AddScoped<CandidateProfile>();
+            services.AddScoped<CandidateService>();
             services.AddAutoMapper(typeof(CandidateProfile));
             return services;
         }

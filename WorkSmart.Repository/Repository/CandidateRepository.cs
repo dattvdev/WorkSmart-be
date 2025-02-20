@@ -18,29 +18,50 @@ namespace WorkSmart.Repository.Repository
 
         public async Task<IEnumerable<User>> GetListSearch(CandidateSearchRequestDto request)
         {
-            /*var query = _dbSet.AsQueryable();
+            DbSet<CV> _CVdbSet = _context.Set<CV>();
+            var query = _CVdbSet.AsQueryable();
 
-            if (exp.HasValue)
+            if (!string.IsNullOrWhiteSpace(request.Name))
             {
-                query = query.Where(c => c.Exp >= exp.Value);
+                query = query.Where(c => c.FullName.ToLower().Contains(request.Name.ToLower()));
             }
+            if (!string.IsNullOrWhiteSpace(request.JobPosition) && request.Exp > 0)
+            query = query.Where(c => c.Experiences.Any(e =>
+                ((e.EndedAt ?? DateTime.Now).Year - e.StartedAt.Year) >= request.Exp &&
+                e.JobPosition.Equals(request.JobPosition, StringComparison.OrdinalIgnoreCase)
+                ));
 
-            if (!string.IsNullOrEmpty(address))
+            if (!string.IsNullOrWhiteSpace(request.Education))
             {
-                query = query.Where(c => c.Address.Contains(address));
+                query = query.Where(c => c.Educations.Any(e => 
+                                e.Degree.Equals(request.Education, StringComparison.OrdinalIgnoreCase)));
             }
-
-            if (tagIds != null && tagIds.Any())
+            if (!string.IsNullOrWhiteSpace(request.Major))
             {
-                query = query.Where(c => c.Tags.Any(t => tagIds.Contains(t.TagID)));
+                query = query.Where(c => c.Educations.Any(e => 
+                                e.Major.Equals(request.Major, StringComparison.OrdinalIgnoreCase)));
             }
-            var candidates = await query
-                .OrderByDescending(c => c.CreatedAt)
-                .Skip((pageIndex - 1) * pageSize)
-                .Take(pageSize)
+            if (!string.IsNullOrWhiteSpace(request.WorkType))
+            {
+                query = query.Where(c => c.WorkType.Equals(request.WorkType, StringComparison.OrdinalIgnoreCase));
+            }
+            // Lấy danh sách UserId không trùng
+            var userIds = await query
+                .Select(c => c.UserID)
+                .Distinct()
+                .Skip((request.PageIndex - 1) * request.PageSize)
+                .Take(request.PageSize)
                 .ToListAsync();
-            return candidates;*/
-            return null;
+
+            if (!userIds.Any())
+            {
+                return new List<User>();
+            }
+            // Truy vấn danh sách User dựa trên UserId
+            var users = await _context.Users
+                .Where(u => userIds.Contains(u.UserID))
+                .ToListAsync();
+            return users;
         }
     }
 }

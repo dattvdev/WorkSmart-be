@@ -34,7 +34,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("TagsTagID");
 
-                    b.ToTable("JobTag");
+                    b.ToTable("JobTag", (string)null);
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.Application", b =>
@@ -582,7 +582,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("Tags");
+                    b.ToTable("Tags", (string)null);
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.Transaction", b =>

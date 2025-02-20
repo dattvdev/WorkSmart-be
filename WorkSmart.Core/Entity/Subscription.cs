@@ -12,7 +12,7 @@ namespace WorkSmart.Core.Entity
         public int PackageID { get; set; }
         public int UserID { get; set; }
         public DateTime ExpDate { get; set; }
-
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         public User User { get; set; }
         public Package Package { get; set; }
     }

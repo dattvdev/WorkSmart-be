@@ -14,7 +14,7 @@ namespace WorkSmart.Core.Entity
         public int CVID { get; set; }
         public string CertificateName { get; set; }
         public string? Description { get; set; }
-        public DateTime StartAt { get; set; }
+        public DateTime CreateAt { get; set; }
 
         public CV CV { get; set; }
     }

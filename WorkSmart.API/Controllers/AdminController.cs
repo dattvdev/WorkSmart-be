@@ -17,6 +17,35 @@ namespace WorkSmart.API.Controllers
             _accountRepository = accountRepository;
         }
 
+        [HttpGet("list-user")]
+        public async Task<IActionResult> ViewListUser()
+        {
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (userRole != "Admin")
+            {
+                return Unauthorized("Access denied");
+            }
+
+            var users = await _accountRepository.GetAll();
+
+            if (users == null || !users.Any())
+            {
+                return NotFound(new { Message = "No user to display" });
+            }
+
+            var result = users.Select(user => new
+            {
+                user.UserID,
+                user.FullName,
+                user.Email,
+                user.IdentityNumber,
+                user.IsBanned,
+                user.CreatedAt
+            });
+
+            return Ok(result);
+        }
+
         [HttpGet("test-auth")]
         public IActionResult TestAuth()
         {
@@ -34,7 +63,7 @@ namespace WorkSmart.API.Controllers
             var currentUserRole = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
             if (currentUserRole != "Admin")
             {
-                return Forbid();
+                return Unauthorized("Access denied");
             }
 
             var user = await _accountRepository.GetById(id);
@@ -60,7 +89,7 @@ namespace WorkSmart.API.Controllers
             var currentUserRole = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
             if (currentUserRole != "Admin")
             {
-                return Forbid();
+                return Unauthorized("Access denied");
             }
 
             var user = await _accountRepository.GetById(id);

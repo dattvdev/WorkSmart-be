@@ -361,26 +361,6 @@ namespace WorkSmart.Repository.Migrations
                     b.ToTable("Jobs", (string)null);
                 });
 
-<<<<<<< HEAD
-            modelBuilder.Entity("WorkSmart.Core.Entity.JobTag", b =>
-                {
-                    b.Property<int>("JobTagID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("JobTagID"));
-
-                    b.Property<string>("TagName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("JobTagID");
-
-                    b.ToTable("JobTags", (string)null);
-                });
-
-=======
->>>>>>> 9593ee87b36c2b60571a464d55aad36895e664e7
             modelBuilder.Entity("WorkSmart.Core.Entity.Notification", b =>
                 {
                     b.Property<int>("NotificationID")

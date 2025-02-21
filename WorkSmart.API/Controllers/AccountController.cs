@@ -359,7 +359,7 @@ namespace WorkSmart.API.Controllers
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Email),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim("userId", user.UserID.ToString()),
+            new Claim("UserId", user.UserID.ToString()),
             new Claim("Purpose", "purpose"),
             new Claim(ClaimTypes.Role, user.Role),
         };

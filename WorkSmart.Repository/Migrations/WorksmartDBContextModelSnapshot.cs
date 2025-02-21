@@ -34,7 +34,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("TagsTagID");
 
-                    b.ToTable("JobTag");
+                    b.ToTable("JobTag", (string)null);
                 });
 
             modelBuilder.Entity("TagUser", b =>
@@ -636,6 +636,10 @@ namespace WorkSmart.Repository.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("TagID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("Tags", (string)null);
 
                     b.ToTable("Tags");
                 });

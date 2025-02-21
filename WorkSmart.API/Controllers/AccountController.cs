@@ -173,6 +173,71 @@ namespace WorkSmart.API.Controllers
             }
         }
 
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest googleLoginRequest)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(googleLoginRequest.Email))
+                {
+                    return BadRequest(new { Message = "Invalid Google login data" });
+                }
+
+                //if (googleLoginRequest.Role != "Candidate" && googleLoginRequest.Role != "Employer")
+                //{
+                //    return BadRequest(new { Error = "Invalid role. Role must be 'Candidate' or 'Employer'." });
+                //}
+
+                var user =  _accountRepository.GetByEmail(googleLoginRequest.Email);
+                if(user == null)
+                {
+                    user = new User
+                    {
+                        FullName = googleLoginRequest.Name,
+                        Email = googleLoginRequest.Email,
+                        Avatar = googleLoginRequest.Picture,
+                        Role = googleLoginRequest.Role,
+                        IsEmailConfirmed = true,
+                        CreatedAt = DateTime.UtcNow,
+                    };
+
+                    if(googleLoginRequest.Role == "Employer")
+                    {
+                        user.PhoneNumber = "";
+                        user.Gender = "";
+                        user.CompanyName = "";
+                        user.WorkLocation = "";
+                    }
+
+                    await _accountRepository.Add(user);
+                    await _accountRepository.Save();
+                }
+
+                if (user.IsBanned)
+                {
+                    return Unauthorized(new { Message = "Your account is banned. Contact fanpage to get more information"});
+                }
+
+                var token = GenerateJwtToken(user);
+
+                return Ok(new
+                {
+                    Token = token,
+                    User = new
+                    {
+                        id = user.UserID,
+                        email = user.Email,
+                        name = user.FullName,
+                        role = user.Role
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = "An error occurred while processing your request." });
+            }
+        }
+
         [HttpPost("forgotPassword")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
         {

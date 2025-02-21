@@ -78,6 +78,7 @@ namespace WorkSmart.API.Controllers
                 if (request.Avatar != null) user.Avatar = request.Avatar;
                 if (request.DateOfBirth != null) user.DateOfBirth = request.DateOfBirth;
 
+                user.UpdatedAt = DateTime.UtcNow;
                 _accountRepository.Update(user);
                 await _accountRepository.Save();
 

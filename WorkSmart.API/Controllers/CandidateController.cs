@@ -15,10 +15,12 @@ namespace WorkSmart.API.Controllers
         }
         // GET: api/GetListSearchCandidate
         [HttpGet("GetListSearch")]
-        public async Task<IEnumerable<GetListSearchCandidateDto>> GetListSearchCandidate
+        public async Task<IActionResult> GetListSearchCandidate
             ([FromQuery] CandidateSearchRequestDto request)
         {
-            return await _candidateService.GetListSearchCandidate(request);
+            var (candidates, total) = await _candidateService.GetListSearchCandidate(request);
+            var totalPage = (int)Math.Ceiling((double)total / request.PageSize);
+            return Ok(new { totalPage, candidates });
         }
     }
 }

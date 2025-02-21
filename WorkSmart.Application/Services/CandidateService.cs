@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WorkSmart.Core.Dto.CandidateDtos;
+using WorkSmart.Core.Entity;
 using WorkSmart.Core.Interface;
 
 namespace WorkSmart.Application.Services
@@ -18,10 +19,13 @@ namespace WorkSmart.Application.Services
             _candidateRepository = candidateRepository;
             _mapper = mapper;
         }
-        public async Task<IEnumerable<GetListSearchCandidateDto>> GetListSearchCandidate(CandidateSearchRequestDto request)
+        public async Task<(IEnumerable<GetListSearchCandidateDto> Users, int Total)> GetListSearchCandidate(CandidateSearchRequestDto request)
         {
-            var candidates = await _candidateRepository.GetListSearch(request);
-            return _mapper.Map<IEnumerable<GetListSearchCandidateDto>>(candidates);
+            var (users, total) = await _candidateRepository.GetListSearch(request);
+
+            var mappedUsers = _mapper.Map<IEnumerable<GetListSearchCandidateDto>>(users);
+
+            return (mappedUsers, total);
         }
     }
 }

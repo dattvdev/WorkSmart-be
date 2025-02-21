@@ -1,20 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using WorkSmart.Core.Entity;
+using WorkSmart.Core.Enums;
 
 namespace WorkSmart.Core.Interface
 {
-    public interface IJobRepository
+    public interface IJobRepository : IBaseRepository<Job>
     {
-        Task<Job> CreateJobAsync(Job job);
-        Task<Job> UpdateJobAsync(Job job);
-        Task<bool> DeleteJobAsync(int jobId);
-        Task<Job> GetJobByIdAsync(int jobId);
-        Task<List<Job>> GetAllJobsAsync();
-        Task<bool> ApproveJobAsync(int jobId);
-        Task<bool> HideJobAsync(int jobId);
+        Task<IEnumerable<Job>> GetJobsByEmployerId(int employerId);
+        Task<IEnumerable<Job>> GetJobsByStatus(JobStatus status);
+        Task<bool> UpdateJobStatus(int jobId, JobStatus newStatus);
     }
 }

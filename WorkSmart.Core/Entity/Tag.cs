@@ -13,6 +13,7 @@ namespace WorkSmart.Core.Entity
 
         public ICollection<NotificationJobTag>? NotificationJobTags { get; set; }
         public ICollection<Job>? Jobs { get; set; }
+        public ICollection<User>? Users { get;}
     }
 }
     

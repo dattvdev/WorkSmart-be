@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.CandidateDtos;
 using WorkSmart.Core.Interface;
 
@@ -10,11 +11,18 @@ namespace WorkSmart.API.Controllers
     [ApiController]
     public class CandidateController : ControllerBase
     {
+        private readonly CandidateService _candidateService;
         private readonly IAccountRepository _accountRepository;
 
-        public CandidateController(IAccountRepository accountRepository)
+        public CandidateController(IAccountRepository accountRepository, CandidateService candidateService)
         {
             _accountRepository = accountRepository;
+            _candidateService = candidateService;
+        }
+
+        public async Task<IEnumerable<GetListSearchCandidateDto>> GetListSearchCandidate([FromQuery] CandidateSearchRequestDto request)
+        {
+            return await _candidateService.GetListSearchCandidate(request);
         }
 
         [HttpGet("profile")]
@@ -38,9 +46,7 @@ namespace WorkSmart.API.Controllers
                     user.Email,
                     user.Avatar,
                     user.DateOfBirth,
-                    user.Address,
-                    user.Exp,
-                    user.Skills
+                    user.Address
                 };
 
                 return Ok(candidateProfile);
@@ -69,8 +75,6 @@ namespace WorkSmart.API.Controllers
                 if (request.PhoneNumber != null) user.PhoneNumber = request.PhoneNumber;
                 if (request.Gender != null) user.Gender = request.Gender;
                 if (request.Address != null) user.Address = request.Address;
-                if (request.Skills != null) user.Skills = request.Skills; 
-                if (request.Exp != null) user.Exp = request.Exp;
                 if (request.Avatar != null) user.Avatar = request.Avatar;
                 if (request.DateOfBirth != null) user.DateOfBirth = request.DateOfBirth;
 

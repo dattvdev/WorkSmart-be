@@ -12,7 +12,7 @@ namespace WorkSmart.Core.Entity
         public int FavoriteJobID { get; set; }
         public int UserID { get; set; }
         public int JobID { get; set; }
-        public DateTime AddedAt { get; set; } = DateTime.Now;
+        public DateTime CreateAt { get; set; } = DateTime.Now;
 
         public User User { get; set; }
         public Job Job { get; set; }

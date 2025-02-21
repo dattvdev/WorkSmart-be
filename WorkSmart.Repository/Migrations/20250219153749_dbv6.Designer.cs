@@ -12,8 +12,8 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-    [Migration("20250217152137_dbv3")]
-    partial class dbv3
+    [Migration("20250219153749_dbv6")]
+    partial class dbv6
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,6 +38,21 @@ namespace WorkSmart.Repository.Migrations
                     b.HasIndex("TagsTagID");
 
                     b.ToTable("JobTag");
+                });
+
+            modelBuilder.Entity("TagUser", b =>
+                {
+                    b.Property<int>("TagsTagID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UsersUserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("TagsTagID", "UsersUserID");
+
+                    b.HasIndex("UsersUserID");
+
+                    b.ToTable("TagUser");
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.Application", b =>
@@ -89,6 +104,9 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("CVTemplateId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -111,10 +129,18 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<string>("Summary")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
+                    b.Property<string>("WorkType")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("CVID");
+
+                    b.HasIndex("CVTemplateId");
 
                     b.HasIndex("UserID");
 
@@ -136,11 +162,11 @@ namespace WorkSmart.Repository.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreateAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("StartAt")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("CertificationID");
 
@@ -244,6 +270,31 @@ namespace WorkSmart.Repository.Migrations
                     b.ToTable("CV_Skills");
                 });
 
+            modelBuilder.Entity("WorkSmart.Core.Entity.CV_Template", b =>
+                {
+                    b.Property<int>("CVTemplateId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CVTemplateId"));
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Thumbnail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("CVTemplateId");
+
+                    b.ToTable("CVTemplates");
+                });
+
             modelBuilder.Entity("WorkSmart.Core.Entity.FavoriteJob", b =>
                 {
                     b.Property<int>("FavoriteJobID")
@@ -252,7 +303,7 @@ namespace WorkSmart.Repository.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FavoriteJobID"));
 
-                    b.Property<DateTime>("AddedAt")
+                    b.Property<DateTime>("CreateAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("JobID")
@@ -344,12 +395,12 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<int?>("Status")
                         .HasColumnType("int");
 
-                    b.Property<int>("TagID")
-                        .HasColumnType("int");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("UserID")
                         .HasColumnType("int");
@@ -491,6 +542,9 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("JobID")
                         .HasColumnType("int");
 
@@ -521,6 +575,9 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("ReceiverID")
                         .HasColumnType("int");
 
@@ -547,6 +604,9 @@ namespace WorkSmart.Repository.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubscriptionID"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("ExpDate")
                         .HasColumnType("datetime2");
@@ -578,12 +638,7 @@ namespace WorkSmart.Repository.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("UserID")
-                        .HasColumnType("int");
-
                     b.HasKey("TagID");
-
-                    b.HasIndex("UserID");
 
                     b.ToTable("Tags");
                 });
@@ -662,9 +717,6 @@ namespace WorkSmart.Repository.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double?>("Exp")
-                        .HasColumnType("float");
-
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -695,8 +747,8 @@ namespace WorkSmart.Repository.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Skills")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserName")
                         .HasColumnType("nvarchar(max)");
@@ -720,6 +772,21 @@ namespace WorkSmart.Repository.Migrations
                     b.HasOne("WorkSmart.Core.Entity.Tag", null)
                         .WithMany()
                         .HasForeignKey("TagsTagID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TagUser", b =>
+                {
+                    b.HasOne("WorkSmart.Core.Entity.Tag", null)
+                        .WithMany()
+                        .HasForeignKey("TagsTagID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WorkSmart.Core.Entity.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersUserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -753,11 +820,19 @@ namespace WorkSmart.Repository.Migrations
 
             modelBuilder.Entity("WorkSmart.Core.Entity.CV", b =>
                 {
+                    b.HasOne("WorkSmart.Core.Entity.CV_Template", "CVTemplate")
+                        .WithMany("CVs")
+                        .HasForeignKey("CVTemplateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("WorkSmart.Core.Entity.User", "User")
                         .WithMany("CVs")
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("CVTemplate");
 
                     b.Navigation("User");
                 });
@@ -961,13 +1036,6 @@ namespace WorkSmart.Repository.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("WorkSmart.Core.Entity.Tag", b =>
-                {
-                    b.HasOne("WorkSmart.Core.Entity.User", null)
-                        .WithMany("Tags")
-                        .HasForeignKey("UserID");
-                });
-
             modelBuilder.Entity("WorkSmart.Core.Entity.Transaction", b =>
                 {
                     b.HasOne("WorkSmart.Core.Entity.User", "User")
@@ -990,6 +1058,11 @@ namespace WorkSmart.Repository.Migrations
                     b.Navigation("Experiences");
 
                     b.Navigation("Skills");
+                });
+
+            modelBuilder.Entity("WorkSmart.Core.Entity.CV_Template", b =>
+                {
+                    b.Navigation("CVs");
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.Job", b =>
@@ -1040,8 +1113,6 @@ namespace WorkSmart.Repository.Migrations
                     b.Navigation("ReportsSent");
 
                     b.Navigation("Subscriptions");
-
-                    b.Navigation("Tags");
 
                     b.Navigation("Transactions");
                 });

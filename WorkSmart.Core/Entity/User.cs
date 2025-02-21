@@ -34,6 +34,7 @@ namespace WorkSmart.Core.Entity
         public string? WorkLocation {  get; set; } //employer
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
+
         public ICollection<Notification>? Notifications { get; set; }
         public ICollection<CV>? CVs { get; set; }
         public ICollection<FavoriteJob>? FavoriteJobs { get; set; }

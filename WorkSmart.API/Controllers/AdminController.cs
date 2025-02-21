@@ -38,6 +38,7 @@ namespace WorkSmart.API.Controllers
                 user.UserID,
                 user.FullName,
                 user.Email,
+                user.Role,
                 user.IdentityNumber,
                 user.IsBanned,
                 user.CreatedAt

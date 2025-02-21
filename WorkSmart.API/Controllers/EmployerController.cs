@@ -74,6 +74,7 @@ namespace WorkSmart.API.Controllers
                 if (request.CompanyDescription != null) user.CompanyDescription = request.CompanyDescription;
                 if (request.WorkLocation != null) user.WorkLocation = request.WorkLocation;
 
+                user.UpdatedAt = DateTime.UtcNow;
                 _accountRepository.Update(user);
                 await _accountRepository.Save();
 

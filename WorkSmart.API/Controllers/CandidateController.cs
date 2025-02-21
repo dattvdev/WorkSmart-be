@@ -19,10 +19,14 @@ namespace WorkSmart.API.Controllers
             _accountRepository = accountRepository;
             _candidateService = candidateService;
         }
-
-        public async Task<IEnumerable<GetListSearchCandidateDto>> GetListSearchCandidate([FromQuery] CandidateSearchRequestDto request)
+        // GET: api/GetListSearchCandidate
+        [HttpGet("GetListSearch")]
+        public async Task<IActionResult> GetListSearchCandidate
+            ([FromQuery] CandidateSearchRequestDto request)
         {
-            return await _candidateService.GetListSearchCandidate(request);
+            var (candidates, total) = await _candidateService.GetListSearchCandidate(request);
+            var totalPage = (int)Math.Ceiling((double)total / request.PageSize);
+            return Ok(new { totalPage, candidates });
         }
 
         [HttpGet("profile")]

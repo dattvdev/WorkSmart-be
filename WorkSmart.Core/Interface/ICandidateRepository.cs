@@ -10,6 +10,6 @@ namespace WorkSmart.Core.Interface
 {
     public interface ICandidateRepository : IBaseRepository<User>
     {
-        Task<IEnumerable<User>> GetListSearch(CandidateSearchRequestDto request);
+        Task<(IEnumerable<User> Users, int Total)> GetListSearch(CandidateSearchRequestDto request);
     }
 }

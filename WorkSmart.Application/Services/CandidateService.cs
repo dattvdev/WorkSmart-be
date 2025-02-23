@@ -29,17 +29,17 @@ namespace WorkSmart.Application.Services
             return (mappedUsers, total);
         }
 
-        public async Task<GetCandidateProfileDto?> GetCandidateProfile(int userId)
-        {
-            var user = await _candidateRepository.GetById(userId);
+        //public async Task<GetCandidateProfileDto?> GetCandidateProfile(int userId)
+        //{
+        //    var user = await _candidateRepository.GetById(userId);
 
-            if (user == null || user.Role != "Candidate")
-                return null;
+        //    if (user == null || user.Role != "Candidate")
+        //        return null;
 
-            return _mapper.Map<GetCandidateProfileDto>(user);
-        }
+        //    return _mapper.Map<GetCandidateProfileDto>(user);
+        //}
 
-        public async Task<bool> UpdateCandidateProfile(int userId, UpdateCandidateRequest request)
+        public async Task<bool> UpdateCandidateProfile(int userId, EditCandidateRequest request)
         {
             var user = await _candidateRepository.GetById(userId);
 

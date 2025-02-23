@@ -12,11 +12,9 @@ namespace WorkSmart.API.Controllers
     public class CandidateController : ControllerBase
     {
         private readonly CandidateService _candidateService;
-        private readonly IAccountRepository _accountRepository;
 
-        public CandidateController(IAccountRepository accountRepository, CandidateService candidateService)
+        public CandidateController(CandidateService candidateService)
         {
-            _accountRepository = accountRepository;
             _candidateService = candidateService;
         }
 
@@ -35,23 +33,11 @@ namespace WorkSmart.API.Controllers
             try
             {
                 var userId = int.Parse(User.FindFirst("UserId")?.Value);
-                var user = await _accountRepository.GetById(userId);
 
-                if (user == null || user.Role != "Candidate")
-                {
+                var candidateProfile = await _candidateService.GetCandidateProfile(userId);
+
+                if (candidateProfile == null)
                     return NotFound(new { Error = "Candidate not found." });
-                }
-
-                //Lấy các thông tin tương ứng ở FE
-                var candidateProfile = new
-                {
-                    user.UserID,
-                    user.FullName,
-                    user.Email,
-                    user.Avatar,
-                    user.DateOfBirth,
-                    user.Address
-                };
 
                 return Ok(candidateProfile);
             }
@@ -67,30 +53,17 @@ namespace WorkSmart.API.Controllers
             try
             {
                 var userId = int.Parse(User.FindFirst("UserId")?.Value);
-                var user = await _accountRepository.GetById(userId);
 
-                if (user == null || user.Role != "Candidate")
-                {
+                var isUpdated = await _candidateService.UpdateCandidateProfile(userId, request);
+
+                if (!isUpdated)
                     return NotFound(new { Error = "Candidate not found." });
-                }
-
-                // Cho phép null nếu người dùng muốn xóa
-                if (request.FullName != null) user.FullName = request.FullName;
-                if (request.PhoneNumber != null) user.PhoneNumber = request.PhoneNumber;
-                if (request.Gender != null) user.Gender = request.Gender;
-                if (request.Address != null) user.Address = request.Address;
-                if (request.Avatar != null) user.Avatar = request.Avatar;
-                if (request.DateOfBirth != null) user.DateOfBirth = request.DateOfBirth;
-
-                user.UpdatedAt = DateTime.UtcNow;
-                _accountRepository.Update(user);
-                await _accountRepository.Save();
 
                 return Ok(new { Message = "Candidate profile updated successfully." });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Error = "An error occurred while edit candidate profile" });
+                return StatusCode(500, new { Error = "An error occurred while editing candidate profile" });
             }
         }
     }

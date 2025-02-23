@@ -27,28 +27,28 @@ namespace WorkSmart.API.Controllers
             return Ok(new { totalPage, candidates });
         }
 
-        [HttpGet("profile")]
-        public async Task<IActionResult> GetCandidateProfile()
-        {
-            try
-            {
-                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+        //[HttpGet("profile")]
+        //public async Task<IActionResult> GetCandidateProfile()
+        //{
+        //    try
+        //    {
+        //        var userId = int.Parse(User.FindFirst("UserId")?.Value);
 
-                var candidateProfile = await _candidateService.GetCandidateProfile(userId);
+        //        var candidateProfile = await _candidateService.GetCandidateProfile(userId);
 
-                if (candidateProfile == null)
-                    return NotFound(new { Error = "Candidate not found." });
+        //        if (candidateProfile == null)
+        //            return NotFound(new { Error = "Candidate not found." });
 
-                return Ok(candidateProfile);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Error = "An error occurred while getting profile" });
-            }
-        }
+        //        return Ok(candidateProfile);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { Error = "An error occurred while getting profile" });
+        //    }
+        //}
 
         [HttpPut("edit-profile")]
-        public async Task<IActionResult> UpdateCandidateProfile([FromBody] UpdateCandidateRequest request)
+        public async Task<IActionResult> EditCandidateProfile([FromBody] EditCandidateRequest request)
         {
             try
             {

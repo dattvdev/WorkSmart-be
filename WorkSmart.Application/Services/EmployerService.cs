@@ -21,17 +21,17 @@ namespace WorkSmart.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<GetEmployerProfileDto> GetEmployerProfile(int userId)
-        {
-            var user = await _accountRepository.GetById(userId);
+        //public async Task<GetEmployerProfileDto> GetEmployerProfile(int userId)
+        //{
+        //    var user = await _accountRepository.GetById(userId);
 
-            if (user == null || user.Role != "Employer")
-                return null;
+        //    if (user == null || user.Role != "Employer")
+        //        return null;
 
-            return _mapper.Map<GetEmployerProfileDto>(user);
-        }
+        //    return _mapper.Map<GetEmployerProfileDto>(user);
+        //}
 
-        public async Task<bool> UpdateEmployerProfile(int userId, UpdateEmployerRequest request)
+        public async Task<bool> UpdateEmployerProfile(int userId, EditEmployerRequest request)
         {
             var user = await _accountRepository.GetById(userId);
             if (user == null || user.Role != "Employer")

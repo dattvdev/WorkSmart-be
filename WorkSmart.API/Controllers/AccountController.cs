@@ -49,7 +49,7 @@ namespace WorkSmart.API.Controllers
                 // Kiểm tra Role hợp lệ (Candidate, Employer)
                 if (request.Role != "Candidate" && request.Role != "Employer")
                 {
-                    return BadRequest(ModelState);
+                    return BadRequest(new { Error = "Invalid role. Role must be 'Candidate' or 'Employer'." });
                 }
 
                 var existingUser = _accountRepository.GetByEmail(request.Email);
@@ -183,10 +183,10 @@ namespace WorkSmart.API.Controllers
                     return BadRequest(new { Message = "Invalid Google login data" });
                 }
 
-                //if (googleLoginRequest.Role != "Candidate" && googleLoginRequest.Role != "Employer")
-                //{
-                //    return BadRequest(new { Error = "Invalid role. Role must be 'Candidate' or 'Employer'." });
-                //}
+                if (googleLoginRequest.Role != "Candidate" && googleLoginRequest.Role != "Employer")
+                {
+                    return BadRequest(new { Error = "Invalid role. Role must be 'Candidate' or 'Employer'." });
+                }
 
                 var user =  _accountRepository.GetByEmail(googleLoginRequest.Email);
                 if(user == null)
@@ -195,8 +195,9 @@ namespace WorkSmart.API.Controllers
                     {
                         FullName = googleLoginRequest.Name,
                         Email = googleLoginRequest.Email,
-                        Avatar = googleLoginRequest.Picture,
+                        Avatar = googleLoginRequest.Avatar,
                         Role = googleLoginRequest.Role,
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword(googleLoginRequest.Email),
                         IsEmailConfirmed = true,
                         CreatedAt = DateTime.UtcNow,
                     };
@@ -225,10 +226,10 @@ namespace WorkSmart.API.Controllers
                     Token = token,
                     User = new
                     {
-                        id = user.UserID,
-                        email = user.Email,
-                        name = user.FullName,
-                        role = user.Role
+                        user.UserID,
+                        user.Email,
+                        user.FullName,
+                        user.Role
                     }
                 });
             }
@@ -361,7 +362,7 @@ namespace WorkSmart.API.Controllers
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim("UserId", user.UserID.ToString()),
             new Claim("Purpose", "purpose"),
-            new Claim(ClaimTypes.Role, user.Role),
+            new Claim("Role", user.Role),
         };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));

@@ -24,6 +24,10 @@ namespace WorkSmart.API.Extension
             services.AddScoped<ICandidateRepository, CandidateRepository>();
             services.AddScoped<CandidateProfile>();
             services.AddScoped<CandidateService>();
+            services.AddScoped<EmployerService>();
+            services.AddTransient<ISendMailService, SendMailService>();
+            services.AddTransient<ITokenRepository, TokenService>();
+            services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddAutoMapper(typeof(CandidateProfile));
             return services;
         }

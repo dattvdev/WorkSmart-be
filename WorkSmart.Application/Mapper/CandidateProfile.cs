@@ -14,6 +14,7 @@ namespace WorkSmart.Application.Mapper
         public CandidateProfile()
         {
             CreateMap<User, GetListSearchCandidateDto>().ReverseMap();
+            CreateMap<User, GetCandidateProfileDto>();
         }
     }
 }

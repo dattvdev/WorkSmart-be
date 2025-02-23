@@ -16,7 +16,7 @@ namespace WorkSmart.Repository.Repository
         {
         }
 
-        public async Task<IEnumerable<User>> GetListSearch(CandidateSearchRequestDto request)
+        public async Task<(IEnumerable<User> Users, int Total)> GetListSearch(CandidateSearchRequestDto request)
         {
             DbSet<CV> _CVdbSet = _context.Set<CV>();
             var query = _CVdbSet.AsQueryable();
@@ -26,25 +26,35 @@ namespace WorkSmart.Repository.Repository
                 query = query.Where(c => c.FullName.ToLower().Contains(request.Name.ToLower()));
             }
             if (!string.IsNullOrWhiteSpace(request.JobPosition) && request.Exp > 0)
-            query = query.Where(c => c.Experiences.Any(e =>
-                ((e.EndedAt ?? DateTime.Now).Year - e.StartedAt.Year) >= request.Exp &&
-                e.JobPosition.Equals(request.JobPosition, StringComparison.OrdinalIgnoreCase)
+            {
+                query = query.Where(c => c.Experiences.Any(e =>
+                    ((e.EndedAt ?? DateTime.Now).Year - e.StartedAt.Year) >= request.Exp &&
+                    e.JobPosition.ToLower() == request.JobPosition.ToLower()
                 ));
+            }
 
             if (!string.IsNullOrWhiteSpace(request.Education))
             {
-                query = query.Where(c => c.Educations.Any(e => 
-                                e.Degree.Equals(request.Education, StringComparison.OrdinalIgnoreCase)));
+                query = query.Where(c => c.Educations.Any(e =>
+                    e.Degree.ToLower() == request.Education.ToLower()
+                ));
             }
+
             if (!string.IsNullOrWhiteSpace(request.Major))
             {
-                query = query.Where(c => c.Educations.Any(e => 
-                                e.Major.Equals(request.Major, StringComparison.OrdinalIgnoreCase)));
+                query = query.Where(c => c.Educations.Any(e =>
+                    e.Major.ToLower() == request.Major.ToLower()
+                ));
             }
+
             if (!string.IsNullOrWhiteSpace(request.WorkType))
             {
-                query = query.Where(c => c.WorkType.Equals(request.WorkType, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(c => c.WorkType.ToLower() == request.WorkType.ToLower());
             }
+
+            // Lấy tổng số bản ghi trước khi phân trang
+            int total = await query.Select(c => c.UserID).Distinct().CountAsync();
+
             // Lấy danh sách UserId không trùng
             var userIds = await query
                 .Select(c => c.UserID)
@@ -55,13 +65,16 @@ namespace WorkSmart.Repository.Repository
 
             if (!userIds.Any())
             {
-                return new List<User>();
+                return (new List<User>(), total);
             }
+
             // Truy vấn danh sách User dựa trên UserId
             var users = await _context.Users
                 .Where(u => userIds.Contains(u.UserID))
                 .ToListAsync();
-            return users;
+
+            return (users, total);
         }
+
     }
 }

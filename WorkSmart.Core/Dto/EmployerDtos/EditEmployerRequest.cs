@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WorkSmart.Core.Dto.EmployerDtos
 {
-    public class UpdateEmployerRequest
+    public class EditEmployerRequest
     {
         public string? FullName { get; set; }
         public string? PhoneNumber { get; set; }

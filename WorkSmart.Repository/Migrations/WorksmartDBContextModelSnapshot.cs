@@ -34,7 +34,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("TagsTagID");
 
-                    b.ToTable("JobTag", (string)null);
+                    b.ToTable("JobTag");
                 });
 
             modelBuilder.Entity("TagUser", b =>
@@ -637,10 +637,6 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasKey("TagID");
 
-                    b.HasIndex("UserID");
-
-                    b.ToTable("Tags", (string)null);
-
                     b.ToTable("Tags");
                 });
 
@@ -735,6 +731,9 @@ namespace WorkSmart.Repository.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsEmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPrivated")
                         .HasColumnType("bit");
 
                     b.Property<string>("PasswordHash")

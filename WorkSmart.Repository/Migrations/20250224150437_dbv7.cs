@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WorkSmart.Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class dbv6 : Migration
+    public partial class dbv7 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -69,6 +69,7 @@ namespace WorkSmart.Repository.Migrations
                     ConfirmationCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsEmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
                     IsBanned = table.Column<bool>(type: "bit", nullable: false),
+                    IsPrivated = table.Column<bool>(type: "bit", nullable: false),
                     Amount = table.Column<double>(type: "float", nullable: false),
                     BankName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BankNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),

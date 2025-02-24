@@ -12,8 +12,8 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-    [Migration("20250219153749_dbv6")]
-    partial class dbv6
+    [Migration("20250224150437_dbv7")]
+    partial class dbv7
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -734,6 +734,9 @@ namespace WorkSmart.Repository.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsEmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPrivated")
                         .HasColumnType("bit");
 
                     b.Property<string>("PasswordHash")

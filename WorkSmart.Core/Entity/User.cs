@@ -21,6 +21,7 @@ namespace WorkSmart.Core.Entity
         public string? ConfirmationCode { get; set; }
         public bool IsEmailConfirmed { get; set; } //candidate and employer
         public bool IsBanned { get; set; } = false;
+        public bool IsPrivated { get; set; } = false;
         public double Amount { get; set; } = 0;
         public string? BankName { get; set; }
         public string? BankNumber { get; set; }

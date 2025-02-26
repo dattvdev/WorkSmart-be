@@ -51,7 +51,7 @@ namespace WorkSmart.Application.Services
             if (request.Gender != null) user.Gender = request.Gender;
             if (request.Address != null) user.Address = request.Address;
             if (request.Avatar != null) user.Avatar = request.Avatar;
-            if (request.DateOfBirth != null) user.DateOfBirth = request.DateOfBirth;
+            //if (request.DateOfBirth != null) user.DateOfBirth = request.DateOfBirth;
             if (request.IdentityNumber != null) user.IdentityNumber = request.IdentityNumber;
             if (request.IsPrivated != null) user.IsPrivated = (bool)request.IsPrivated;
 

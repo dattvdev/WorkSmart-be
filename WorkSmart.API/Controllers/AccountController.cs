@@ -165,7 +165,17 @@ namespace WorkSmart.API.Controllers
                 }
 
                 var token = GenerateJwtToken(user);
-                return Ok(new { Token = token });
+                return Ok(new
+                {
+                    Token = token,
+                    User = new
+                    {
+                        user.UserID,
+                        user.Email,
+                        user.FullName,
+                        user.Role
+                    }
+                });
             }
             catch (Exception ex)
             {

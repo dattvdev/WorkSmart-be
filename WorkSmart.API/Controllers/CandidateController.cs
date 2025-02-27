@@ -27,25 +27,35 @@ namespace WorkSmart.API.Controllers
             return Ok(new { totalPage, candidates });
         }
 
-        //[HttpGet("profile")]
-        //public async Task<IActionResult> GetCandidateProfile()
-        //{
-        //    try
-        //    {
-        //        var userId = int.Parse(User.FindFirst("UserId")?.Value);
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetCandidateProfile()
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString();
+                Console.WriteLine("Received Token: " + token);
 
-        //        var candidateProfile = await _candidateService.GetCandidateProfile(userId);
+                var userIdClaim = User.FindFirst("UserId");
+                if (userIdClaim == null)
+                {
+                    return Unauthorized(new { Error = "UserId không tìm thấy trong token" });
+                }
 
-        //        if (candidateProfile == null)
-        //            return NotFound(new { Error = "Candidate not found." });
+                var userId = int.Parse(userIdClaim.Value);
+                Console.WriteLine($"Decoded UserId: {userId}");
 
-        //        return Ok(candidateProfile);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, new { Error = "An error occurred while getting profile" });
-        //    }
-        //}
+                var candidateProfile = await _candidateService.GetCandidateProfile(userId);
+
+                if (candidateProfile == null)
+                    return NotFound(new { Error = "Candidate not found." });
+
+                return Ok(candidateProfile);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = "An error occurred while getting profile" });
+            }
+        }
 
         [HttpPut("edit-profile")]
         public async Task<IActionResult> EditCandidateProfile([FromBody] EditCandidateRequest request)

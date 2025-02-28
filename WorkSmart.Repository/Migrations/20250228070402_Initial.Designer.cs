@@ -12,8 +12,8 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-    [Migration("20250224150437_dbv7")]
-    partial class dbv7
+    [Migration("20250228070402_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -9,13 +9,11 @@ namespace WorkSmart.Core.Dto.EmployerDtos
 {
     public class EditEmployerRequest
     {
-        [Required(ErrorMessage = "Phone number is required.")]
         [RegularExpression(@"^\d{10,}$", ErrorMessage = "Phone number must contain only numbers and be at least 10 digits.")]
         public string? PhoneNumber { get; set; }
 
         public string? Address { get; set; }
 
-        [Required(ErrorMessage = "Company name is required.")]
         [MinLength(3, ErrorMessage = "Company Name must be at least 3 characters.")]
         [RegularExpression(@"^[A-Za-zÀ-Ỹà-ỹ\s]+$", ErrorMessage = "Company Name must contain only letters.")]
         public string? CompanyName { get; set; }

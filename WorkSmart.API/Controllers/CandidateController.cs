@@ -32,9 +32,6 @@ namespace WorkSmart.API.Controllers
         {
             try
             {
-                var token = Request.Headers["Authorization"].ToString();
-                Console.WriteLine("Received Token: " + token);
-
                 var userIdClaim = User.FindFirst("UserId");
                 if (userIdClaim == null)
                 {
@@ -42,7 +39,6 @@ namespace WorkSmart.API.Controllers
                 }
 
                 var userId = int.Parse(userIdClaim.Value);
-                Console.WriteLine($"Decoded UserId: {userId}");
 
                 var candidateProfile = await _candidateService.GetCandidateProfile(userId);
 
@@ -69,7 +65,7 @@ namespace WorkSmart.API.Controllers
 
                 var userId = int.Parse(User.FindFirst("UserId")?.Value);
 
-                var isUpdated = await _candidateService.UpdateCandidateProfile(userId, request);
+                var isUpdated = await _candidateService.EditCandidateProfile(userId, request);
 
                 if (!isUpdated)
                     return NotFound(new { Error = "Candidate not found." });

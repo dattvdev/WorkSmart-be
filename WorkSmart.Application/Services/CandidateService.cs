@@ -39,13 +39,14 @@ namespace WorkSmart.Application.Services
             return _mapper.Map<GetCandidateProfileDto>(user);
         }
 
-        public async Task<bool> UpdateCandidateProfile(int userId, EditCandidateRequest request)
+        public async Task<bool> EditCandidateProfile(int userId, EditCandidateRequest request)
         {
             var user = await _candidateRepository.GetById(userId);
 
             if (user == null || user.Role != "Candidate")
                 return false;
 
+            // Cho phép null nếu người dùng muốn xóa
             if (request.FullName != null) user.FullName = request.FullName;
             if (request.PhoneNumber != null) user.PhoneNumber = request.PhoneNumber;
             if (request.Gender != null) user.Gender = request.Gender;

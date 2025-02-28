@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+﻿using Microsoft.AspNetCore.Mvc;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.CandidateDtos;
-using WorkSmart.Core.Interface;
 
 namespace WorkSmart.API.Controllers
 {

@@ -48,7 +48,6 @@ namespace WorkSmart.Application.Services
             if (request.Address != null) user.Address = request.Address;
             if (request.Avatar != null) user.Avatar = request.Avatar;
 
-
             user.UpdatedAt = DateTime.UtcNow;
             _accountRepository.Update(user);
             await _accountRepository.Save();

@@ -24,5 +24,18 @@ namespace WorkSmart.API.Controllers
             var imageUrl = await _cloudinaryService.UploadImage(file, "profile_pictures");
             return Ok(new {ImageUrl = imageUrl});
         }
+
+        [HttpDelete("delete-image")]
+        public async Task<IActionResult> DeleteImage([FromBody] string imageUrl)
+        {
+            if (string.IsNullOrEmpty(imageUrl))
+                return BadRequest("Image URL is required.");
+
+            var result = await _cloudinaryService.DeleteImage(imageUrl);
+            if (result)
+                return Ok(new { Message = "Image deleted successfully." });
+
+            return BadRequest("Failed to delete image.");
+        }
     }
 }

@@ -40,5 +40,48 @@ namespace WorkSmart.Application.Services
             var uploadResult = await _cloudinary.UploadAsync(uploadParams);
             return uploadResult.SecureUrl.AbsoluteUri; // Trả về link ảnh
         }
+
+        public async Task<bool> DeleteImage(string imageUrl)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(imageUrl))
+                    return false;
+
+                // Lấy PublicId từ URL
+                var publicId = ExtractPublicId(imageUrl);
+                if (string.IsNullOrEmpty(publicId))
+                    return false;
+
+                // Gọi API Cloudinary để xóa ảnh
+                var deleteParams = new DeletionParams(publicId);
+                var result = await _cloudinary.DestroyAsync(deleteParams);
+
+                return result.Result == "ok";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Lỗi khi xóa ảnh: {ex.Message}");
+                return false;
+            }
+        }
+
+        // Hàm trích xuất public_id từ URL của Cloudinary
+        private string ExtractPublicId(string imageUrl)
+        {
+            try
+            {
+                var uri = new Uri(imageUrl);
+                var pathSegments = uri.Segments;
+                var fileNameWithExtension = pathSegments[^1]; // Lấy tên file có phần mở rộng
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileNameWithExtension);
+
+                return $"profile_pictures/{fileNameWithoutExtension}";
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }

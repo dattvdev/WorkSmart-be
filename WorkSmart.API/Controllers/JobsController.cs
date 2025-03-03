@@ -42,6 +42,35 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new { message = "An error occurred while creating the job." });
             }
         }
+        [HttpGet("getAllJob")]
+        public async Task<IActionResult> GetAllJob()
+        {
+            try
+            {
+                var jobs = await _jobService.GetAllJobsAsync();
+                return Ok(jobs);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error lits job: {Message}", ex.Message);
+                return StatusCode(500, new { message = "An error occurred while list the job." });
+
+            }
+        }
+        [HttpDelete("delete/{jobId}")]
+        public IActionResult DeleteJob(int jobId)
+        {
+            try
+            {
+                _jobService.DeleteJob(jobId);
+                return Ok(new { message = "Job deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Failed to delete job", error = ex.Message });
+            }
+        }
+
 
         /// Update an existing job post
         [HttpPut("update/{id}")]

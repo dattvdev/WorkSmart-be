@@ -26,7 +26,11 @@ namespace WorkSmart.Application.Services
             var job = await _jobRepository.GetById(jobId);
             return job == null ? null : _mapper.Map<JobDto>(job);
         }
-
+        public async Task<IEnumerable<JobDto>> GetAllJobsAsync()
+        {
+            var jobs = await _jobRepository.GetAll();
+            return _mapper.Map<IEnumerable<JobDto>>(jobs);
+        }
         public async Task CreateJobAsync(CreateJobDto jobDto)
         {
             var job = _mapper.Map<Job>(jobDto);
@@ -41,6 +45,10 @@ namespace WorkSmart.Application.Services
             _mapper.Map(jobDto, job);
             await _jobRepository.Save();
             return _mapper.Map<JobDto>(job);
+        }
+        public void DeleteJob(int jobId)
+        {
+            _jobRepository.Delete(jobId);
         }
 
         public async Task<bool> HideJob(int jobId) => await _jobRepository.UpdateJobStatus(jobId, JobStatus.Hidden);

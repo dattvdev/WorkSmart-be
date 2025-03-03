@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Claims;
 using System.Text;
 using WorkSmart.API.Extension;
-using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.MailDtos;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository.Repository;
@@ -49,6 +47,9 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
 });
+
+// Đăng ký Repository
+builder.Services.AddScoped<ICVRepository,CVRepository>();
 
 var app = builder.Build();
 

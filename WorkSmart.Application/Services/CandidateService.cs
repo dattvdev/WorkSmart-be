@@ -29,29 +29,30 @@ namespace WorkSmart.Application.Services
             return (mappedUsers, total);
         }
 
-        //public async Task<GetCandidateProfileDto?> GetCandidateProfile(int userId)
-        //{
-        //    var user = await _candidateRepository.GetById(userId);
+        public async Task<GetCandidateProfileDto?> GetCandidateProfile(int userId)
+        {
+            var user = await _candidateRepository.GetById(userId);
 
-        //    if (user == null || user.Role != "Candidate")
-        //        return null;
+            if (user == null || user.Role != "Candidate")
+                return null;
 
-        //    return _mapper.Map<GetCandidateProfileDto>(user);
-        //}
+            return _mapper.Map<GetCandidateProfileDto>(user);
+        }
 
-        public async Task<bool> UpdateCandidateProfile(int userId, EditCandidateRequest request)
+        public async Task<bool> EditCandidateProfile(int userId, EditCandidateRequest request)
         {
             var user = await _candidateRepository.GetById(userId);
 
             if (user == null || user.Role != "Candidate")
                 return false;
 
+            // Cho phép null nếu người dùng muốn xóa
             if (request.FullName != null) user.FullName = request.FullName;
             if (request.PhoneNumber != null) user.PhoneNumber = request.PhoneNumber;
             if (request.Gender != null) user.Gender = request.Gender;
             if (request.Address != null) user.Address = request.Address;
             if (request.Avatar != null) user.Avatar = request.Avatar;
-            if (request.DateOfBirth != null) user.DateOfBirth = request.DateOfBirth;
+            //if (request.DateOfBirth != null) user.DateOfBirth = request.DateOfBirth;
             if (request.IdentityNumber != null) user.IdentityNumber = request.IdentityNumber;
             if (request.IsPrivated != null) user.IsPrivated = (bool)request.IsPrivated;
 

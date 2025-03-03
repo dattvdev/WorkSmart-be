@@ -12,8 +12,8 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-    [Migration("20250224150437_dbv7")]
-    partial class dbv7
+    [Migration("20250227152519_dbv10")]
+    partial class dbv10
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -376,6 +376,9 @@ namespace WorkSmart.Repository.Migrations
 
                     b.Property<int?>("Exp")
                         .HasColumnType("int");
+
+                    b.Property<string>("JobPosition")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Level")
                         .HasColumnType("nvarchar(max)");

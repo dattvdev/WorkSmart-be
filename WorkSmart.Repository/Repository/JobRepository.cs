@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
 using WorkSmart.Core.Interface;
@@ -49,6 +50,62 @@ namespace WorkSmart.Repository.Repository
         public async Task<IEnumerable<Job>> GetJobsByStatus(JobStatus status)
         {
             return await _dbSet.Where(j => j.Status == status).ToListAsync();
+        }
+
+        public async Task<(IEnumerable<Job> Jobs, int Total)> GetListSearch(JobSearchRequestDto request)
+        {
+            DbSet<Job> _JobdbSet = _context.Set<Job>();
+            var query = _JobdbSet.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(request.Title))
+            {
+                query = query.Where(c => c.Title.ToLower().Contains(request.Title.ToLower()));
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.JobPosition))
+            {
+                query = query.Where(c => c.JobPosition.ToLower().Contains(request.JobPosition.ToLower()));
+            }
+
+            if (request.WorkTypes != null && request.WorkTypes.Any())
+            {
+                query = query.Where(c => request.WorkTypes.Select(wt => wt.ToLower()).Contains(c.WorkType.ToLower()));
+
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Location))
+            {
+                query = query.Where(c => c.Location.ToLower().Contains(request.Location.ToLower()));
+            }
+
+            if (request.MinSalary.HasValue)
+            {
+                query = query.Where(c => c.Salary >= request.MinSalary);
+            }
+            if (request.MaxSalary.HasValue)
+            {
+                query = query.Where(c => c.Salary <= request.MaxSalary);
+            }
+
+            if (request.Tags != null && request.Tags.Any())
+            {
+                query = query.Where(c => c.Tags.Any(t => request.Tags.Contains(t.TagName.ToLower())));
+            }
+            //query = query.Where(c => c.Status != JobStatus.Hidden);
+            // Lấy tổng số bản ghi trước khi phân trang
+            int total = await query.CountAsync();
+
+            var Jobs = await query
+                .Skip((request.PageIndex - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync();
+
+            if (!Jobs.Any())
+            {
+                return (new List<Job>(), total);
+            }
+
+            return (Jobs, total);
         }
 
         public Task<bool> HideJobAsync(int jobId)

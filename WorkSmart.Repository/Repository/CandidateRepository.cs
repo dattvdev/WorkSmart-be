@@ -51,17 +51,21 @@ namespace WorkSmart.Repository.Repository
             {
                 query = query.Where(c => c.WorkType.ToLower() == request.WorkType.ToLower());
             }
+            query = query.Include(c => c.User);
 
+            var cvs = await query.ToListAsync();
+            query = query.Where(c => !c.User.IsPrivated);
             // Lấy tổng số bản ghi trước khi phân trang
             int total = await query.Select(c => c.UserID).Distinct().CountAsync();
 
             // Lấy danh sách UserId không trùng
             var userIds = await query
-                .Select(c => c.UserID)
+                .Select(c => c.UserID) // Lấy UserID
                 .Distinct()
                 .Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .ToListAsync();
+            
 
             if (!userIds.Any())
             {

@@ -19,13 +19,18 @@ namespace WorkSmart.API.Controllers
             _mapper = mapper;
         }
 
+
         [HttpPost]
-        public async Task<IActionResult> CreateCV([FromBody] CreateCVDto createCVDto)
+        public async Task<IActionResult> CreateCV([FromBody] CreateCVDto createCvDto)
         {
-            var cv = _mapper.Map<CV>(createCVDto);
+            if (createCvDto == null)
+                return BadRequest("Dữ liệu không hợp lệ");
+
+            var cv = _mapper.Map<CV>(createCvDto);
             cv.UserID = 14; // Lấy từ user đăng nhập
-            await _cvRepository.Add(cv);
-            return CreatedAtAction(nameof(GetCVById),new { id = cv.CVID },_mapper.Map<CVDto>(cv));
+            var newCV = await _cvRepository.CreateCVAsync(cv);
+
+            return Ok(newCV);
         }
 
         [HttpGet("{id}")]
@@ -35,14 +40,14 @@ namespace WorkSmart.API.Controllers
             if (cv == null)
                 return NotFound();
 
-            return Ok(_mapper.Map<CVDto>(cv));
+            return Ok(_mapper.Map<CreateCVDto>(cv));
         }
 
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetCVsByUserId(int userId)
         {
             var cvs = await _cvRepository.GetAllByUserIdAsync(userId);
-            return Ok(_mapper.Map<IEnumerable<CVDto>>(cvs));
+            return Ok(_mapper.Map<IEnumerable<CreateCVDto>>(cvs));
         }
 
         [HttpDelete("{id}")]

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace WorkSmart.Core.Entity
@@ -24,6 +25,7 @@ namespace WorkSmart.Core.Entity
         public User User { get; set; }
         public CV_Template CVTemplate { get; set; }
         public ICollection<Application>? Applications { get; set; }
+        [JsonIgnore]
         public ICollection<CV_Education>? Educations { get; set; }
         public ICollection<CV_Experience>? Experiences { get; set; }
         public ICollection<CV_Certification>? Certifications { get; set; }

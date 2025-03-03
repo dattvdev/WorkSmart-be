@@ -2,15 +2,13 @@
 using WorkSmart.Core.Dto.CVDtos;
 using WorkSmart.Core.Entity;
 
-namespace WorkSmart.Application.Mapper
+public class CVProfile : Profile
 {
-    public class CVProfile : Profile
+    public CVProfile()
     {
-        public CVProfile()
-        {
-            CreateMap<CV,CVDto>().ReverseMap();
-            CreateMap<CreateCVDto,CV>();
-        }
+        CreateMap<CreateCVDto,CV>();
+        CreateMap<CreateCVEducationDto,CV_Education>();
+        CreateMap<CreateCVExperienceDto,CV_Experience>();
+        CreateMap<CreateCVSkillDto,CV_Skill>();
     }
-
 }

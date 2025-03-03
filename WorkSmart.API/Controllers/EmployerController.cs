@@ -48,10 +48,10 @@ namespace WorkSmart.API.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(new { Error = "Invalid input data.", Details = ModelState });
-                }
+                //if (!ModelState.IsValid)
+                //{
+                //    return BadRequest(new { Error = "Invalid input data.", Details = ModelState });
+                //}
 
                 var userId = int.Parse(User.FindFirst("UserId")?.Value);
                 

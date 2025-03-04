@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using WorkSmart.Application.Services;
+using WorkSmart.Core.Dto.CandidateDtos;
 using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
@@ -41,6 +42,35 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new { message = "An error occurred while creating the job." });
             }
         }
+        [HttpGet("getAllJob")]
+        public async Task<IActionResult> GetAllJob()
+        {
+            try
+            {
+                var jobs = await _jobService.GetAllJobsAsync();
+                return Ok(jobs);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error lits job: {Message}", ex.Message);
+                return StatusCode(500, new { message = "An error occurred while list the job." });
+
+            }
+        }
+        [HttpDelete("delete/{jobId}")]
+        public IActionResult DeleteJob(int jobId)
+        {
+            try
+            {
+                _jobService.DeleteJob(jobId);
+                return Ok(new { message = "Job deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Failed to delete job", error = ex.Message });
+            }
+        }
+
 
         /// Update an existing job post
         [HttpPut("update/{id}")]
@@ -119,6 +149,16 @@ namespace WorkSmart.API.Controllers
                 _logger.LogError("Error fetching job ID {JobID}: {Message}", id, ex.Message);
                 return StatusCode(500, new { message = "An error occurred while retrieving the job." });
             }
+        }
+
+        [HttpGet("GetListSearch")]
+        public async Task<IActionResult> GetListSearch
+            ([FromQuery] JobSearchRequestDto request)
+        {
+            var (jobs, total) = await _jobService.GetListSearch(request);
+            var totalPage = (int)Math.Ceiling((double)total / request.PageSize);
+            var totalJob = total;
+            return Ok(new {totalJob, totalPage, jobs });
         }
 
         ///// Get jobs by employer ID

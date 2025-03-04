@@ -379,6 +379,9 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<int?>("Exp")
                         .HasColumnType("int");
 
+                    b.Property<string>("JobPosition")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Level")
                         .HasColumnType("nvarchar(max)");
 

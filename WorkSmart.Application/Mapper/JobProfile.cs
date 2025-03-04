@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using WorkSmart.Core.Dto.CandidateDtos;
 using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
@@ -18,6 +19,7 @@ namespace WorkSmart.Application.Mapper
 
             // Mapping UpdateJobDto,Job
             CreateMap<UpdateJobDto, Job>();
+            CreateMap<Job, GetListSearchJobDto>().ReverseMap(); ;
         }
     }
 }

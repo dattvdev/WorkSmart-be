@@ -74,6 +74,7 @@ namespace WorkSmart.API.Controllers
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
                     ConfirmationCode = confirmationCode,
                     IsEmailConfirmed = false,
+                    Avatar = request.Avatar,
                     CreatedAt = DateTime.Now,
                 };
 
@@ -173,6 +174,7 @@ namespace WorkSmart.API.Controllers
                         user.UserID,
                         user.Email,
                         user.FullName,
+                        user.Avatar,
                         user.Role
                     }
                 });
@@ -239,6 +241,7 @@ namespace WorkSmart.API.Controllers
                         user.UserID,
                         user.Email,
                         user.FullName,
+                        user.Avatar,
                         user.Role
                     }
                 });

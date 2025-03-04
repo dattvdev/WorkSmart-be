@@ -20,6 +20,7 @@ namespace WorkSmart.Core.Entity
         public int? NumberOfRecruitment { get; set; }
         public string? WorkType { get; set; }
         public string? Location { get; set; }
+        public string? JobPosition { get; set; }
         public double? Salary { get; set; }
         public int? Exp { get; set; }
         public bool Priority { get; set; } = false;

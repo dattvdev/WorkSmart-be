@@ -30,6 +30,8 @@ namespace WorkSmart.Core.Dto.AccountDtos
         [Required]
         public string Role { get; set; } //candidate and employer
 
+        public string? Avatar { get; set; }
+
         //employer
         public string? PhoneNumber { get; set; }
         public string? Gender { get; set; }

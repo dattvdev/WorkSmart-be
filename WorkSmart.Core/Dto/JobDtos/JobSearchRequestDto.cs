@@ -17,7 +17,7 @@ namespace WorkSmart.Core.Dto.JobDtos
         public string? Location { get; set; }
         public double? MinSalary { get; set; }
         public double? MaxSalary { get; set; }
-        public List<string>? Tags { get; set; }
-        public DateTime? LastUpdatedAt { get; set; }
+        public List<int>? Tags { get; set; }
+        public bool MostRecent { get; set; } = true;
     }
 }

@@ -6,11 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WorkSmart.Repository.Migrations
 {
     /// <inheritdoc />
-<<<<<<<< HEAD:WorkSmart.Repository/Migrations/20250227152519_dbv10.cs
-    public partial class dbv10 : Migration
-========
-    public partial class Initial : Migration
->>>>>>>> master:WorkSmart.Repository/Migrations/20250228070402_Initial.cs
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

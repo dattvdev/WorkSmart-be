@@ -30,6 +30,8 @@ namespace WorkSmart.API.Extension
             services.AddTransient<ITokenRepository, TokenService>();
             services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddAutoMapper(typeof(CandidateProfile));
+            services.AddScoped<TagService>();
+            services.AddScoped<ITagRepository, TagRepository>();
             return services;
         }
     }

@@ -89,7 +89,11 @@ namespace WorkSmart.Repository.Repository
 
             if (request.Tags != null && request.Tags.Any())
             {
-                query = query.Where(c => c.Tags.Any(t => request.Tags.Contains(t.TagName.ToLower())));
+                query = query.Where(c => c.Tags.Any(t => request.Tags.Contains(t.TagID)));
+            }
+            if (!request.MostRecent)
+            {
+                query = query.OrderByDescending(c => c.UpdatedAt);
             }
             //query = query.Where(c => c.Status != JobStatus.Hidden);
             // Lấy tổng số bản ghi trước khi phân trang

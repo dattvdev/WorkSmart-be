@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WorkSmart.Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
     public partial class init : Migration
     {
         /// <inheritdoc />

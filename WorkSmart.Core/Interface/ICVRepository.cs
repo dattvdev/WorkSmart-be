@@ -4,8 +4,10 @@ namespace WorkSmart.Core.Interface
 {
     public interface ICVRepository : IBaseRepository<CV>
     {
-        Task<IEnumerable<CV>> GetAllByUserIdAsync(int userId);
-        Task<CV> CreateCVAsync(CV cv);
+        Task<IEnumerable<CV>> GetAllCVsByUserId(int userId);
+        Task<CV> GetCVWithDetails(int id);
+        void Update(CV cv); 
+        Task Delete(int id);
     }
 
 }

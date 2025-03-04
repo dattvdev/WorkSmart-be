@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using WorkSmart.API.Extension;
+using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.MailDtos;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository.Repository;
@@ -55,6 +56,7 @@ builder.Services.AddAuthentication(options =>
 
 // Đăng ký Repository
 builder.Services.AddScoped<ICVRepository,CVRepository>();
+builder.Services.AddScoped<CVService>();
 
 var app = builder.Build();
 

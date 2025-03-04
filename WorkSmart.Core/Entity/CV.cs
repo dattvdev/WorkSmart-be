@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 namespace WorkSmart.Core.Entity
 {
@@ -11,8 +6,9 @@ namespace WorkSmart.Core.Entity
     {
         public int CVID { get; set; }
         public int UserID { get; set; }
-        public int CVTemplateId { get; set; }
-        public string FullName { get; set; }
+        public int? CVTemplateId { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
         public string? JobPosition { get; set; }
         public string? WorkType { get; set; }
         public string? Summary { get; set; }
@@ -20,10 +16,13 @@ namespace WorkSmart.Core.Entity
         public string? Phone { get; set; }
         public string? Email { get; set; }
         public string? Link { get; set; }
+        public string? Borderstyle { get; set; }
+        public string? Colorhex { get; set; }
+        public bool? IsFeatured { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
         public User User { get; set; }
-        public CV_Template CVTemplate { get; set; }
+        public CV_Template? CVTemplate { get; set; }
         public ICollection<Application>? Applications { get; set; }
         [JsonIgnore]
         public ICollection<CV_Education>? Educations { get; set; }

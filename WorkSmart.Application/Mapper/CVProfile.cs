@@ -6,9 +6,10 @@ public class CVProfile : Profile
 {
     public CVProfile()
     {
-        CreateMap<CreateCVDto,CV>();
-        CreateMap<CreateCVEducationDto,CV_Education>();
-        CreateMap<CreateCVExperienceDto,CV_Experience>();
-        CreateMap<CreateCVSkillDto,CV_Skill>();
+        CreateMap<CV,CVDto>().ReverseMap();
+        CreateMap<CV_Certification,CVCertificationDto>().ReverseMap();
+        CreateMap<CV_Experience,CVExperienceDto>().ReverseMap();
+        CreateMap<CV_Skill,CVSkillDto>().ReverseMap();
+        CreateMap<CV_Education,CVEducationDto>().ReverseMap();
     }
 }

@@ -150,6 +150,7 @@ namespace WorkSmart.API.Controllers
                 user.TaxVerificationReason = request.Reason;
             }
 
+            //Gửi mail cho employer sau khi đã approve/reject tax
             user.UpdatedAt = DateTime.UtcNow;
             _accountRepository.Update(user);
             await _accountRepository.Save();
@@ -193,6 +194,7 @@ namespace WorkSmart.API.Controllers
                 user.LicenseVerificationReason = request.Reason;
             }
 
+            //Gửi mail cho employer sau khi đã approve/reject license
             user.UpdatedAt = DateTime.UtcNow;
             _accountRepository.Update(user);
             await _accountRepository.Save();

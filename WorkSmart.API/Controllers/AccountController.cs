@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.AccountDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Interface;
@@ -262,6 +263,7 @@ namespace WorkSmart.API.Controllers
                 {
                     return BadRequest("Email không tồn tại.");
                 }
+
                 var token = GenerateJwtToken(user);
                 var resetLink = Url.Action("ResetPassword", "Account", new { token }, "https");
 
@@ -335,11 +337,17 @@ namespace WorkSmart.API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var user = _accountRepository.GetByEmail(request.Email);
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
 
-                if (user == null || !BCrypt.Net.BCrypt.Verify(request.OldPassword, user.PasswordHash))
+                var user = await _accountRepository.GetById(userId);
+                if (user == null)
                 {
-                    return Unauthorized(new { Error = "Invalid email or password. Please try again" });
+                    return NotFound(new { Error = "User not found" });
+                }
+
+                if (!BCrypt.Net.BCrypt.Verify(request.OldPassword, user.PasswordHash))
+                {
+                    return BadRequest(new { Error = "Old password is incorrect." });
                 }
 
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);

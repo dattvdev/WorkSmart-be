@@ -40,7 +40,7 @@ namespace WorkSmart.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Error = "An error occurred while getting profile." });
+                return StatusCode(500, new { Error = "An error occurred while getting profile.", Details = ex.Message });
             }
         }
 
@@ -65,7 +65,7 @@ namespace WorkSmart.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Error = "An error occurred while updating profile." });
+                return StatusCode(500, new { Error = "An error occurred while updating profile.", Details = ex.Message });
             }
         }
 
@@ -82,9 +82,13 @@ namespace WorkSmart.API.Controllers
 
                 return BadRequest("Failed to submit tax verification.");
             }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Error = ex.Message });
+            }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Error = "An error occurred while verify tax." });
+                return StatusCode(500, new { Error = "An error occurred while verify tax.", Details = ex.Message });
             }
         }
 

@@ -200,8 +200,8 @@ namespace WorkSmart.API.Controllers
             return Ok(new { message = request.IsApproved ? "Business license verification approved." : "Business license verification rejected." });
         }
 
-        [HttpGet("pending-tax-verifications")]
-        public async Task<IActionResult> GetPendingTaxVerifications()
+        [HttpGet("pending-verifications")]
+        public async Task<IActionResult> GetPendingVerifications()
         {
             var currentUserRole = User.FindFirst("Role")?.Value;
             if (currentUserRole != "Admin")

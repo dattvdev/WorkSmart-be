@@ -73,6 +73,7 @@ namespace WorkSmart.Application.Services
             user.CompanyName = request.CompanyName;
             user.CompanyDescription = request.CompanyDescription;
             user.PhoneNumber = request.PhoneNumber;
+            user.Address = request.Address;
             user.TaxVerificationStatus = "Pending";
             user.UpdatedAt = DateTime.UtcNow;
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.CandidateDtos;
 
@@ -16,8 +17,7 @@ namespace WorkSmart.API.Controllers
         }
 
         [HttpGet("GetListSearch")]
-        public async Task<IActionResult> GetListSearchCandidate
-            ([FromQuery] CandidateSearchRequestDto request)
+        public async Task<IActionResult> GetListSearchCandidate([FromQuery] CandidateSearchRequestDto request)
         {
             var (candidates, total) = await _candidateService.GetListSearchCandidate(request);
             var totalPage = (int)Math.Ceiling((double)total / request.PageSize);

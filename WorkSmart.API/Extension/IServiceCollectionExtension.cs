@@ -33,6 +33,8 @@ namespace WorkSmart.API.Extension
             services.AddAutoMapper(typeof(CandidateProfile));
             services.AddScoped<TagService>();
             services.AddScoped<ITagRepository, TagRepository>();
+            services.AddScoped<IPersonalMessageRepository, PersonalMessageRepository>();
+            services.AddSignalR();
             return services;
         }
     }

@@ -101,17 +101,9 @@ namespace WorkSmart.API.Controllers
                 var token = GenerateJwtToken(user);
                 return Ok(new { Token = token });
             }
-            catch (DbUpdateException ex)
+            catch (Exception ex)
             {
-                if (ex.InnerException is SqlException sqlEx)
-                {
-                    if (sqlEx.Number == 2627 || sqlEx.Number == 2601)
-                    {
-                        return BadRequest(new { Error = "The email address is already in use. Please choose a different one." });
-                    }
-                }
-
-                return StatusCode(500, new { Error = "An error occurred while processing your request." });
+                return StatusCode(500, new { Error = "An error occurred while processing your request.", ex.Message });
             }
         }
 

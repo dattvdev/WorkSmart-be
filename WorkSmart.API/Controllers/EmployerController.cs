@@ -79,7 +79,7 @@ namespace WorkSmart.API.Controllers
                 var result = await _employerService.VerifyTax(userId, taxVerificationDto);
                 if (result)
                     return Ok("Tax verification submitted successfully.");
-
+                //Gửi mail thông báo về employer sau khi đã gửi xác thực thành công, chờ admin aprove
                 return BadRequest("Failed to submit tax verification.");
             }
             catch (InvalidOperationException ex)

@@ -12,8 +12,8 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-    [Migration("20250305133727_int")]
-    partial class @int
+    [Migration("20250305153833_dbv12")]
+    partial class dbv12
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -718,6 +718,9 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<string>("CompanySize")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("CompanyWebsite")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ConfirmationCode")
                         .HasColumnType("nvarchar(max)");
 
@@ -760,7 +763,6 @@ namespace WorkSmart.Repository.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LicenseVerificationStatus")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PasswordHash")
@@ -781,7 +783,6 @@ namespace WorkSmart.Repository.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TaxVerificationStatus")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")

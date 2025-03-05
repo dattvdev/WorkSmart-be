@@ -27,6 +27,10 @@ namespace WorkSmart.API.Controllers
             await _notificationService.CreateNotification(createNotificationDto);
             return Ok();
         }
-
+        [HttpDelete("{id}")]
+        public void Delete(int id)
+        {
+            _notificationService.DeleteNotification(id);
+        }
     }
 }

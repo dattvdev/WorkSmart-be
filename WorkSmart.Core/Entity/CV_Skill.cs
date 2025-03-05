@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace WorkSmart.Core.Entity
 {
@@ -12,8 +7,7 @@ namespace WorkSmart.Core.Entity
         [Key]
         public int SkillID { get; set; }
         public int CVID { get; set; }
-        public string SkillName { get; set; }
-
+        public string? SkillName { get; set; }
         public CV CV { get; set; }
     }
 }

@@ -101,8 +101,14 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("CVTemplateId")
+                    b.Property<string>("Borderstyle")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("CVTemplateId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Colorhex")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -110,11 +116,16 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FullName")
-                        .IsRequired()
+                    b.Property<string>("FirstName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool?>("IsFeatured")
+                        .HasColumnType("bit");
+
                     b.Property<string>("JobPosition")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Link")
@@ -156,10 +167,9 @@ namespace WorkSmart.Repository.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("CertificateName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("CreateAt")
+                    b.Property<DateTime?>("CreateAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -190,14 +200,12 @@ namespace WorkSmart.Repository.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Major")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SchoolName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("StartedAt")
+                    b.Property<DateTime?>("StartedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("EducationID");
@@ -222,7 +230,6 @@ namespace WorkSmart.Repository.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("CompanyName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
@@ -232,10 +239,9 @@ namespace WorkSmart.Repository.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("JobPosition")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("StartedAt")
+                    b.Property<DateTime?>("StartedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("ExperienceID");
@@ -257,7 +263,6 @@ namespace WorkSmart.Repository.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("SkillName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("SkillID");
@@ -373,6 +378,9 @@ namespace WorkSmart.Repository.Migrations
 
                     b.Property<int?>("Exp")
                         .HasColumnType("int");
+
+                    b.Property<string>("JobPosition")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Level")
                         .HasColumnType("nvarchar(max)");
@@ -695,10 +703,19 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<string>("BankNumber")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("BusinessLicenseImage")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("CompanyDescription")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CompanyName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompanySize")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompanyWebsite")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ConfirmationCode")
@@ -727,6 +744,9 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<string>("IdentityNumber")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Industry")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsBanned")
                         .HasColumnType("bit");
 
@@ -735,6 +755,12 @@ namespace WorkSmart.Repository.Migrations
 
                     b.Property<bool>("IsPrivated")
                         .HasColumnType("bit");
+
+                    b.Property<string>("LicenseVerificationReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LicenseVerificationStatus")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -747,11 +773,23 @@ namespace WorkSmart.Repository.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("TaxId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TaxVerificationReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TaxVerificationStatus")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UserName")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("VerificationLevel")
+                        .HasColumnType("int");
 
                     b.Property<string>("WorkLocation")
                         .HasColumnType("nvarchar(max)");
@@ -823,8 +861,7 @@ namespace WorkSmart.Repository.Migrations
                     b.HasOne("WorkSmart.Core.Entity.CV_Template", "CVTemplate")
                         .WithMany("CVs")
                         .HasForeignKey("CVTemplateId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("WorkSmart.Core.Entity.User", "User")
                         .WithMany("CVs")

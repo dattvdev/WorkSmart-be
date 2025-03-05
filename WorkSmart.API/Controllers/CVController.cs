@@ -1,54 +1,79 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using WorkSmart.Core.Dto.CVDtos;
-using WorkSmart.Core.Entity;
-using WorkSmart.Core.Interface;
-
+using WorkSmart.Application.Services;
 namespace WorkSmart.API.Controllers
 {
-    [Route("cv")]
     [ApiController]
+    [Route("api/[controller]")]
     public class CVController : ControllerBase
     {
-        private readonly ICVRepository _cvRepository;
-        private readonly IMapper _mapper;
+        private readonly CVService _cvService;
+        private readonly ILogger<CVController> _logger;
 
-        public CVController(ICVRepository cvRepository,IMapper mapper)
+        public CVController(CVService cvService,ILogger<CVController> logger)
         {
-            _cvRepository = cvRepository;
-            _mapper = mapper;
+            _cvService = cvService;
+            _logger = logger;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateCV([FromBody] CreateCVDto createCVDto)
+        [HttpPost("create")]
+        public async Task<ActionResult<CVDto>> CreateCV([FromBody] CVDto cvDto)
         {
-            var cv = _mapper.Map<CV>(createCVDto);
-            cv.UserID = 14; // Lấy từ user đăng nhập
-            await _cvRepository.Add(cv);
-            return CreatedAtAction(nameof(GetCVById),new { id = cv.CVID },_mapper.Map<CVDto>(cv));
+            if (cvDto == null)
+            {
+                return BadRequest("CV data cannot be null.");
+            }
+            cvDto.CVID = 0;
+            var createdCv = await _cvService.CreateCVAsync(cvDto);
+            return CreatedAtAction(nameof(GetCV),new { id = createdCv.CVID },createdCv);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetCVById(int id)
+        public async Task<ActionResult<CVDto>> GetCV(int id)
         {
-            var cv = await _cvRepository.GetById(id);
+            var cv = await _cvService.GetCVByIdAsync(id);
             if (cv == null)
+            {
                 return NotFound();
+            }
 
-            return Ok(_mapper.Map<CVDto>(cv));
+            return Ok(cv);
         }
 
         [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetCVsByUserId(int userId)
+        public async Task<ActionResult<IEnumerable<CVDto>>> GetAllCVsByUserId(int userId)
         {
-            var cvs = await _cvRepository.GetAllByUserIdAsync(userId);
-            return Ok(_mapper.Map<IEnumerable<CVDto>>(cvs));
+            var cvs = await _cvService.GetAllCVsAsync(userId);
+            return Ok(cvs);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<CVDto>> UpdateCV(int id,[FromBody] CVDto cvDto)
+        {
+            if (id != cvDto.CVID)
+            {
+                return BadRequest("CV ID mismatch.");
+            }
+
+            try
+            {
+                var updatedCv = await _cvService.UpdateCVAsync(1,cvDto); // Giả định 1 là ID user
+                return Ok(updatedCv); // Trả về CV đã cập nhật
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message); // Trả về 403 Forbidden nếu không có quyền
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message); // Trả về 404 nếu không tìm thấy
+            }
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteCV(int id)
+        public async Task<ActionResult> DeleteCV(int id)
         {
-            _cvRepository.Delete(id);
+            await _cvService.DeleteCVAsync(id);
             return NoContent();
         }
     }

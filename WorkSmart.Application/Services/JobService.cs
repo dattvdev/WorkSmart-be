@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using WorkSmart.Core.Dto.CandidateDtos;
 using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
 using WorkSmart.Core.Interface;
+using WorkSmart.Repository.Repository;
 
 namespace WorkSmart.Application.Services
 {
@@ -27,7 +29,8 @@ namespace WorkSmart.Application.Services
         public async Task<IEnumerable<JobDto>> GetAllJobsAsync()
         {
             var jobs = await _jobRepository.GetAll();
-            return _mapper.Map<IEnumerable<JobDto>>(jobs);
+            var jobOrderBy = jobs.OrderByDescending(j => j.CreatedAt).ToList();
+            return _mapper.Map<IEnumerable<JobDto>>(jobOrderBy);
         }
         public async Task CreateJobAsync(CreateJobDto jobDto)
         {
@@ -51,5 +54,13 @@ namespace WorkSmart.Application.Services
 
         public async Task<bool> HideJob(int jobId) => await _jobRepository.UpdateJobStatus(jobId, JobStatus.Hidden);
         public async Task<bool> UnhideJob(int jobId) => await _jobRepository.UpdateJobStatus(jobId, JobStatus.Active);
+        public async Task<(IEnumerable<GetListSearchJobDto> Jobs, int Total)> GetListSearch(JobSearchRequestDto request)
+        {
+            var (jobs, total) = await _jobRepository.GetListSearch(request);
+
+            var mappedJobs = _mapper.Map<IEnumerable<GetListSearchJobDto>>(jobs);
+
+            return (mappedJobs, total);
+        }
     }
 }

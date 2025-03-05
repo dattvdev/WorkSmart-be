@@ -25,11 +25,23 @@ namespace WorkSmart.API.Extension
             services.AddScoped<CandidateProfile>();
             services.AddScoped<CandidateService>();
             services.AddScoped<EmployerService>();
+            services.AddScoped<AdminService>();
             services.AddScoped<CloudinaryService>();
             services.AddTransient<ISendMailService, SendMailService>();
             services.AddTransient<ITokenRepository, TokenService>();
             services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddAutoMapper(typeof(CandidateProfile));
+
+            services.AddScoped<TagService>();
+            services.AddScoped<ITagRepository, TagRepository>();
+
+            services.AddScoped<IPersonalMessageRepository, PersonalMessageRepository>();
+
+            services.AddScoped<IPackageRepository, PackageRepository>();
+            services.AddScoped<PackageService>();
+            services.AddAutoMapper(typeof(PackageProfile));
+
+            services.AddSignalR();
             return services;
         }
     }

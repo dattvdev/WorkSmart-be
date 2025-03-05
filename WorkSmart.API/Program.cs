@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using WorkSmart.API.Extension;
+using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.MailDtos;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository.Repository;
@@ -21,7 +22,12 @@ builder.Services.AddCors(options =>
 });
 
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+    });
+
 builder.Services.AddScopeCollection(builder.Configuration.GetConnectionString("DefaultConnection").ToString());
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -50,6 +56,7 @@ builder.Services.AddAuthentication(options =>
 
 // Đăng ký Repository
 builder.Services.AddScoped<ICVRepository,CVRepository>();
+builder.Services.AddScoped<CVService>();
 
 var app = builder.Build();
 

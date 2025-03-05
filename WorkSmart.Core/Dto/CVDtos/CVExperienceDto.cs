@@ -1,10 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Text.Json.Serialization;
 
-namespace WorkSmart.Core.Entity
+namespace WorkSmart.Core.Dto.CVDtos
 {
-    public class CV_Experience
+    public class CVExperienceDto
     {
-        [Key]
         public int ExperienceID { get; set; }
         public int CVID { get; set; }
         public string? JobPosition { get; set; }
@@ -13,7 +12,6 @@ namespace WorkSmart.Core.Entity
         public string? Description { get; set; }
         public DateTime? StartedAt { get; set; }
         public DateTime? EndedAt { get; set; }
-
-        public CV CV { get; set; }
     }
+
 }

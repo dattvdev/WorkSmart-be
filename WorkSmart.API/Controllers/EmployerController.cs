@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.EmployerDtos;
 using WorkSmart.Core.Interface;
@@ -39,7 +40,7 @@ namespace WorkSmart.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Error = "An error occurred while getting profile." });
+                return StatusCode(500, new { Error = "An error occurred while getting profile.", Details = ex.Message });
             }
         }
 
@@ -64,8 +65,51 @@ namespace WorkSmart.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Error = "An error occurred while updating profile." });
+                return StatusCode(500, new { Error = "An error occurred while updating profile.", Details = ex.Message });
             }
+        }
+
+        [HttpPost("verify-tax")]
+        public async Task<IActionResult> VerifyTax([FromBody] TaxVerificationDto taxVerificationDto)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+
+                var result = await _employerService.VerifyTax(userId, taxVerificationDto);
+                if (result)
+                    return Ok("Tax verification submitted successfully.");
+                //Gửi mail thông báo về employer sau khi đã gửi xác thực thành công, chờ admin aprove
+                return BadRequest("Failed to submit tax verification.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = "An error occurred while verify tax.", Details = ex.Message });
+            }
+        }
+
+        [HttpPost("upload-business-license")]
+        public async Task<IActionResult> UploadBusinessLicense([FromBody] UploadBusinessLicenseDto request)
+        {
+            var userId = int.Parse(User.FindFirst("UserId")?.Value);
+
+            if (string.IsNullOrEmpty(request.BusinessLicenseImageUrl))
+            {
+                return BadRequest("Business license image URL is required.");
+            }
+
+            var result = await _employerService.UploadBusinessLicense(userId, request.BusinessLicenseImageUrl);
+
+            if (!result)
+            {
+                return NotFound("User not found");
+            }
+
+            return Ok(new { message = "Business license submitted for verification." });
         }
     }
 }

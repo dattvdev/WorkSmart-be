@@ -7,6 +7,8 @@ namespace WorkSmart.Core.Entity
         public int CVID { get; set; }
         public int UserID { get; set; }
         public int? CVTemplateId { get; set; }
+        public string? Title { get; set; }
+        public string? Description { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? JobPosition { get; set; }

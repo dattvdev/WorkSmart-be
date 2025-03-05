@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using WorkSmart.Application.Services;
+using WorkSmart.Core.Dto.CandidateDtos;
 using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
@@ -148,6 +149,16 @@ namespace WorkSmart.API.Controllers
                 _logger.LogError("Error fetching job ID {JobID}: {Message}", id, ex.Message);
                 return StatusCode(500, new { message = "An error occurred while retrieving the job." });
             }
+        }
+
+        [HttpGet("GetListSearch")]
+        public async Task<IActionResult> GetListSearch
+            ([FromQuery] JobSearchRequestDto request)
+        {
+            var (jobs, total) = await _jobService.GetListSearch(request);
+            var totalPage = (int)Math.Ceiling((double)total / request.PageSize);
+            var totalJob = total;
+            return Ok(new {totalJob, totalPage, jobs });
         }
 
         ///// Get jobs by employer ID

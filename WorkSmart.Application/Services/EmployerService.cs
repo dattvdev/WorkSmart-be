@@ -21,17 +21,16 @@ namespace WorkSmart.Application.Services
             _mapper = mapper;
         }
 
-        //public async Task<GetEmployerProfileDto> GetEmployerProfile(int userId)
-        //{
-        //    var user = await _accountRepository.GetById(userId);
+        public async Task<GetEmployerProfileDto> GetEmployerProfile(int userId)
+        {
+            var user = await _accountRepository.GetById(userId);
+            if (user == null || user.Role != "Employer")
+                return null;
 
-        //    if (user == null || user.Role != "Employer")
-        //        return null;
+            return _mapper.Map<GetEmployerProfileDto>(user);
+        }
 
-        //    return _mapper.Map<GetEmployerProfileDto>(user);
-        //}
-
-        public async Task<bool> UpdateEmployerProfile(int userId, EditEmployerRequest request)
+        public async Task<bool> EditEmployerProfile(int userId, EditEmployerRequest request)
         {
             var user = await _accountRepository.GetById(userId);
             if (user == null || user.Role != "Employer")
@@ -40,17 +39,67 @@ namespace WorkSmart.Application.Services
             }
 
             // Cho phép null nếu người dùng muốn xóa
-            if (request.FullName != null) user.FullName = request.FullName;
-            if (request.PhoneNumber != null) user.PhoneNumber = request.PhoneNumber;
-            if (request.Address != null) user.Address = request.Address;
-            if (request.Amount != null) user.Amount = request.Amount;
-            if (request.BankName != null) user.BankName = request.BankName;
-            if (request.BankNumber != null) user.BankNumber = request.BankNumber;
             if (request.CompanyName != null) user.CompanyName = request.CompanyName;
             if (request.CompanyDescription != null) user.CompanyDescription = request.CompanyDescription;
-            if (request.WorkLocation != null) user.WorkLocation = request.WorkLocation;
+            if (request.PhoneNumber != null) user.PhoneNumber = request.PhoneNumber;
+            if (request.CreatedAt != null) user.CreatedAt = (DateTime)request.CreatedAt;
+            if (request.IsPrivated != null) user.IsPrivated = (bool)request.IsPrivated;
+            if (request.Address != null) user.Address = request.Address;
+            if (request.Avatar != null) user.Avatar = request.Avatar;
 
             user.UpdatedAt = DateTime.UtcNow;
+            _accountRepository.Update(user);
+            await _accountRepository.Save();
+
+            return true;
+        }
+
+        public async Task<bool> VerifyTax(int userId, TaxVerificationDto request)
+        {
+            var user = await _accountRepository.GetById(userId);
+            if (user == null || user.Role != "Employer")
+            {
+                return false;
+            }
+
+            if (user.VerificationLevel >= 1)
+            {
+                throw new InvalidOperationException("Tax verification already completed.");
+            }
+
+            user.TaxId = request.TaxId;
+            user.Industry = request.Industry;
+            user.CompanySize = request.CompanySize;
+            user.CompanyName = request.CompanyName;
+            user.CompanyDescription = request.CompanyDescription;
+            user.PhoneNumber = request.PhoneNumber;
+            user.Address = request.Address;
+            user.TaxVerificationStatus = "Pending";
+            user.UpdatedAt = DateTime.UtcNow;
+
+            _accountRepository.Update(user);
+            await _accountRepository.Save();
+
+            return true;
+        }
+
+        public async Task<bool> UploadBusinessLicense(int userId, string imageUrl)
+        {
+            var user = await _accountRepository.GetById(userId);
+            if (user == null || user.Role != "Employer")
+            {
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(imageUrl))
+            {
+                throw new ArgumentException("Business license image URL is required.");
+            }
+
+            user.BusinessLicenseImage = imageUrl;
+            user.LicenseVerificationStatus = "Pending";
+            user.UpdatedAt = DateTime.Now;
+
             _accountRepository.Update(user);
             await _accountRepository.Save();
 

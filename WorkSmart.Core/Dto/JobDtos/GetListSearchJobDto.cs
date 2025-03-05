@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
+using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
 
-namespace WorkSmart.Core.Entity
+namespace WorkSmart.Core.Dto.JobDtos
 {
-    
-    public class Job
+    public class GetListSearchJobDto
     {
         public int JobID { get; set; }
         public int UserID { get; set; }
@@ -20,7 +19,6 @@ namespace WorkSmart.Core.Entity
         public int? NumberOfRecruitment { get; set; }
         public string? WorkType { get; set; }
         public string? Location { get; set; }
-        public string? JobPosition { get; set; }
         public double? Salary { get; set; }
         public int? Exp { get; set; }
         public bool Priority { get; set; } = false;
@@ -29,8 +27,6 @@ namespace WorkSmart.Core.Entity
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
-        public User User { get; set; }
-        public ICollection<Application>? Applications { get; set; }
         public ICollection<FavoriteJob>? FavoriteJobs { get; set; }
         public ICollection<Tag>? Tags { get; set; }
         public ICollection<ReportPost>? ReportPosts { get; set; }

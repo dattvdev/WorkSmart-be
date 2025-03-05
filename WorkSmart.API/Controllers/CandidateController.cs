@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.CandidateDtos;
-using WorkSmart.Core.Interface;
 
 namespace WorkSmart.API.Controllers
 {
@@ -19,8 +17,7 @@ namespace WorkSmart.API.Controllers
         }
 
         [HttpGet("GetListSearch")]
-        public async Task<IActionResult> GetListSearchCandidate
-            ([FromQuery] CandidateSearchRequestDto request)
+        public async Task<IActionResult> GetListSearchCandidate([FromQuery] CandidateSearchRequestDto request)
         {
             var (candidates, total) = await _candidateService.GetListSearchCandidate(request);
             var totalPage = (int)Math.Ceiling((double)total / request.PageSize);
@@ -32,9 +29,6 @@ namespace WorkSmart.API.Controllers
         {
             try
             {
-                var token = Request.Headers["Authorization"].ToString();
-                Console.WriteLine("Received Token: " + token);
-
                 var userIdClaim = User.FindFirst("UserId");
                 if (userIdClaim == null)
                 {
@@ -42,7 +36,6 @@ namespace WorkSmart.API.Controllers
                 }
 
                 var userId = int.Parse(userIdClaim.Value);
-                Console.WriteLine($"Decoded UserId: {userId}");
 
                 var candidateProfile = await _candidateService.GetCandidateProfile(userId);
 
@@ -69,7 +62,7 @@ namespace WorkSmart.API.Controllers
 
                 var userId = int.Parse(User.FindFirst("UserId")?.Value);
 
-                var isUpdated = await _candidateService.UpdateCandidateProfile(userId, request);
+                var isUpdated = await _candidateService.EditCandidateProfile(userId, request);
 
                 if (!isUpdated)
                     return NotFound(new { Error = "Candidate not found." });

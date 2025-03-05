@@ -74,6 +74,7 @@ namespace WorkSmart.API.Controllers
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
                     ConfirmationCode = confirmationCode,
                     IsEmailConfirmed = false,
+                    Avatar = request.Avatar,
                     CreatedAt = DateTime.Now,
                 };
 
@@ -165,7 +166,18 @@ namespace WorkSmart.API.Controllers
                 }
 
                 var token = GenerateJwtToken(user);
-                return Ok(new { Token = token });
+                return Ok(new
+                {
+                    Token = token,
+                    User = new
+                    {
+                        user.UserID,
+                        user.Email,
+                        user.FullName,
+                        user.Avatar,
+                        user.Role
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -229,6 +241,7 @@ namespace WorkSmart.API.Controllers
                         user.UserID,
                         user.Email,
                         user.FullName,
+                        user.Avatar,
                         user.Role
                     }
                 });

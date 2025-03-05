@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WorkSmart.Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class dbv7 : Migration
+    public partial class @int : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -82,7 +82,16 @@ namespace WorkSmart.Repository.Migrations
                     CompanyDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     WorkLocation = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    VerificationLevel = table.Column<int>(type: "int", nullable: false),
+                    TaxId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Industry = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CompanySize = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TaxVerificationStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TaxVerificationReason = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BusinessLicenseImage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LicenseVerificationStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LicenseVerificationReason = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -96,8 +105,9 @@ namespace WorkSmart.Repository.Migrations
                     CVID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserID = table.Column<int>(type: "int", nullable: false),
-                    CVTemplateId = table.Column<int>(type: "int", nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CVTemplateId = table.Column<int>(type: "int", nullable: true),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     JobPosition = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     WorkType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Summary = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -105,6 +115,9 @@ namespace WorkSmart.Repository.Migrations
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Link = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Borderstyle = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Colorhex = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsFeatured = table.Column<bool>(type: "bit", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -166,6 +179,7 @@ namespace WorkSmart.Repository.Migrations
                     NumberOfRecruitment = table.Column<int>(type: "int", nullable: true),
                     WorkType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Location = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    JobPosition = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Salary = table.Column<double>(type: "float", nullable: true),
                     Exp = table.Column<int>(type: "int", nullable: true),
                     Priority = table.Column<bool>(type: "bit", nullable: false),
@@ -373,9 +387,9 @@ namespace WorkSmart.Repository.Migrations
                     CertificationID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CVID = table.Column<int>(type: "int", nullable: false),
-                    CertificateName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CertificateName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreateAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -395,10 +409,10 @@ namespace WorkSmart.Repository.Migrations
                     EducationID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CVID = table.Column<int>(type: "int", nullable: false),
-                    Major = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SchoolName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Major = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SchoolName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Degree = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    StartedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    StartedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     EndedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -419,11 +433,11 @@ namespace WorkSmart.Repository.Migrations
                     ExperienceID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CVID = table.Column<int>(type: "int", nullable: false),
-                    JobPosition = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CompanyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    JobPosition = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CompanyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    StartedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    StartedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     EndedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -444,7 +458,7 @@ namespace WorkSmart.Repository.Migrations
                     SkillID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CVID = table.Column<int>(type: "int", nullable: false),
-                    SkillName = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    SkillName = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {

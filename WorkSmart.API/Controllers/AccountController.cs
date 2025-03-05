@@ -44,6 +44,7 @@ namespace WorkSmart.API.Controllers
             {
                 if (!ModelState.IsValid)
                 {
+                    return BadRequest(ModelState); 
                 }
 
                 // Kiểm tra Role hợp lệ (Candidate, Employer)

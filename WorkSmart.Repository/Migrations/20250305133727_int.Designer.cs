@@ -12,13 +12,8 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-<<<<<<<< HEAD:WorkSmart.Repository/Migrations/20250304220447_Initial.Designer.cs
-    [Migration("20250304220447_Initial")]
-    partial class Initial
-========
-    [Migration("20250305052934_dbv11")]
-    partial class dbv11
->>>>>>>> master:WorkSmart.Repository/Migrations/20250305052934_dbv11.Designer.cs
+    [Migration("20250305133727_int")]
+    partial class @int
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

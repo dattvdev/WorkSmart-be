@@ -23,16 +23,14 @@ namespace WorkSmart.Repository.Repository
 
             if (!string.IsNullOrWhiteSpace(request.Name))
             {
-                //query = query.Where(c => c.FullName.ToLower().Contains(request.Name.ToLower()));
-                //=>fix nha Đạt
+                query = query.Where(c => c.FirstName.ToLower().Contains(request.Name.ToLower()) || c.LastName.ToLower().Contains(request.Name.ToLower()));
             }
             if (!string.IsNullOrWhiteSpace(request.JobPosition) && request.Exp > 0)
             {
-                /*query = query.Where(c => c.Experiences.Any(e =>
-                    ((e.EndedAt ?? DateTime.Now).Year - e.StartedAt.Year) >= request.Exp &&
+                query = query.Where(c => c.Experiences.Any(e =>
+                    ((e.EndedAt ?? DateTime.Now).Year - e.StartedAt.Value.Year) >= request.Exp &&
                     e.JobPosition.ToLower() == request.JobPosition.ToLower()
-                ));*/
-                //=>fix nha Đạt
+                ));
             }
 
             if (!string.IsNullOrWhiteSpace(request.Education))

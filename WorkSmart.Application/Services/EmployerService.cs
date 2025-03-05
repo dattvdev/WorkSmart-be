@@ -24,7 +24,6 @@ namespace WorkSmart.Application.Services
         public async Task<GetEmployerProfileDto> GetEmployerProfile(int userId)
         {
             var user = await _accountRepository.GetById(userId);
-
             if (user == null || user.Role != "Employer")
                 return null;
 
@@ -49,6 +48,57 @@ namespace WorkSmart.Application.Services
             if (request.Avatar != null) user.Avatar = request.Avatar;
 
             user.UpdatedAt = DateTime.UtcNow;
+            _accountRepository.Update(user);
+            await _accountRepository.Save();
+
+            return true;
+        }
+
+        public async Task<bool> VerifyTax(int userId, TaxVerificationDto request)
+        {
+            var user = await _accountRepository.GetById(userId);
+            if (user == null || user.Role != "Employer")
+            {
+                return false;
+            }
+
+            if (user.VerificationLevel >= 1)
+            {
+                throw new InvalidOperationException("Tax verification already completed.");
+            }
+
+            user.TaxId = request.TaxId;
+            user.Industry = request.Industry;
+            user.CompanySize = request.CompanySize;
+            user.CompanyName = request.CompanyName;
+            user.CompanyDescription = request.CompanyDescription;
+            user.PhoneNumber = request.PhoneNumber;
+            user.TaxVerificationStatus = "Pending";
+            user.UpdatedAt = DateTime.UtcNow;
+
+            _accountRepository.Update(user);
+            await _accountRepository.Save();
+
+            return true;
+        }
+
+        public async Task<bool> UploadBusinessLicense(int userId, string imageUrl)
+        {
+            var user = await _accountRepository.GetById(userId);
+            if (user == null || user.Role != "Employer")
+            {
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(imageUrl))
+            {
+                throw new ArgumentException("Business license image URL is required.");
+            }
+
+            user.BusinessLicenseImage = imageUrl;
+            user.LicenseVerificationStatus = "Pending";
+            user.UpdatedAt = DateTime.Now;
+
             _accountRepository.Update(user);
             await _accountRepository.Save();
 

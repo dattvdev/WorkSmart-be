@@ -12,8 +12,8 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-    [Migration("20250304144504_init")]
-    partial class init
+    [Migration("20250305052934_dbv11")]
+    partial class dbv11
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -701,10 +701,16 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<string>("BankNumber")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("BusinessLicenseImage")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("CompanyDescription")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CompanyName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompanySize")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ConfirmationCode")
@@ -733,6 +739,9 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<string>("IdentityNumber")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Industry")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsBanned")
                         .HasColumnType("bit");
 
@@ -741,6 +750,13 @@ namespace WorkSmart.Repository.Migrations
 
                     b.Property<bool>("IsPrivated")
                         .HasColumnType("bit");
+
+                    b.Property<string>("LicenseVerificationReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LicenseVerificationStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -753,11 +769,24 @@ namespace WorkSmart.Repository.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("TaxId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TaxVerificationReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TaxVerificationStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UserName")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("VerificationLevel")
+                        .HasColumnType("int");
 
                     b.Property<string>("WorkLocation")
                         .HasColumnType("nvarchar(max)");

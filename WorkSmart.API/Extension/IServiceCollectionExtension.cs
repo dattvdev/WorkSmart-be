@@ -25,6 +25,7 @@ namespace WorkSmart.API.Extension
             services.AddScoped<CandidateProfile>();
             services.AddScoped<CandidateService>();
             services.AddScoped<EmployerService>();
+            services.AddScoped<AdminService>();
             services.AddScoped<CloudinaryService>();
             services.AddTransient<ISendMailService, SendMailService>();
             services.AddTransient<ITokenRepository, TokenService>();

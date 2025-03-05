@@ -29,7 +29,8 @@ namespace WorkSmart.Application.Services
         public async Task<IEnumerable<JobDto>> GetAllJobsAsync()
         {
             var jobs = await _jobRepository.GetAll();
-            return _mapper.Map<IEnumerable<JobDto>>(jobs);
+            var jobOrderBy = jobs.OrderByDescending(j => j.CreatedAt).ToList();
+            return _mapper.Map<IEnumerable<JobDto>>(jobOrderBy);
         }
         public async Task CreateJobAsync(CreateJobDto jobDto)
         {

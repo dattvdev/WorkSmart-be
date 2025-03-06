@@ -56,6 +56,9 @@ namespace WorkSmart.API.Controllers
                 user.Role,
                 user.IdentityNumber,
                 user.IsBanned,
+                user.VerificationLevel,
+                user.TaxId,
+                user.BusinessLicenseImage,
                 user.CreatedAt
             });
 
@@ -137,7 +140,7 @@ namespace WorkSmart.API.Controllers
             if (request.IsApproved)
             {
                 user.TaxVerificationStatus = "Approved";
-                user.VerificationLevel = 1; // Đã xác thực thuế
+                user.VerificationLevel = 2; // Đã xác thực thuế
                 user.TaxVerificationReason = null;
             }
             else
@@ -181,7 +184,7 @@ namespace WorkSmart.API.Controllers
             if (request.IsApproved)
             {
                 user.LicenseVerificationStatus = "Approved";
-                user.VerificationLevel = 2; // Đã xác thực giấy phép kinh doanh
+                user.VerificationLevel = 3; // Đã xác thực giấy phép kinh doanh
                 user.LicenseVerificationReason = null;
             }
             else

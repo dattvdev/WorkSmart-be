@@ -40,6 +40,7 @@ namespace WorkSmart.API.Extension
             services.AddScoped<IPackageRepository, PackageRepository>();
             services.AddScoped<PackageService>();
             services.AddAutoMapper(typeof(PackageProfile));
+            services.AddMemoryCache();
 
             services.AddSignalR();
             return services;

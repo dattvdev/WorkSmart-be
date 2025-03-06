@@ -57,6 +57,8 @@ namespace WorkSmart.API.Controllers
                 user.IdentityNumber,
                 user.IsBanned,
                 user.VerificationLevel,
+                user.TaxId,
+                user.BusinessLicenseImage,
                 user.CreatedAt
             });
 

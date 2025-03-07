@@ -15,7 +15,11 @@ namespace WorkSmart.Application.Mapper
         {
 
             CreateMap<Core.Entity.Application, ApplicationJobDto>()
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt));
+                .ForMember(u => u.FullName, option => option.MapFrom(a => a.User.FullName))
+                .ForMember(u => u.PhoneNumber, option => option.MapFrom(a => a.User.PhoneNumber))
+                .ForMember(u => u.Email, option => option.MapFrom(a => a.User.Email));
+
+
         }
     }
 }

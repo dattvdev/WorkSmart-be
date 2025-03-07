@@ -8,6 +8,7 @@ namespace WorkSmart.Core.Interface
         Task<CV> GetCVWithDetails(int id);
         void Update(CV cv); 
         Task Delete(int id);
+        void SetFeature(int cvId, int userId);
     }
 
 }

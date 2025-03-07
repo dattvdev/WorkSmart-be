@@ -61,5 +61,11 @@ namespace WorkSmart.Application.Services
         {
             await _cvRepository.Delete(id); 
         }
+
+        public void SetFeature(int cvId, int userId)
+        {
+            _cvRepository.SetFeature(cvId, userId);
+        }
+
     }
 }

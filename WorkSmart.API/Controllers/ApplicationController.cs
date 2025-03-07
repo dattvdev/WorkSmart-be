@@ -127,6 +127,12 @@ namespace WorkSmart.Api.Controllers
             return BadRequest("Failed to update application status.");
         }
 
+        [HttpPost("ApplyToJob")]
+        public async Task<IActionResult> ApplyToJob(int userId, int jobId, int cvId)
+        {
+            await _applicationService.ApplyToJob(userId, jobId, cvId);
 
+            return Ok("Application submitted successfully.");
+        }
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WorkSmart.Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class initDB : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -33,7 +33,13 @@ namespace WorkSmart.Repository.Migrations
                     PackageID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Price = table.Column<double>(type: "float", nullable: false)
+                    Price = table.Column<double>(type: "float", nullable: false),
+                    JobPostLimitPerDay = table.Column<int>(type: "int", nullable: true),
+                    FeaturedJobPostLimit = table.Column<int>(type: "int", nullable: true),
+                    AccessToPremiumCandidates = table.Column<bool>(type: "bit", nullable: true),
+                    CVLimit = table.Column<int>(type: "int", nullable: true),
+                    HighlightProfile = table.Column<bool>(type: "bit", nullable: true),
+                    AccessToExclusiveJobs = table.Column<bool>(type: "bit", nullable: true)
                 },
                 constraints: table =>
                 {

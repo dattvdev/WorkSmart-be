@@ -44,5 +44,21 @@ namespace WorkSmart.Repository.Repository
                 await _context.SaveChangesAsync(); 
             }
         }
+
+        public void SetFeature(int cvId, int userId)
+        {
+            var cvs = _dbSet.Where(cv => cv.UserID == userId).ToList();
+            foreach (var cv in cvs)
+            {
+                if (cv.CVID == cvId)
+                {
+                    if(cv.IsFeatured == null) cv.IsFeatured = true;
+                    else
+                        cv.IsFeatured = !cv.IsFeatured;
+                }
+                else cv.IsFeatured = false;
+            }
+            _context.SaveChanges();
+        }
     }
 }

@@ -7,7 +7,7 @@ using WorkSmart.Core.Enums;
 
 namespace WorkSmart.Core.Interface
 {
-    public interface IJobRepository : IBaseRepository<Job>
+    public interface IJobRepository  : IBaseRepository<Job>
     {
         Task<IEnumerable<Job>> GetJobsByEmployerId(int employerId);
         Task<IEnumerable<Job>> GetJobsByStatus(JobStatus status);

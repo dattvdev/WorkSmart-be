@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using WorkSmart.Application.Mapper;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.AdminDtos;
 using WorkSmart.Core.Interface;
@@ -14,11 +16,13 @@ namespace WorkSmart.API.Controllers
     {
         private readonly IAccountRepository _accountRepository;
         private readonly AdminService _adminService;
+        private readonly IMapper _mapper;
 
-        public AdminController(IAccountRepository accountRepository, AdminService adminService)
+        public AdminController(IAccountRepository accountRepository, AdminService adminService, IMapper mapper)
         {
             _accountRepository = accountRepository;
             _adminService = adminService;
+            _mapper = mapper;
         }
 
         [HttpGet("test-auth")]
@@ -48,19 +52,13 @@ namespace WorkSmart.API.Controllers
                 return NotFound(new { Message = "No user to display" });
             }
 
-            var result = users.Select(user => new
+            var filterUsers = users.Where(u => u.Role == "Admin").ToList();
+            if (!filterUsers.Any())
             {
-                user.UserID,
-                user.FullName,
-                user.Email,
-                user.Role,
-                user.IdentityNumber,
-                user.IsBanned,
-                user.VerificationLevel,
-                user.TaxId,
-                user.BusinessLicenseImage,
-                user.CreatedAt
-            });
+                return NotFound(new { Message = "No user to display after filtering" });
+            }
+
+            var result = _mapper.Map<List<AccountDto>>(filterUsers);
 
             return Ok(result);
         }

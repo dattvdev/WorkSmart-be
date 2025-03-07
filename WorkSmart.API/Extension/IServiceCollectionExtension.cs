@@ -14,34 +14,54 @@ namespace WorkSmart.API.Extension
             //Add extentions here
             services.AddDbContext<WorksmartDBContext>(options =>
             options.UseSqlServer(Connectionstring));
-            services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IJobRepository, JobRepository>();
             services.AddScoped<JobService>();
             services.AddAutoMapper(typeof(JobProfile));
+
+            services.AddScoped<IJobRepository, JobRepository>();    
+            services.AddScoped<IApplicationRepository, ApplicationRepository>();
             services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<NotificationService>();
             services.AddAutoMapper(typeof(NotificationProfile));
+
             services.AddScoped<ICandidateRepository, CandidateRepository>();
+            services.AddScoped<IAccountRepository, AccountRepository>();
+            services.AddScoped<ITagRepository, TagRepository>();
+            services.AddScoped<IPersonalMessageRepository, PersonalMessageRepository>();
+            services.AddScoped<IPackageRepository, PackageRepository>();
+            services.AddTransient<ISendMailService, SendMailService>();
+            services.AddTransient<ITokenRepository, TokenService>();
+            services.AddScoped<JobService>();
+            services.AddScoped<ApplicationService>();
+            services.AddScoped<NotificationService>();
             services.AddScoped<CandidateProfile>();
             services.AddScoped<CandidateService>();
+            services.AddAutoMapper(typeof(CandidateProfile));
+
             services.AddScoped<EmployerService>();
             services.AddScoped<AdminService>();
             services.AddScoped<CloudinaryService>();
             services.AddTransient<ISendMailService, SendMailService>();
             services.AddTransient<ITokenRepository, TokenService>();
             services.AddScoped<IAccountRepository, AccountRepository>();
-            services.AddAutoMapper(typeof(CandidateProfile));
+
 
             services.AddScoped<TagService>();
-            services.AddScoped<ITagRepository, TagRepository>();
+            services.AddScoped<PackageService>();
+            services.AddAutoMapper(typeof(CandidateProfile));
+            services.AddAutoMapper(typeof(JobProfile));
+            services.AddAutoMapper(typeof(NotificationProfile));
+            services.AddAutoMapper(typeof(AccountProfile));
+            services.AddAutoMapper(typeof(PackageProfile));
+
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<UserService>();
+            services.AddAutoMapper(typeof(UserProfile));
 
             services.AddScoped<IPersonalMessageRepository, PersonalMessageRepository>();
+            services.AddScoped<MessageService>();
 
-            services.AddScoped<IPackageRepository, PackageRepository>();
-            services.AddScoped<PackageService>();
-            services.AddAutoMapper(typeof(PackageProfile));
             services.AddMemoryCache();
-
             services.AddSignalR();
             return services;
         }

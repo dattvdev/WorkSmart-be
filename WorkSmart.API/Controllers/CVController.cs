@@ -76,5 +76,11 @@ namespace WorkSmart.API.Controllers
             await _cvService.DeleteCVAsync(id);
             return NoContent();
         }
+
+        [HttpPut("/setfeature")]
+        public void SetFeature(int cvId, int userId)
+        {
+            _cvService.SetFeature(cvId, userId);
+        }
     }
 }

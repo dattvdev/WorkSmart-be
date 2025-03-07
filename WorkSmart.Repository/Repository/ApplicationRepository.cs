@@ -14,6 +14,18 @@ namespace WorkSmart.Repository.Repository
         {
         }
 
+        public async Task ApplyToJob(int userId, int jobId, int cvId)
+        {
+            Application application = new Application
+            {
+                UserID = userId,
+                JobID = jobId,
+                CVID = cvId,
+                Status = "Pending",
+            };
+            await Add(application);
+        }
+
         // Lấy danh sách ứng viên đã ứng tuyển cho công việc với jobId
         public async Task<IEnumerable<Application>> GetApplicationsByJobIdAsync(int jobId)
         {
@@ -57,5 +69,7 @@ namespace WorkSmart.Repository.Repository
         {
             throw new NotImplementedException();
         }
+
+
     }
 }

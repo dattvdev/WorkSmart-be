@@ -18,11 +18,22 @@ namespace WorkSmart.API.Extension
             services.AddScoped<JobService>();
             services.AddAutoMapper(typeof(JobProfile));
 
+            services.AddScoped<IJobRepository, JobRepository>();    
+            services.AddScoped<IApplicationRepository, ApplicationRepository>();
             services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<NotificationService>();
             services.AddAutoMapper(typeof(NotificationProfile));
 
             services.AddScoped<ICandidateRepository, CandidateRepository>();
+            services.AddScoped<IAccountRepository, AccountRepository>();
+            services.AddScoped<ITagRepository, TagRepository>();
+            services.AddScoped<IPersonalMessageRepository, PersonalMessageRepository>();
+            services.AddScoped<IPackageRepository, PackageRepository>();
+            services.AddTransient<ISendMailService, SendMailService>();
+            services.AddTransient<ITokenRepository, TokenService>();
+            services.AddScoped<JobService>();
+            services.AddScoped<ApplicationService>();
+            services.AddScoped<NotificationService>();
             services.AddScoped<CandidateProfile>();
             services.AddScoped<CandidateService>();
             services.AddAutoMapper(typeof(CandidateProfile));
@@ -36,12 +47,11 @@ namespace WorkSmart.API.Extension
 
 
             services.AddScoped<TagService>();
-            services.AddScoped<ITagRepository, TagRepository>();
-
-            services.AddScoped<IPersonalMessageRepository, PersonalMessageRepository>();
-
-            services.AddScoped<IPackageRepository, PackageRepository>();
             services.AddScoped<PackageService>();
+            services.AddAutoMapper(typeof(CandidateProfile));
+            services.AddAutoMapper(typeof(JobProfile));
+            services.AddAutoMapper(typeof(NotificationProfile));
+            services.AddAutoMapper(typeof(AccountProfile));
             services.AddAutoMapper(typeof(PackageProfile));
 
             services.AddScoped<IUserRepository, UserRepository>();
@@ -51,6 +61,7 @@ namespace WorkSmart.API.Extension
             services.AddScoped<IPersonalMessageRepository, PersonalMessageRepository>();
             services.AddScoped<MessageService>();
 
+            services.AddMemoryCache();
             services.AddSignalR();
             return services;
         }

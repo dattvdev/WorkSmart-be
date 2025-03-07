@@ -35,14 +35,15 @@ namespace WorkSmart.Core.Entity
         public string? WorkLocation {  get; set; } //employer
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
-        public int VerificationLevel { get; set; } = 0; // Cấp độ xác thực 0/1/2
+        public int VerificationLevel { get; set; } = 1; // Cấp độ xác thực 1/2/3
         public string? TaxId { get; set; } // Mã số thuế
         public string? Industry { get; set; } // Lĩnh vực hoạt động
         public string? CompanySize { get; set; }
-        public string TaxVerificationStatus { get; set; } = "Pending"; // Pending, Approved, Rejected
+        public string? CompanyWebsite { get; set; }
+        public string? TaxVerificationStatus { get; set; } = "Active"; // Pending, Approved, Rejected
         public string? TaxVerificationReason { get; set; } // Lý do từ chối
         public string? BusinessLicenseImage { get; set; }
-        public string LicenseVerificationStatus { get; set; } = "Pending"; // Pending, Approved, Rejected
+        public string? LicenseVerificationStatus { get; set; } = "Active"; // Pending, Approved, Rejected
         public string? LicenseVerificationReason { get; set; } // Lý do từ chối
 
         public ICollection<Notification>? Notifications { get; set; }

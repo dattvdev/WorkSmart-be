@@ -11,7 +11,10 @@ namespace WorkSmart.Repository.Repository
 
         public async Task<IEnumerable<CV>> GetAllCVsByUserId(int userId)
         {
-            return await _dbSet.Where(cv => cv.UserID == userId).ToListAsync();
+            return await _dbSet
+.Where(cv => cv.UserID == userId)
+.OrderByDescending(cv => cv.CreatedAt)
+.ToListAsync();
         }
 
         public async Task<CV> GetCVWithDetails(int id)

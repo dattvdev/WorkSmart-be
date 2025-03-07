@@ -62,9 +62,19 @@ namespace WorkSmart.Application.Services
                 return false;
             }
 
-            if (user.VerificationLevel >= 1)
+            if (user.VerificationLevel >= 2)
             {
                 throw new InvalidOperationException("Tax verification already completed.");
+            }
+
+            if (user.TaxVerificationStatus == "Pending")
+            {
+                throw new InvalidOperationException("Authentication request has been sent.");
+            }
+            
+            if (user.TaxVerificationStatus == "Approved")
+            {
+                throw new InvalidOperationException("Tax code already verified.");
             }
 
             user.TaxId = request.TaxId;
@@ -89,6 +99,26 @@ namespace WorkSmart.Application.Services
             if (user == null || user.Role != "Employer")
             {
                 return false;
+            }
+
+            if (user.VerificationLevel == 1)
+            {
+                throw new InvalidOperationException("Company must verify tax first");
+            }
+
+            if (user.VerificationLevel >= 3)
+            {
+                throw new InvalidOperationException("Business License verification already completed.");
+            }
+
+            if (user.LicenseVerificationStatus == "Pending")
+            {
+                throw new InvalidOperationException("Authentication request has been sent.");
+            }
+
+            if (user.LicenseVerificationStatus == "Approved")
+            {
+                throw new InvalidOperationException("Business license already verified.");
             }
 
             if (string.IsNullOrEmpty(imageUrl))

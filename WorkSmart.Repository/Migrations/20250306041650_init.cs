@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WorkSmart.Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class @int : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -87,10 +87,11 @@ namespace WorkSmart.Repository.Migrations
                     TaxId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Industry = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CompanySize = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TaxVerificationStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CompanyWebsite = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TaxVerificationStatus = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TaxVerificationReason = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BusinessLicenseImage = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LicenseVerificationStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LicenseVerificationStatus = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LicenseVerificationReason = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -106,6 +107,8 @@ namespace WorkSmart.Repository.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserID = table.Column<int>(type: "int", nullable: false),
                     CVTemplateId = table.Column<int>(type: "int", nullable: true),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     JobPosition = table.Column<string>(type: "nvarchar(max)", nullable: true),

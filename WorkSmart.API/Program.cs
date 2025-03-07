@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using WorkSmart.API.Extension;
+using WorkSmart.API.Hubs;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.MailDtos;
 using WorkSmart.Core.Interface;
@@ -77,5 +78,6 @@ app.UseAuthorization();
 app.UseAuthentication();
 
 app.MapControllers();
+app.MapHub<ChatHub>("/hubs/chat");
 
 app.Run();

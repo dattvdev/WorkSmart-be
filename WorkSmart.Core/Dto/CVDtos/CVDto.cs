@@ -20,8 +20,8 @@ namespace WorkSmart.Core.Dto.CVDtos
         public string? Borderstyle { get; set; }
         public string? Colorhex { get; set; }
         public bool? IsFeatured { get; set; } = false;
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
         public ICollection<CVExperienceDto>? Experiences { get; set; }
         public ICollection<CVCertificationDto>? Certifications { get; set; }
         public ICollection<CVSkillDto>? Skills { get; set; }

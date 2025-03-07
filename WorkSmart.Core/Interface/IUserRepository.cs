@@ -9,5 +9,6 @@ namespace WorkSmart.Core.Interface
 {
     public interface IUserRepository : IBaseRepository<User>
     {
+        
     }
 }

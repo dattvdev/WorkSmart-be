@@ -11,5 +11,9 @@ namespace WorkSmart.Core.Interface
         Task<bool> IsTokenUsedAsync(string token);
 
         Task MarkTokenAsUsedAsync(string token);
+
+        Task SaveOtpAsync(string email, string otp);
+
+        Task<bool> ValidateOtpAsync(string email, string otp);
     }
 }

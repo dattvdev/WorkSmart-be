@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
 
 namespace WorkSmart.Core.Dto.JobDtos
@@ -10,7 +11,8 @@ namespace WorkSmart.Core.Dto.JobDtos
     public class CreateJobDto
     {
         public int UserID { get; set; }
-        public int JobTagID { get; set; }
+        public List<int>? JobTagID { get; set; }
+        public List<Tag>? Tags { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public string? Level { get; set; }

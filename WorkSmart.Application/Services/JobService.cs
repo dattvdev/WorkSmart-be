@@ -14,11 +14,13 @@ namespace WorkSmart.Application.Services
     {
         private readonly IJobRepository _jobRepository;
         private readonly IMapper _mapper;
+        private readonly ITagRepository _tagRepository;
 
-        public JobService(IJobRepository jobRepository, IMapper mapper)
+        public JobService(IJobRepository jobRepository, IMapper mapper, ITagRepository tagRepository)
         {
             _jobRepository = jobRepository;
             _mapper = mapper;
+            _tagRepository = tagRepository;
         }
 
         public async Task<JobDto> GetJobById(int jobId)
@@ -35,6 +37,11 @@ namespace WorkSmart.Application.Services
         public async Task CreateJobAsync(CreateJobDto jobDto)
         {
             var job = _mapper.Map<Job>(jobDto);
+            var allTags = await _tagRepository.GetAll();
+            if (jobDto.JobTagID != null && jobDto.JobTagID.Any())
+            {
+                job.Tags = allTags.Where(t => jobDto.JobTagID.Contains(t.TagID)).ToList();
+            }
             await _jobRepository.Add(job);
         }
 

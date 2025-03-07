@@ -76,11 +76,11 @@ namespace WorkSmart.Api.Controllers
                         return BadRequest("Failed to update recruitment number.");
                     }
 
-                    string subject = "Your Application Status - Rejected";
-                    string body = $"Dear {candidate.User.FullName},\n\nWe regret to inform you that your application for the job has been rejected.\n\nBest regards,\nWorkSmart Team";
+                    //string subject = "Your Application Status - Rejected";
+                    //string body = $"Dear {candidate.User.FullName},\n\nWe regret to inform you that your application for the job has been rejected.\n\nBest regards,\nWorkSmart Team";
 
-                    // Gửi email
-                    await _sendMailService.SendEmailAsync(candidate.User.Email, subject, body);
+                    //// Gửi email
+                    //await _sendMailService.SendEmailAsync(candidate.User.Email, subject, body);
 
                     return Ok("Candidate rejected successfully, recruitment number updated.");
                 }
@@ -98,7 +98,7 @@ namespace WorkSmart.Api.Controllers
 
             if (candidate == null)
             {
-                return NotFound("Candidate not found.");
+                return NotFound("Candidate not found."); 
             }
             if(candidate.Status == "Approved")
             {
@@ -116,8 +116,8 @@ namespace WorkSmart.Api.Controllers
                         return BadRequest("Failed to update recruitment number.");
                     }
 
-                    await _sendMailService.SendEmailAsync(candidate.User.Email, "Your Application Status - Accepted",
-                        $"Dear {candidate.User.FullName},\n\nYour application for the job has been approved.\n\nBest regards,\nYour Team");
+                    //await _sendMailService.SendEmailAsync(candidate.User.Email, "Your Application Status - Accepted",
+                    //    $"Dear {candidate.User.FullName},\n\nYour application for the job has been approved.\n\nBest regards,\nYour Team");
 
                     return Ok("Candidate accepted successfully.");
                 }

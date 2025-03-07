@@ -18,24 +18,24 @@ namespace WorkSmart.Repository.Repository
         public async Task<IEnumerable<Application>> GetApplicationsByJobIdAsync(int jobId)
         {
             return await _context.Applications
-                .Where(a => a.JobID == jobId) 
                 .Include(a => a.User)  
-                .Include(a => a.CV)  
+                .Include(a => a.CV)
+                .Where(a => a.JobID == jobId)
                 .ToListAsync();
         }
 
         public async Task<IEnumerable<Application>> GetApplicationsByUserIdAsync(int userId)
         {
             return await _context.Applications
+                .Include(a => a.Job)
                 .Where(a => a.UserID == userId)  // Lọc theo UserID
-                .Include(a => a.Job) 
                 .ToListAsync();
         }
         public async Task<Application> GetCandidateByIdAsync(int candidateId)
         {
             return await _context.Applications
+                .Include(a => a.User)
                 .Where(a => a.ApplicationID == candidateId)
-                .Include(a => a.User) 
                 .FirstOrDefaultAsync(); 
         }
         public async Task<bool> UpdateApplicationStatusAsync(int applicationId, string status)

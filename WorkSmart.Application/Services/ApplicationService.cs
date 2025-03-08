@@ -100,9 +100,9 @@ namespace WorkSmart.Application.Services
             return true;
         }
 
-        public async Task ApplyToJob(int userId, int jobId, int cvId)
+        public async Task ApplyToJob(int userId, int jobId)
         {
-            await _applicationRepository.ApplyToJob(userId, jobId, cvId);
+            await _applicationRepository.ApplyToJob(userId, jobId);
         }
     }
 }

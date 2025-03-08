@@ -14,13 +14,14 @@ namespace WorkSmart.Repository.Repository
         {
         }
 
-        public async Task ApplyToJob(int userId, int jobId, int cvId)
+        public async Task ApplyToJob(int userId, int jobId)
         {
+            var cv = _context.CVs.FirstOrDefault(cv => cv.UserID == userId && cv.IsFeatured==true);
             Application application = new Application
             {
                 UserID = userId,
                 JobID = jobId,
-                CVID = cvId,
+                CVID = cv.CVID,
                 Status = "Pending",
             };
             await Add(application);

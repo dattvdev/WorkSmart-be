@@ -130,7 +130,7 @@ namespace WorkSmart.Api.Controllers
         [HttpPost("ApplyToJob")]
         public async Task<IActionResult> ApplyToJob(int userId, int jobId, int cvId)
         {
-            await _applicationService.ApplyToJob(userId, jobId, cvId);
+            await _applicationService.ApplyToJob(userId, jobId);
 
             return Ok("Application submitted successfully.");
         }

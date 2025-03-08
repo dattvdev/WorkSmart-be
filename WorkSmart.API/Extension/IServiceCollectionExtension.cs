@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using WorkSmart.API.SignalRService;
 using WorkSmart.Application.Mapper;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Interface;
@@ -32,6 +33,7 @@ namespace WorkSmart.API.Extension
             services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<NotificationService>();
             services.AddAutoMapper(typeof(NotificationProfile));
+            services.AddScoped<SignalRNotificationService>();
             //candidate
             services.AddScoped<ICandidateRepository, CandidateRepository>();
             services.AddAutoMapper(typeof(CandidateProfile));

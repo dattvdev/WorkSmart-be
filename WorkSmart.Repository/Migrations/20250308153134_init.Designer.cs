@@ -12,11 +12,7 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-<<<<<<<< HEAD:WorkSmart.Repository/Migrations/20250308111303_init.Designer.cs
-    [Migration("20250308111303_init")]
-========
-    [Migration("20250308112609_init")]
->>>>>>>> master:WorkSmart.Repository/Migrations/20250308112609_init.Designer.cs
+    [Migration("20250308153134_init")]
     partial class init
     {
         /// <inheritdoc />

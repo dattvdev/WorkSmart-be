@@ -22,6 +22,5 @@ namespace WorkSmart.Core.Dto.PackageDtos
         public bool? HighlightProfile { get; set; } // Hồ sơ được hiển thị nổi bật
         public bool? AccessToExclusiveJobs { get; set; }
 
-        public ICollection<Subscription>? Subscriptions { get; set; }
     }
 }

@@ -12,8 +12,8 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-    [Migration("20250307103447_initial")]
-    partial class initial
+    [Migration("20250308112609_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -500,6 +500,24 @@ namespace WorkSmart.Repository.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PackageID"));
+
+                    b.Property<bool?>("AccessToExclusiveJobs")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("AccessToPremiumCandidates")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("CVLimit")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FeaturedJobPostLimit")
+                        .HasColumnType("int");
+
+                    b.Property<bool?>("HighlightProfile")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("JobPostLimitPerDay")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()

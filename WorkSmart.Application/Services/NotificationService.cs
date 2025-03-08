@@ -36,7 +36,21 @@ namespace WorkSmart.Application.Services
         {
             _notificationRepository.Delete(id);
         }
-    }
 
+        public async Task<GetNotificationDto> CreateNotification(GetNotificationDto notificationDto)
+        {
+            var noti = await _notificationRepository.CreateNotification(_mapper.Map<Notification>(notificationDto));
+           return _mapper.Map<GetNotificationDto>(noti);
+        }
+        public async Task<int> GetUnreadNotificationsCount(int userId)
+        {
+            return await _notificationRepository.GetUnreadNotificationsCount(userId);
+        }
+        public async Task<bool> MarkNotificationAsRead(int notificationId)
+        {
+            return await _notificationRepository.MarkNotificationAsRead(notificationId);
+        }
+
+
+    } 
 }
-

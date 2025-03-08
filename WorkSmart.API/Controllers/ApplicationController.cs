@@ -128,10 +128,15 @@ namespace WorkSmart.Api.Controllers
         }
 
         [HttpPost("ApplyToJob")]
-        public async Task<IActionResult> ApplyToJob(int userId, int jobId, int cvId)
+        public async Task<IActionResult> ApplyToJob(int userId, int jobId)
         {
-            await _applicationService.ApplyToJob(userId, jobId);
-
+            var (email, fullname) = await _applicationService.ApplyToJob(userId, jobId);
+            if (email != null)
+            {
+                await _sendMailService.SendEmailAsync(email, "Thanks for your application",
+                $"Dear {fullname},\n\nYour application for the job has successfully.\n\nBest regards,\nYour Team");
+            }
+          
             return Ok("Application submitted successfully.");
         }
     }

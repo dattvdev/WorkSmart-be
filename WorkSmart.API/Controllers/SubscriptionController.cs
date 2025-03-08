@@ -29,12 +29,18 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
-        [HttpGet("getById/{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet("getByUserId/{id}")]
+        public async Task<IActionResult> GetByUserId(int id)
         {
             try
             {
-                var (subscription, package) = await _subscriptionService.GetById(id);
+                var (subscription, package) = await _subscriptionService.GetByUserId(id);
+                if (subscription == null)
+                    return NotFound(new { message = "Subscription not found" });
+                if (package == null)
+                    return NotFound(new { message = "Package not found" });
+                if (subscription.ExpDate < DateTime.Now)
+                    return BadRequest(new { message = "Subscription expired" });
                 return Ok(new { subscription, package });
             }
             catch (Exception ex)

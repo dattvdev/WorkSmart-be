@@ -24,9 +24,9 @@ namespace WorkSmart.Application.Services
             return _mapper.Map<IEnumerable<SubscriptionDto>>(subscriptions);
         }
 
-        public async Task<(SubscriptionDto, GetPackageDto)> GetById(int id)
+        public async Task<(SubscriptionDto, GetPackageDto)> GetByUserId(int id)
         {
-            var subscription = await _subscriptionRepository.GetById(id);
+            var subscription = await _subscriptionRepository.GetByUserId(id);
             var package = await _packageRepository.GetById(subscription.PackageID);
             return  (_mapper.Map<SubscriptionDto>(subscription), _mapper.Map<GetPackageDto>(package));
         }

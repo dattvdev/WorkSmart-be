@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using AutoMapper;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using WorkSmart.Core.Dto.ApplicationDtos;
+using WorkSmart.Core.Dto.CandidateDtos;
 using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Interface;
@@ -13,10 +15,12 @@ namespace WorkSmart.Application.Services
     {
         private readonly IApplicationRepository _applicationRepository;
         private readonly IJobRepository _jobRepository;
-        public ApplicationService(IApplicationRepository applicationRepository, IJobRepository jobRepository)
+        private readonly IMapper _mapper;
+        public ApplicationService(IApplicationRepository applicationRepository, IJobRepository jobRepository, IMapper mapper)
         {
             _applicationRepository = applicationRepository;
             _jobRepository = jobRepository;
+            _mapper = mapper;
         }
         public async Task<Core.Entity.Application> GetCandidateByIdAsync(int candidateId)
         {
@@ -25,26 +29,14 @@ namespace WorkSmart.Application.Services
         }
 
         // Lấy danh sách ứng viên đã ứng tuyển cho công việc (jobId)
-        public async Task<List<ApplicationJobDto>> GetApplicationsByJobIdAsync(int jobId)
+        public async Task<IEnumerable<ApplicationJobDto>> GetApplicationsByJobIdAsync(int jobId)
         {
             // Lấy tất cả các ứng viên ứng tuyển cho theo jobId
             var applications = await _applicationRepository.GetApplicationsByJobIdAsync(jobId);
 
-            var applicationDtos = applications
-                .Where(a => a.JobID == jobId)  // Lọc theo JobID
-                .Select(a => new ApplicationJobDto
-                {
-                    ApplicationID = a.ApplicationID,
-                    UserID = a.UserID,
-                    JobID = a.JobID,
-                    CVID = a.CVID,
-                    Status = a.Status,
-                    CreatedAt = a.CreatedAt
-                    //Thêm user ở đya 
-                })
-                .ToList();
+            var mapperApplicationDtos = _mapper.Map<IEnumerable<ApplicationJobDto>>(applications);
 
-            return applicationDtos;
+            return mapperApplicationDtos;
         }
 
         public async Task<IEnumerable<Core.Entity.Application>> GetApplicationsByUserIdAsync(int userId)

@@ -12,57 +12,60 @@ namespace WorkSmart.API.Extension
         public static IServiceCollection AddScopeCollection(this IServiceCollection services, string? Connectionstring)
         {
             //Add extentions here
+            //connect DB
             services.AddDbContext<WorksmartDBContext>(options =>
             options.UseSqlServer(Connectionstring));
+            //job
             services.AddScoped<IJobRepository, JobRepository>();
             services.AddScoped<JobService>();
             services.AddAutoMapper(typeof(JobProfile));
-
-            services.AddScoped<IJobRepository, JobRepository>();    
+            //application
             services.AddScoped<IApplicationRepository, ApplicationRepository>();
+            services.AddScoped<ApplicationService>();
+            services.AddAutoMapper(typeof(ApplicationProfile));
+            //account
+            services.AddScoped<IAccountRepository, AccountRepository>();
+            services.AddTransient<ISendMailService, SendMailService>();
+            services.AddTransient<ITokenRepository, TokenService>();
+            services.AddAutoMapper(typeof(AccountProfile));
+            //notification
             services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<NotificationService>();
             services.AddAutoMapper(typeof(NotificationProfile));
-
+            //candidate
             services.AddScoped<ICandidateRepository, CandidateRepository>();
-            services.AddScoped<IAccountRepository, AccountRepository>();
-            services.AddScoped<ITagRepository, TagRepository>();
-            services.AddScoped<IPersonalMessageRepository, PersonalMessageRepository>();
-            services.AddScoped<IPackageRepository, PackageRepository>();
-            services.AddTransient<ISendMailService, SendMailService>();
-            services.AddTransient<ITokenRepository, TokenService>();
-            services.AddScoped<JobService>();
-            services.AddScoped<ApplicationService>();
-            services.AddScoped<NotificationService>();
-            services.AddScoped<CandidateProfile>();
-            services.AddScoped<CandidateService>();
             services.AddAutoMapper(typeof(CandidateProfile));
-
+            services.AddScoped<CandidateService>();
+            //employer
             services.AddScoped<EmployerService>();
             services.AddScoped<AdminService>();
             services.AddScoped<CloudinaryService>();
-            services.AddTransient<ISendMailService, SendMailService>();
-            services.AddTransient<ITokenRepository, TokenService>();
-            services.AddScoped<IAccountRepository, AccountRepository>();
-
-
+            //tag
+            services.AddScoped<ITagRepository, TagRepository>();
             services.AddScoped<TagService>();
-            services.AddScoped<PackageService>();
-            services.AddAutoMapper(typeof(CandidateProfile));
-            services.AddAutoMapper(typeof(JobProfile));
-            services.AddAutoMapper(typeof(NotificationProfile));
-            services.AddAutoMapper(typeof(AccountProfile));
-            services.AddAutoMapper(typeof(PackageProfile));
-
+            //user
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<UserService>();
             services.AddAutoMapper(typeof(UserProfile));
-
+            //message
             services.AddScoped<IPersonalMessageRepository, PersonalMessageRepository>();
             services.AddScoped<MessageService>();
+            //subscription
+            services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+            services.AddScoped<SubscriptionService>();
+            services.AddAutoMapper(typeof(SubscriptionProfile));
+            //package
+            services.AddScoped<IPackageRepository, PackageRepository>();
+            services.AddScoped<PackageService>();
+            services.AddAutoMapper(typeof(PackageProfile));
+            //cv
+            services.AddScoped<ICVRepository, CVRepository>();
+            services.AddScoped<CVService>();
+            //---------------------
 
             services.AddMemoryCache();
             services.AddSignalR();
+
             return services;
         }
     }

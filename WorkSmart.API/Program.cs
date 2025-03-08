@@ -51,9 +51,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Đăng ký Repository
-builder.Services.AddScoped<ICVRepository,CVRepository>();
-builder.Services.AddScoped<CVService>();
+
 
 var app = builder.Build();
 

@@ -1,18 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WorkSmart.Application.Services;
+using WorkSmart.Core.Dto.SubscriptionDtos;
 using WorkSmart.Core.Entity;
 
 namespace WorkSmart.API.Controllers
 {
-    [Route("tags")]
+    [Route("subscriptions")]
     [ApiController]
-    public class TagController : Controller
+    public class SubscriptionController : Controller
     {
-        private readonly TagService _tagService;
+        private readonly SubscriptionService _subscriptionService;
 
-        public TagController(TagService tagService)
+        public SubscriptionController(SubscriptionService subscriptionService)
         {
-            _tagService = tagService;
+            _subscriptionService = subscriptionService;
         }
 
         [HttpGet("getAll")]
@@ -20,63 +21,59 @@ namespace WorkSmart.API.Controllers
         {
             try
             {
-                var tags = await _tagService.GetAll();
-                return Ok(tags);
+                var subscriptions = await _subscriptionService.GetAll();
+                return Ok(subscriptions);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
             }
         }
-
         [HttpGet("getById/{id}")]
         public async Task<IActionResult> GetById(int id)
         {
             try
             {
-                var tag = await _tagService.GetById(id);
-                return Ok(tag);
+                var (subscription, package) = await _subscriptionService.GetById(id);
+                return Ok(new { subscription, package });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
             }
         }
-
-        [HttpPost("add")]
-        public async Task<IActionResult> Add([FromBody] Tag tag)
-        {
-            try
-            {
-                await _tagService.Add(tag);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = ex.Message });
-            }
-        }
-
-        [HttpPut("update")]
-        public async Task<IActionResult> Update([FromBody] Tag tag)
-        {
-            try
-            {
-                _tagService.Update(tag);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = ex.Message });
-            }
-        }
-
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             try
             {
-                _tagService.Delete(id);
+                _subscriptionService.Delete(id);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+        [HttpPost("add")]
+        public async Task<IActionResult> Add([FromBody] SubscriptionDto subscriptionDto)
+        {
+            try
+            {
+                await _subscriptionService.Add(subscriptionDto);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+        [HttpPut("update")]
+        public async Task<IActionResult> Update([FromBody] SubscriptionDto subscriptionDto)
+        {
+            try
+            {
+                _subscriptionService.Update(subscriptionDto);
                 return Ok();
             }
             catch (Exception ex)

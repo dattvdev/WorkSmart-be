@@ -8,6 +8,7 @@ namespace WorkSmart.Core.Dto.AdminDtos
 {
     public class GetListVerificationDto
     {
+        public int? UserID { get; set; }
         public string? CompanyName { get; set; }
         public string? CompanyDescription { get; set; }
         public string? Email { get; set; }

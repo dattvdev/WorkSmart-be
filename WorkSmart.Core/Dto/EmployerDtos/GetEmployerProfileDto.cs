@@ -14,7 +14,7 @@ namespace WorkSmart.Core.Dto.EmployerDtos
         public string CompanyName { get; set; }
         public string CompanyDescription { get; set; }
         public DateTime CreatedAt { get; set; }
-        public string Avatar {  get; set; }
-        public bool IsPrivated { get; set; }
+        public string Avatar { get; set; }
+        public int VerificationLevel { get; set; }
     }
 }

@@ -52,7 +52,7 @@ namespace WorkSmart.API.Controllers
                 return NotFound(new { Message = "No user to display" });
             }
 
-            var filterUsers = users.Where(u => u.Role == "Admin").ToList();
+            var filterUsers = users.Where(u => u.Role != "Admin").ToList();
             if (!filterUsers.Any())
             {
                 return NotFound(new { Message = "No user to display after filtering" });

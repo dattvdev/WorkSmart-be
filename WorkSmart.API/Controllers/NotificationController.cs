@@ -19,19 +19,6 @@ namespace WorkSmart.API.Controllers
             _notificationService = notificationService;
             _hubContext = hubContext;
         }
-        // GET: api/GetByUserId
-        [HttpGet("{userId}")]
-        public async Task<IEnumerable<GetNotificationDto>> Get(int userId)
-        {
-            return await _notificationService.GetByUserId(userId);
-        }
-        // POST: api/CreateNotification
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody] CreateNotificationDto createNotificationDto)
-        {
-            await _notificationService.CreateNotification(createNotificationDto);
-            return Ok();
-        }
         [HttpDelete("{id}")]
         public void Delete(int id)
         {

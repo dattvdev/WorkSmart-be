@@ -34,17 +34,27 @@ namespace WorkSmart.Application.Services
             var jobOrderBy = jobs.OrderByDescending(j => j.CreatedAt).ToList();
             return _mapper.Map<IEnumerable<JobDto>>(jobOrderBy);
         }
+        //public async Task CreateJobAsync(CreateJobDto jobDto)
+        //{
+        //    var job = _mapper.Map<Job>(jobDto);
+        //    var allTags = await _tagRepository.GetAll();
+        //    if (jobDto.JobTagID != null && jobDto.JobTagID.Any())
+        //    {
+        //        job.Tags = allTags.Where(t => jobDto.JobTagID.Contains(t.TagID)).ToList();
+        //    }
+        //    await _jobRepository.Add(job);
+        //}
         public async Task CreateJobAsync(CreateJobDto jobDto)
         {
             var job = _mapper.Map<Job>(jobDto);
             var allTags = await _tagRepository.GetAll();
             if (jobDto.JobTagID != null && jobDto.JobTagID.Any())
             {
+               
                 job.Tags = allTags.Where(t => jobDto.JobTagID.Contains(t.TagID)).ToList();
             }
             await _jobRepository.Add(job);
         }
-
         public async Task<JobDto> UpdateJobAsync(int jobId, UpdateJobDto jobDto)
         {
             var job = await _jobRepository.GetById(jobId);
@@ -59,15 +69,34 @@ namespace WorkSmart.Application.Services
             _jobRepository.Delete(jobId);
         }
 
-        public async Task<bool> HideJob(int jobId) => await _jobRepository.UpdateJobStatus(jobId, JobStatus.Hidden);
-        public async Task<bool> UnhideJob(int jobId) => await _jobRepository.UpdateJobStatus(jobId, JobStatus.Active);
-        public async Task<(IEnumerable<GetListSearchJobDto> Jobs, int Total)> GetListSearch(JobSearchRequestDto request)
+        public async Task<bool> HideJobAsync(int jobId)
         {
+            return await _jobRepository.HideJobAsync(jobId);
+        }
+
+        public async Task<bool> UnhideJobAsync(int jobId)
+        {
+            return await _jobRepository.UnhideJobAsync(jobId);
+        }
+        public async Task<(IEnumerable<GetListSearchJobDto> Jobs, int Total)> GetListSearch(JobSearchRequestDto request)
+            {
             var (jobs, total) = await _jobRepository.GetListSearch(request);
 
             var mappedJobs = _mapper.Map<IEnumerable<GetListSearchJobDto>>(jobs);
 
             return (mappedJobs, total);
+        }
+        public async Task<ExpiredJobsResultDto> HideExpiredJobsAsync()
+        {
+            var expiredJobs = await _jobRepository.HideExpiredJobsAsync();
+
+            var result = new ExpiredJobsResultDto
+            {
+                HiddenCount = expiredJobs.Count,
+                HiddenJobs = _mapper.Map<List<ExpiredJobDto>>(expiredJobs)
+            };
+
+            return result;
         }
     }
 }

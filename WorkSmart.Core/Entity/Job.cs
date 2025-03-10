@@ -26,6 +26,7 @@ namespace WorkSmart.Core.Entity
         public bool Priority { get; set; } = false;
         public DateTime? Deadline { get; set; }
         public JobStatus? Status { get; set; }
+        public bool? IsHidden { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
 

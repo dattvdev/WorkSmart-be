@@ -23,6 +23,7 @@ namespace WorkSmart.Application.Services
                 config["Cloudinary:ApiSecret"]
             );
             _cloudinary = new Cloudinary(account);
+            _cloudinary.Api.Secure = true;
         }
 
         public async Task<string> UploadImage(IFormFile file, string folderName)

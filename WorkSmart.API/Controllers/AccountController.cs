@@ -369,6 +369,7 @@ namespace WorkSmart.API.Controllers
             new Claim("UserId", user.UserID.ToString()),
             new Claim("Purpose", "purpose"),
             new Claim("Role", user.Role),
+            new Claim("VerificationLevel", user.VerificationLevel.ToString()),
         };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));

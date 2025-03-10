@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WorkSmart.Core.Dto.AdminDtos;
+using WorkSmart.Core.Entity;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository.Repository;
 
@@ -27,6 +28,7 @@ namespace WorkSmart.Application.Services
                             (u.TaxVerificationStatus == "Pending" || u.LicenseVerificationStatus == "Pending"))
                 .Select(u => new GetListVerificationDto
                 {
+                    UserID = u.UserID,
                     CompanyName = u.CompanyName,
                     CompanyDescription = u.CompanyDescription,
                     Email = u.Email,

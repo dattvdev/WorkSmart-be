@@ -16,12 +16,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAll",
         policy =>
         {
-            policy.AllowAnyOrigin() // Cho phép tất cả các nguồn
+            policy.WithOrigins("http://localhost:5173", "http://localhost:7141") // Thay bằng origin thực tế của client, không sử dụng all vì không đi chung được  với AllowCredentials (bắt buộc) 
                   .AllowAnyMethod()
-                  .AllowAnyHeader();
+                  .AllowAnyHeader()
+                  .AllowCredentials(); // Quan trọng cho SignalR
         });
 });
-
 
 builder.Services.AddControllers();
 
@@ -51,9 +51,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Đăng ký Repository
-builder.Services.AddScoped<ICVRepository,CVRepository>();
-builder.Services.AddScoped<CVService>();
+
 
 var app = builder.Build();
 
@@ -74,6 +72,8 @@ app.UseAuthorization();
 app.UseAuthentication();
 
 app.MapControllers();
+
+app.MapHub<NotificationHub>("/notificationHub");
 app.MapHub<ChatHub>("/hubs/chat");
 
 app.Run();

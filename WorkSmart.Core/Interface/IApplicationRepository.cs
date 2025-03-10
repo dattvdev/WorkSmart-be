@@ -14,6 +14,6 @@ namespace WorkSmart.Core.Interface
 
         Task<Application> GetCandidateByIdAsync(int candidateId);
 
-        Task ApplyToJob(int userId, int jobId, int cvId);
+        Task ApplyToJob(int userId, int jobId);
     }
 }

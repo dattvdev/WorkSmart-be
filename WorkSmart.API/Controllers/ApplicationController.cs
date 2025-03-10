@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using WorkSmart.API.SignalRService;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.ApplicationDtos;
 using WorkSmart.Core.Dto.JobDtos;
@@ -14,11 +15,12 @@ namespace WorkSmart.Api.Controllers
     {
         private readonly ApplicationService _applicationService;
         private readonly ISendMailService _sendMailService;  // Inject the SendMailService
-
-        public ApplicationController(ApplicationService applicationService, ISendMailService sendMailService)
+        private readonly SignalRNotificationService _signalRService;
+        public ApplicationController(ApplicationService applicationService, ISendMailService sendMailService, SignalRNotificationService signalRService)
         {
             _applicationService = applicationService;
             _sendMailService = sendMailService;
+            _signalRService = signalRService;
         }
 
         // Lấy danh sách ứng viên theo JobID
@@ -82,6 +84,13 @@ namespace WorkSmart.Api.Controllers
                     //// Gửi email
                     //await _sendMailService.SendEmailAsync(candidate.User.Email, subject, body);
 
+                    await _signalRService.SendNotificationToUser(
+                        candidate.UserID,
+                        "Application Status Updated",
+                        "We regret to inform you that your application has been rejected.",
+                        $"/applications/{candidateId}/details"
+                    );
+
                     return Ok("Candidate rejected successfully, recruitment number updated.");
                 }
             }
@@ -119,6 +128,13 @@ namespace WorkSmart.Api.Controllers
                     //await _sendMailService.SendEmailAsync(candidate.User.Email, "Your Application Status - Accepted",
                     //    $"Dear {candidate.User.FullName},\n\nYour application for the job has been approved.\n\nBest regards,\nYour Team");
 
+                    // Gửi thông báo realtime
+                    await _signalRService.SendNotificationToUser(
+                        candidate.UserID,
+                        "Application Status Updated",
+                        "Congratulations! Your application has been approved.",
+                        $"/applications/{candidateId}/details"
+                    );
                     return Ok("Candidate accepted successfully.");
                 }
             }
@@ -128,10 +144,15 @@ namespace WorkSmart.Api.Controllers
         }
 
         [HttpPost("ApplyToJob")]
-        public async Task<IActionResult> ApplyToJob(int userId, int jobId, int cvId)
+        public async Task<IActionResult> ApplyToJob(int userId, int jobId)
         {
-            await _applicationService.ApplyToJob(userId, jobId, cvId);
-
+            var (email, fullname) = await _applicationService.ApplyToJob(userId, jobId);
+            if (email != null)
+            {
+                await _sendMailService.SendEmailAsync(email, "Thanks for your application",
+                $"Dear {fullname},\n\nYour application for the job has successfully.\n\nBest regards,\nYour Team");
+            }
+          
             return Ok("Application submitted successfully.");
         }
     }

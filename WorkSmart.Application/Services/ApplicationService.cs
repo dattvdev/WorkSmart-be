@@ -15,12 +15,14 @@ namespace WorkSmart.Application.Services
     {
         private readonly IApplicationRepository _applicationRepository;
         private readonly IJobRepository _jobRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
-        public ApplicationService(IApplicationRepository applicationRepository, IJobRepository jobRepository, IMapper mapper)
+        public ApplicationService(IApplicationRepository applicationRepository, IJobRepository jobRepository, IMapper mapper, IUserRepository userRepository)
         {
             _applicationRepository = applicationRepository;
             _jobRepository = jobRepository;
             _mapper = mapper;
+            _userRepository = userRepository;
         }
         public async Task<Core.Entity.Application> GetCandidateByIdAsync(int candidateId)
         {
@@ -92,9 +94,11 @@ namespace WorkSmart.Application.Services
             return true;
         }
 
-        public async Task ApplyToJob(int userId, int jobId, int cvId)
+        public async Task<(string email, string fullname)> ApplyToJob(int userId, int jobId)
         {
-            await _applicationRepository.ApplyToJob(userId, jobId, cvId);
+            await _applicationRepository.ApplyToJob(userId, jobId);
+            var user = await _userRepository.GetById(userId);
+            return (user.Email, user.FullName);
         }
     }
 }

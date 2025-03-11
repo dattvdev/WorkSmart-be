@@ -20,6 +20,7 @@ namespace WorkSmart.Core.Dto.JobDtos
         public string? WorkType { get; set; }
         public string? Location { get; set; }
         public double? Salary { get; set; }
+        public bool? IsHidden { get; set; }
         public int? Exp { get; set; }
         public bool Priority { get; set; } = false;
         public DateTime? Deadline { get; set; }

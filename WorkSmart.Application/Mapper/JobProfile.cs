@@ -20,6 +20,9 @@ namespace WorkSmart.Application.Mapper
             // Mapping UpdateJobDto,Job
             CreateMap<UpdateJobDto, Job>();
             CreateMap<Job, GetListSearchJobDto>().ReverseMap(); ;
+            CreateMap<Job, ExpiredJobDto>()
+                .ForMember(dest => dest.HiddenAt, opt => opt.MapFrom(src => DateTime.Now));
+
         }
     }
 }

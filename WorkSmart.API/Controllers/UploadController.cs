@@ -25,6 +25,16 @@ namespace WorkSmart.API.Controllers
             return Ok(new {ImageUrl = imageUrl});
         }
 
+        [HttpPost("upload-file")]
+        public async Task<IActionResult> UploadFile([FromForm] IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("Please select a valid file.");
+
+            var fileUrl = await _cloudinaryService.UploadFile(file, "documents");
+            return Ok(new { FileUrl = fileUrl });
+        }
+
         [HttpDelete("delete-image")]
         public async Task<IActionResult> DeleteImage([FromBody] string imageUrl)
         {

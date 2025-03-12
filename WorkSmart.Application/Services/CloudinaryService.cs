@@ -35,11 +35,28 @@ namespace WorkSmart.Application.Services
             var uploadParams = new ImageUploadParams()
             {
                 File = new FileDescription(file.FileName, stream),
-                Folder = folderName // Cloudinary sẽ tự động tạo folder
+                Folder = folderName
             };
 
             var uploadResult = await _cloudinary.UploadAsync(uploadParams);
             return uploadResult.SecureUrl.AbsoluteUri; // Trả về link ảnh
+        }
+
+        public async Task<string> UploadFile(IFormFile file, string folderName)
+        {
+            if (file == null || file.Length == 0)
+                throw new ArgumentException("File không hợp lệ.");
+
+            await using var stream = file.OpenReadStream();
+
+            var uploadParams = new RawUploadParams
+            {
+                File = new FileDescription(file.FileName, stream),
+                Folder = folderName
+            };
+
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+            return uploadResult.SecureUrl.AbsoluteUri; // Trả về link file đã upload
         }
 
         public async Task<bool> DeleteImage(string imageUrl)

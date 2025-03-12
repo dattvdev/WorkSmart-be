@@ -12,7 +12,7 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-    [Migration("20250308153134_init")]
+    [Migration("20250311161810_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -387,6 +387,9 @@ namespace WorkSmart.Repository.Migrations
 
                     b.Property<int?>("Exp")
                         .HasColumnType("int");
+
+                    b.Property<bool?>("IsHidden")
+                        .HasColumnType("bit");
 
                     b.Property<string>("JobPosition")
                         .HasColumnType("nvarchar(max)");

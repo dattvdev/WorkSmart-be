@@ -9,41 +9,40 @@ namespace WorkSmart.API.Hubs
 {
     public class ChatHub : Hub
     {
-        public static readonly ConcurrentDictionary<int, string> UserConnections = new ConcurrentDictionary<int, string>();
-
-        public async Task ConnectUser(int userId)
+        public async Task SendMessage(PersonalMessage message)
         {
-            UserConnections[userId] = Context.ConnectionId;
-            await Groups.AddToGroupAsync(Context.ConnectionId, $"User_{userId}");
-            await Clients.Others.SendAsync("UserConnected", userId);
+            // Send to the specific receiver
+            await Clients.User(message.ReceiverID.ToString()).SendAsync("ReceiveMessage", message);
+            // Also send to the sender to confirm message was sent
+            await Clients.User(message.SenderID.ToString()).SendAsync("ReceiveMessage", message);
         }
 
-        public async Task SendMessage(int receiverId, string message)
+        public async Task MarkAsRead(int senderId, int receiverId)
         {
-            if (UserConnections.TryGetValue(receiverId, out string connectionId))
-            {
-                await Clients.Client(connectionId).SendAsync("ReceiveMessage", message);
-            }
+            // Notify the sender that their messages have been read
+            await Clients.User(senderId.ToString()).SendAsync("MessagesRead", receiverId);
         }
 
-        public async Task MarkAsRead(int messageId, int senderId)
+        public async Task JoinConversation(string userId)
         {
-            if (UserConnections.TryGetValue(senderId, out string connectionId))
-            {
-                await Clients.Client(connectionId).SendAsync("MessageRead", messageId);
-            }
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"user_{userId}");
         }
 
-        public override async Task OnDisconnectedAsync(Exception exception)
+        public async Task LeaveConversation(string userId)
         {
-            int userId = UserConnections.FirstOrDefault(x => x.Value == Context.ConnectionId).Key;
-            if (userId != 0)
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"user_{userId}");
+        }
+
+        public override async Task OnConnectedAsync()
+        {
+            // You can add the user to their personal group when they connect
+            var userId = Context.User.Identity.Name;
+            if (!string.IsNullOrEmpty(userId))
             {
-                UserConnections.TryRemove(userId, out _);
-                await Clients.Others.SendAsync("UserDisconnected", userId);
+                await Groups.AddToGroupAsync(Context.ConnectionId, $"user_{userId}");
             }
 
-            await base.OnDisconnectedAsync(exception);
+            await base.OnConnectedAsync();
         }
     }
 }

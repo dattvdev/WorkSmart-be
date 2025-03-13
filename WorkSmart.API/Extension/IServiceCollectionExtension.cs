@@ -67,7 +67,10 @@ namespace WorkSmart.API.Extension
 
             services.AddMemoryCache();
             services.AddSignalR();
-
+            services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
             return services;
         }
     }

@@ -23,7 +23,7 @@ namespace WorkSmart.API.Controllers
         public async Task<IActionResult> SendMessage(SendMessageDto dto)
         {
             // Get current user ID from claims
-            int currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            int currentUserId = int.Parse(User.FindFirst("UserID")?.Value);
 
             // Ensure the sender is the current user
             if (currentUserId != dto.SenderID)
@@ -47,7 +47,7 @@ namespace WorkSmart.API.Controllers
         [HttpGet("conversation/{receiverId}")]
         public async Task<IActionResult> GetConversation(int receiverId, [FromQuery] int page = 0, [FromQuery] int pageSize = 20)
         {
-            int currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            int currentUserId = int.Parse(User.FindFirst("UserID")?.Value);
             var messages = await _messageService.GetConversationMessagesAsync(currentUserId, receiverId, page, pageSize);
             return Ok(messages);
         }
@@ -55,7 +55,7 @@ namespace WorkSmart.API.Controllers
         [HttpGet("conversations")]
         public async Task<IActionResult> GetUserConversations()
         {
-            int currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            int currentUserId = int.Parse(User.FindFirst("UserID")?.Value);
             var conversations = await _messageService.GetUserConversationsAsync(currentUserId);
             return Ok(conversations);
         }
@@ -63,7 +63,7 @@ namespace WorkSmart.API.Controllers
         [HttpGet("unread-count")]
         public async Task<IActionResult> GetUnreadCount()
         {
-            int currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            int currentUserId = int.Parse(User.FindFirst("UserID")?.Value);
             var count = await _messageService.GetUnreadMessageCountAsync(currentUserId);
             return Ok(new { count });
         }
@@ -82,7 +82,7 @@ namespace WorkSmart.API.Controllers
         [HttpPost("mark-all-read/{senderId}")]
         public async Task<IActionResult> MarkAllAsRead(int senderId)
         {
-            int currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            int currentUserId = int.Parse(User.FindFirst("UserID")?.Value);
             await _messageService.MarkAllMessagesAsReadAsync(senderId, currentUserId);
             return Ok();
         }

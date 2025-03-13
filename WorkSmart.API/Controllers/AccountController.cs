@@ -253,21 +253,26 @@ namespace WorkSmart.API.Controllers
                 var user = _accountRepository.GetByEmail(request.Email);
                 if (user == null)
                 {
-                    return BadRequest("Email không tồn tại.");
+                    return BadRequest("Email does not exist.");
                 }
 
-                var token = GenerateJwtToken(user);
-                var resetLink = Url.Action("ResetPassword", "Account", new { token }, "https");
+                var token = new Random().Next(100000, 999999).ToString();
+
+                await _tokenRepository.SaveOtpAsync(user.Email, token);
 
                 var emailContent = new Core.Dto.MailDtos.MailContent
                 {
                     To = user.Email,
-                    Subject = "Password Reset Request",
-                    Body = $"<p>Please click the link below to reset your password.</p><a href='{resetLink}'>Reset Password</a>"
+                    Subject = "OTP code to reset password",
+                    Body = $"<p>Your OTP code is: <b>{token}</b></p><p>The code is valid for 10 minutes.</p>"
                 };
                 await _sendMailService.SendMail(emailContent);
 
-                return Ok("Email khôi phục mật khẩu đã được gửi.");
+                return Ok("Password recovery email has been sent.");
+            }
+            catch (SqlException ex) when (ex.Number == -2) //Timeout error
+            {
+                return StatusCode(500, new { error = "Database connection timed out. Please try again." });
             }
             catch (Exception ex)
             {
@@ -280,38 +285,26 @@ namespace WorkSmart.API.Controllers
         {
             try
             {
-                var handler = new JwtSecurityTokenHandler();
-                var jsonToken = handler.ReadToken(request.Token) as JwtSecurityToken;
-
-                if (jsonToken == null || !jsonToken.Claims.Any())
-                {
-                    return BadRequest("Invalid or expired token.");
-                }
-                if (await _tokenRepository.IsTokenUsedAsync(request.Token))
-                {
-                    return BadRequest("Token has already been used.");
-                }
-                var emailClaim = jsonToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
-                var purposeClaim = jsonToken.Claims.FirstOrDefault(c => c.Type == "Purpose")?.Value;
-
-                if (emailClaim == null || purposeClaim != "purpose")
-                {
-                    return BadRequest("Invalid token.");
-                }
-
-                var user = _accountRepository.GetByEmail(emailClaim);
-
+                var user = _accountRepository.GetByEmail(request.Email);
                 if (user == null)
                 {
-                    return BadRequest("User not found.");
+                    return BadRequest("Email does not exist.");
+                }
+
+                if (!await _tokenRepository.ValidateOtpAsync(user.Email, request.Token))
+                {
+                    return BadRequest("OTP code is invalid or expired.");
                 }
 
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
                 _accountRepository.Update(user);
                 await _accountRepository.Save();
-                await _tokenRepository.MarkTokenAsUsedAsync(request.Token);
 
                 return Ok("Password has been reset successfully.");
+            }
+            catch (SqlException ex) when (ex.Number == -2) //Timeout error
+            {
+                return StatusCode(500, new { error = "Database connection timed out. Please try again." });
             }
             catch (Exception ex)
             {
@@ -376,6 +369,7 @@ namespace WorkSmart.API.Controllers
             new Claim("UserId", user.UserID.ToString()),
             new Claim("Purpose", "purpose"),
             new Claim("Role", user.Role),
+            new Claim("VerificationLevel", user.VerificationLevel.ToString()),
         };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));

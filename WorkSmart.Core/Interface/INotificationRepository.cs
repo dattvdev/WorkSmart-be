@@ -10,5 +10,8 @@ namespace WorkSmart.Core.Interface
     public interface INotificationRepository : IBaseRepository<Notification>
     {
         Task<IEnumerable<Notification>> GetByUserId(int userId);
+        Task<int> GetUnreadNotificationsCount(int userId);
+        Task<bool> MarkNotificationAsRead(int notificationId);
+        Task<Notification> CreateNotification(Notification notification);
     }
 }

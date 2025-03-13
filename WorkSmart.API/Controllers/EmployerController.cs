@@ -77,10 +77,8 @@ namespace WorkSmart.API.Controllers
                 var userId = int.Parse(User.FindFirst("UserId")?.Value);
 
                 var result = await _employerService.VerifyTax(userId, taxVerificationDto);
-                if (result)
-                    return Ok("Tax verification submitted successfully.");
+                return Ok("Tax verification submitted successfully.");
                 //Gửi mail thông báo về employer sau khi đã gửi xác thực thành công, chờ admin aprove
-                return BadRequest("Failed to submit tax verification.");
             }
             catch (InvalidOperationException ex)
             {
@@ -95,21 +93,33 @@ namespace WorkSmart.API.Controllers
         [HttpPost("upload-business-license")]
         public async Task<IActionResult> UploadBusinessLicense([FromBody] UploadBusinessLicenseDto request)
         {
-            var userId = int.Parse(User.FindFirst("UserId")?.Value);
-
-            if (string.IsNullOrEmpty(request.BusinessLicenseImageUrl))
+            try
             {
-                return BadRequest("Business license image URL is required.");
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+
+                if (string.IsNullOrEmpty(request.BusinessLicenseImageUrl))
+                {
+                    return BadRequest("Business license image URL is required.");
+                }
+
+                var result = await _employerService.UploadBusinessLicense(userId, request.BusinessLicenseImageUrl);
+
+                if (!result)
+                {
+                    return NotFound("User not found");
+                }
+
+                return Ok(new { message = "Business license submitted for verification." });
+
             }
-
-            var result = await _employerService.UploadBusinessLicense(userId, request.BusinessLicenseImageUrl);
-
-            if (!result)
+            catch (InvalidOperationException ex)
             {
-                return NotFound("User not found");
+                return BadRequest(new { Error = ex.Message });
             }
-
-            return Ok(new { message = "Business license submitted for verification." });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = "An error occurred while verify business license.", Details = ex.Message });
+            }
         }
     }
 }

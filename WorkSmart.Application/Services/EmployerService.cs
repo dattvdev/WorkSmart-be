@@ -24,20 +24,14 @@ namespace WorkSmart.Application.Services
         public async Task<GetEmployerProfileDto> GetEmployerProfile(int userId)
         {
             var user = await _accountRepository.GetById(userId);
-            if (user == null || user.Role != "Employer")
-                return null;
-
+            
             return _mapper.Map<GetEmployerProfileDto>(user);
         }
 
         public async Task<bool> EditEmployerProfile(int userId, EditEmployerRequest request)
         {
             var user = await _accountRepository.GetById(userId);
-            if (user == null || user.Role != "Employer")
-            {
-                return false;
-            }
-
+           
             // Cho phép null nếu người dùng muốn xóa
             if (request.CompanyName != null) user.CompanyName = request.CompanyName;
             if (request.CompanyDescription != null) user.CompanyDescription = request.CompanyDescription;
@@ -57,14 +51,20 @@ namespace WorkSmart.Application.Services
         public async Task<bool> VerifyTax(int userId, TaxVerificationDto request)
         {
             var user = await _accountRepository.GetById(userId);
-            if (user == null || user.Role != "Employer")
-            {
-                return false;
-            }
-
-            if (user.VerificationLevel >= 1)
+            
+            if (user.VerificationLevel >= 2)
             {
                 throw new InvalidOperationException("Tax verification already completed.");
+            }
+
+            if (user.TaxVerificationStatus == "Pending")
+            {
+                throw new InvalidOperationException("Authentication request has been sent.");
+            }
+            
+            if (user.TaxVerificationStatus == "Approved")
+            {
+                throw new InvalidOperationException("Tax code already verified.");
             }
 
             user.TaxId = request.TaxId;
@@ -86,9 +86,25 @@ namespace WorkSmart.Application.Services
         public async Task<bool> UploadBusinessLicense(int userId, string imageUrl)
         {
             var user = await _accountRepository.GetById(userId);
-            if (user == null || user.Role != "Employer")
+           
+            if (user.VerificationLevel == 1)
             {
-                return false;
+                throw new InvalidOperationException("Company must verify tax first");
+            }
+
+            if (user.VerificationLevel >= 3)
+            {
+                throw new InvalidOperationException("Business License verification already completed.");
+            }
+
+            if (user.LicenseVerificationStatus == "Pending")
+            {
+                throw new InvalidOperationException("Authentication request has been sent.");
+            }
+
+            if (user.LicenseVerificationStatus == "Approved")
+            {
+                throw new InvalidOperationException("Business license already verified.");
             }
 
             if (string.IsNullOrEmpty(imageUrl))

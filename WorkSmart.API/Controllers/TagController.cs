@@ -4,7 +4,7 @@ using WorkSmart.Core.Entity;
 
 namespace WorkSmart.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("tags")]
     [ApiController]
     public class TagController : Controller
     {

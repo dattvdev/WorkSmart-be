@@ -7,11 +7,15 @@ using WorkSmart.Core.Enums;
 
 namespace WorkSmart.Core.Interface
 {
-    public interface IJobRepository : IBaseRepository<Job>
+    public interface IJobRepository  : IBaseRepository<Job>
     {
         Task<IEnumerable<Job>> GetJobsByEmployerId(int employerId);
         Task<IEnumerable<Job>> GetJobsByStatus(JobStatus status);
         Task<bool> UpdateJobStatus(int jobId, JobStatus newStatus);
         Task<(IEnumerable<Job> Jobs, int Total)> GetListSearch(JobSearchRequestDto request);
+        Task<bool> HideJobAsync(int jobId);
+        Task<bool> UnhideJobAsync(int jobId);
+        Task<List<Job>> GetExpiredJobsAsync();
+        Task<List<Job>> HideExpiredJobsAsync();
     }
 }

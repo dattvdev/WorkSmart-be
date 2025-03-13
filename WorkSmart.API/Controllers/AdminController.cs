@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using WorkSmart.Application.Mapper;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.AdminDtos;
 using WorkSmart.Core.Interface;
@@ -14,11 +16,13 @@ namespace WorkSmart.API.Controllers
     {
         private readonly IAccountRepository _accountRepository;
         private readonly AdminService _adminService;
+        private readonly IMapper _mapper;
 
-        public AdminController(IAccountRepository accountRepository, AdminService adminService)
+        public AdminController(IAccountRepository accountRepository, AdminService adminService, IMapper mapper)
         {
             _accountRepository = accountRepository;
             _adminService = adminService;
+            _mapper = mapper;
         }
 
         [HttpGet("test-auth")]
@@ -35,12 +39,6 @@ namespace WorkSmart.API.Controllers
         [HttpGet("list-user")]
         public async Task<IActionResult> ViewListUser()
         {
-            var userRole = User.FindFirst("Role")?.Value;
-            if (userRole != "Admin")
-            {
-                return Unauthorized("Access denied");
-            }
-
             var users = await _accountRepository.GetAll();
 
             if (users == null || !users.Any())
@@ -48,16 +46,13 @@ namespace WorkSmart.API.Controllers
                 return NotFound(new { Message = "No user to display" });
             }
 
-            var result = users.Select(user => new
+            var filterUsers = users.Where(u => u.Role != "Admin").ToList();
+            if (!filterUsers.Any())
             {
-                user.UserID,
-                user.FullName,
-                user.Email,
-                user.Role,
-                user.IdentityNumber,
-                user.IsBanned,
-                user.CreatedAt
-            });
+                return NotFound(new { Message = "No user to display after filtering" });
+            }
+
+            var result = _mapper.Map<List<AccountDto>>(filterUsers);
 
             return Ok(result);
         }
@@ -65,12 +60,6 @@ namespace WorkSmart.API.Controllers
         [HttpPost("ban/{id}")]
         public async Task<IActionResult> BanUser(int id)
         {
-            var currentUserRole = User.FindFirst("Role")?.Value;
-            if (currentUserRole != "Admin")
-            {
-                return Unauthorized("Access denied");
-            }
-
             var user = await _accountRepository.GetById(id);
             if (user == null)
             {
@@ -91,12 +80,6 @@ namespace WorkSmart.API.Controllers
         [HttpPost("unban/{id}")]
         public async Task<IActionResult> UnbanUser(int id)
         {
-            var currentUserRole = User.FindFirst("Role")?.Value;
-            if (currentUserRole != "Admin")
-            {
-                return Unauthorized("Access denied");
-            }
-
             var user = await _accountRepository.GetById(id);
             if (user == null)
             {
@@ -117,12 +100,6 @@ namespace WorkSmart.API.Controllers
         [HttpPost("approve-tax/{userId}")]
         public async Task<IActionResult> ApproveTax(int userId, [FromBody] ApproveVerificationRequest request)
         {
-            var currentUserRole = User.FindFirst("Role")?.Value;
-            if (currentUserRole != "Admin")
-            {
-                return Unauthorized("Access denied");
-            }
-
             var user = await _accountRepository.GetById(userId);
             if (user == null)
             {
@@ -137,7 +114,7 @@ namespace WorkSmart.API.Controllers
             if (request.IsApproved)
             {
                 user.TaxVerificationStatus = "Approved";
-                user.VerificationLevel = 1; // Đã xác thực thuế
+                user.VerificationLevel = 2; // Đã xác thực thuế
                 user.TaxVerificationReason = null;
             }
             else
@@ -161,12 +138,6 @@ namespace WorkSmart.API.Controllers
         [HttpPost("approve-license/{userId}")]
         public async Task<IActionResult> ApproveLicense(int userId, [FromBody] ApproveVerificationRequest request)
         {
-            var currentUserRole = User.FindFirst("Role")?.Value;
-            if (currentUserRole != "Admin")
-            {
-                return Unauthorized("Access denied");
-            }
-
             var user = await _accountRepository.GetById(userId);
             if (user == null)
             {
@@ -181,7 +152,7 @@ namespace WorkSmart.API.Controllers
             if (request.IsApproved)
             {
                 user.LicenseVerificationStatus = "Approved";
-                user.VerificationLevel = 2; // Đã xác thực giấy phép kinh doanh
+                user.VerificationLevel = 3; // Đã xác thực giấy phép kinh doanh
                 user.LicenseVerificationReason = null;
             }
             else
@@ -205,11 +176,6 @@ namespace WorkSmart.API.Controllers
         [HttpGet("pending-verifications")]
         public async Task<IActionResult> GetPendingVerifications()
         {
-            var currentUserRole = User.FindFirst("Role")?.Value;
-            if (currentUserRole != "Admin")
-            {
-                return Unauthorized("Access denied!");
-            }
             var result = await _adminService.GetPendingVerifications();
 
             return Ok(result);

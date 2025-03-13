@@ -385,6 +385,9 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<int?>("Exp")
                         .HasColumnType("int");
 
+                    b.Property<bool?>("IsHidden")
+                        .HasColumnType("bit");
+
                     b.Property<string>("JobPosition")
                         .HasColumnType("nvarchar(max)");
 
@@ -497,6 +500,24 @@ namespace WorkSmart.Repository.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PackageID"));
+
+                    b.Property<bool?>("AccessToExclusiveJobs")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("AccessToPremiumCandidates")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("CVLimit")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FeaturedJobPostLimit")
+                        .HasColumnType("int");
+
+                    b.Property<bool?>("HighlightProfile")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("JobPostLimitPerDay")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()

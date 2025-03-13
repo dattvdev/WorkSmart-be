@@ -11,7 +11,10 @@ namespace WorkSmart.Repository.Repository
 
         public async Task<IEnumerable<CV>> GetAllCVsByUserId(int userId)
         {
-            return await _dbSet.Where(cv => cv.UserID == userId).ToListAsync();
+            return await _dbSet
+.Where(cv => cv.UserID == userId)
+.OrderByDescending(cv => cv.CreatedAt)
+.ToListAsync();
         }
 
         public async Task<CV> GetCVWithDetails(int id)
@@ -36,6 +39,22 @@ namespace WorkSmart.Repository.Repository
                 _dbSet.Remove(cv);
                 await _context.SaveChangesAsync(); 
             }
+        }
+
+        public void SetFeature(int cvId, int userId)
+        {
+            var cvs = _dbSet.Where(cv => cv.UserID == userId).ToList();
+            foreach (var cv in cvs)
+            {
+                if (cv.CVID == cvId)
+                {
+                    if(cv.IsFeatured == null) cv.IsFeatured = true;
+                    else
+                        cv.IsFeatured = !cv.IsFeatured;
+                }
+                else cv.IsFeatured = false;
+            }
+            _context.SaveChanges();
         }
     }
 }

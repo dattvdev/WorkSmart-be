@@ -2,6 +2,7 @@
 using WorkSmart.API.SignalRService;
 using WorkSmart.Application.Mapper;
 using WorkSmart.Application.Services;
+using WorkSmart.Core.Dto.MailDtos;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository;
 using WorkSmart.Repository.Repository;
@@ -63,7 +64,8 @@ namespace WorkSmart.API.Extension
             //cv
             services.AddScoped<ICVRepository, CVRepository>();
             services.AddScoped<CVService>();
-            //---------------------
+            //mail
+            services.AddScoped<SendMailService>();
 
             services.AddMemoryCache();
             services.AddSignalR();

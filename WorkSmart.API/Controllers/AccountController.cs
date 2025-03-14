@@ -47,12 +47,6 @@ namespace WorkSmart.API.Controllers
                     return BadRequest(ModelState); 
                 }
 
-                // Kiểm tra Role hợp lệ (Candidate, Employer)
-                if (request.Role != "Candidate" && request.Role != "Employer")
-                {
-                    return BadRequest(new { Error = "Invalid role. Role must be 'Candidate' or 'Employer'." });
-                }
-
                 var existingUser = _accountRepository.GetByEmail(request.Email);
                 if (existingUser != null)
                 {
@@ -94,7 +88,102 @@ namespace WorkSmart.API.Controllers
                 {
                     To = user.Email,
                     Subject = "Email Confirmation",
-                    Body = $"<h1>Confirm Your Email</h1><p>Please use the following code to confirm your email address: <strong>{confirmationCode}</strong></p>"
+                    Body = $@"<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>Email Confirmation</title>
+    <style>
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }}
+        .email-container {{
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }}
+        .header {{
+            background-color: #4285f4;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }}
+        .content {{
+            padding: 30px;
+        }}
+        .message {{
+            background-color: #f1f8ff;
+            border-left: 4px solid #4285f4;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }}
+        .verification-code {{
+            font-size: 32px;
+            letter-spacing: 5px;
+            text-align: center;
+            margin: 30px 0;
+            color: #4285f4;
+            font-weight: bold;
+        }}
+        .footer {{
+            background-color: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+        }}
+        .button {{
+            display: inline-block;
+            background-color: #4285f4;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-top: 15px;
+            text-align: center;
+        }}
+    </style>
+</head>
+<body>
+    <div class=""email-container"">
+        <div class=""header"">
+            <h2>Account Registration</h2>
+        </div>
+        
+        <div class=""content"">
+            <h1 style=""color: #4285f4; text-align: center;"">Confirm Your Email</h1>
+            
+            <div class=""message"">
+                <p>Dear {user.FullName},</p>
+                <p>Thank you for registering with our service. To complete your registration, please use the verification code below:</p>
+            </div>
+            
+            <div class=""verification-code"">
+                {confirmationCode}
+            </div>
+            
+            <p style=""text-align: center;"">This code will expire in 30 minutes.</p>
+            
+            <p style=""margin-top: 30px; font-size: 14px; color: #777;"">If you did not request this verification, please ignore this email or contact our support team if you have any concerns.</p>
+        </div>
+        
+        <div class=""footer"">
+            <p>© 2025 WorkSmart. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>"
                 };
                 await _sendMailService.SendMail(emailContent);
 
@@ -188,11 +277,6 @@ namespace WorkSmart.API.Controllers
                     return BadRequest(new { Message = "Invalid Google login data" });
                 }
 
-                if (googleLoginRequest.Role != "Candidate" && googleLoginRequest.Role != "Employer")
-                {
-                    return BadRequest(new { Error = "Invalid role. Role must be 'Candidate' or 'Employer'." });
-                }
-
                 var user =  _accountRepository.GetByEmail(googleLoginRequest.Email);
                 if(user == null)
                 {
@@ -270,10 +354,6 @@ namespace WorkSmart.API.Controllers
 
                 return Ok("Password recovery email has been sent.");
             }
-            catch (SqlException ex) when (ex.Number == -2) //Timeout error
-            {
-                return StatusCode(500, new { error = "Database connection timed out. Please try again." });
-            }
             catch (Exception ex)
             {
                 return StatusCode(500, new { Error = ex.Message });
@@ -285,6 +365,11 @@ namespace WorkSmart.API.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);  
+                }
+
                 var user = _accountRepository.GetByEmail(request.Email);
                 if (user == null)
                 {
@@ -301,10 +386,6 @@ namespace WorkSmart.API.Controllers
                 await _accountRepository.Save();
 
                 return Ok("Password has been reset successfully.");
-            }
-            catch (SqlException ex) when (ex.Number == -2) //Timeout error
-            {
-                return StatusCode(500, new { error = "Database connection timed out. Please try again." });
             }
             catch (Exception ex)
             {
@@ -379,7 +460,7 @@ namespace WorkSmart.API.Controllers
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
+                expires: DateTime.Now.AddHours(2),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

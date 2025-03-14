@@ -18,6 +18,5 @@ namespace WorkSmart.Core.Dto.EmployerDtos
         public int VerificationLevel { get; set; }
         public string TaxVerificationStatus { get; set; }
         public string LicenseVerificationStatus { get; set; }
-
     }
 }

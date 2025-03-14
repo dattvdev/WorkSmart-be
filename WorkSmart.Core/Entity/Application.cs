@@ -15,6 +15,7 @@ namespace WorkSmart.Core.Entity
         public string Status { get; set; } = "Pending";
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public string? RejectionReason { get; set; }
 
         public User User { get; set; }
         public Job Job { get; set; }

@@ -13,7 +13,10 @@ namespace WorkSmart.Core.Interface
         Task<IEnumerable<Application>> GetApplicationsByUserIdAsync(int userId);
 
         Task<Application> GetCandidateByIdAsync(int candidateId);
-
+ 
+        Task<Application> GetApplicationDetailAsync(int applicationId, int jobId);
         Task ApplyToJob(int userId, int jobId);
+        Task<bool> UpdateRejectionReasonAsync(int applicationId, string rejectionReason);
+        Task<Job> GetJobDetailForApplicationAsync(int applicationId);
     }
 }

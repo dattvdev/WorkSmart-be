@@ -152,7 +152,7 @@ namespace WorkSmart.Repository.Repository
         {
             var currentDate = DateTime.Now;
             return await _dbSet
-                .Where(j => j.Deadline < currentDate && j.IsHidden != true)
+                .Where(j => j.Deadline < currentDate && j.Status.Equals("3"))
                 .ToListAsync();
         }
 
@@ -162,7 +162,7 @@ namespace WorkSmart.Repository.Repository
 
             foreach (var job in expiredJobs)
             {
-                job.IsHidden = true;
+                job.Status = (JobStatus?)3;
                 job.UpdatedAt = DateTime.Now;
             }
 

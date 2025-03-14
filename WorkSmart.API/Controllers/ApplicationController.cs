@@ -173,14 +173,14 @@ WorkSmart Team";
                     string subject = "Your Application Status - Accepted";
                     string body = $@"Dear {candidate.User.FullName},
 
-Congratulations! We are pleased to inform you that your application for {jobTitle} has been accepted.
+                    Congratulations! We are pleased to inform you that your application for {jobTitle} has been accepted.
 
-Our team was impressed with your qualifications and experience, and we believe you would be a valuable addition to our company.
+                    Our team was impressed with your qualifications and experience, and we believe you would be a valuable addition to our company.
 
-We will contact you shortly with more details about the next steps in the hiring process.
+                    We will contact you shortly with more details about the next steps in the hiring process.
 
-Best regards,
-WorkSmart Team";
+                    Best regards,
+                    WorkSmart Team";
 
                     // Gửi email chấp nhận
                     await _sendMailService.SendEmailAsync(candidate.User.Email, subject, body);

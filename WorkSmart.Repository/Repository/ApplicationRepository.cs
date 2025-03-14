@@ -51,6 +51,17 @@ namespace WorkSmart.Repository.Repository
                 .Where(a => a.ApplicationID == candidateId)
                 .FirstOrDefaultAsync(); 
         }
+
+       
+        public async Task<Job> GetJobDetailForApplicationAsync(int applicationId)
+        {
+            var application = await _context.Applications
+                .Include(a => a.Job)
+                .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
+
+            return application?.Job;
+        }
+
         public async Task<bool> UpdateApplicationStatusAsync(int applicationId, string status)
         {
             var application = await _context.Applications
@@ -66,11 +77,44 @@ namespace WorkSmart.Repository.Repository
             return true;
         }
 
-        Task<IEnumerable<Application>> IApplicationRepository.GetApplicationsByUserIdAsync(int userId)
+        public async Task<bool> UpdateRejectionReasonAsync(int applicationId, string rejectionReason)
         {
-            throw new NotImplementedException();
+            var application = await _context.Applications
+                .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
+
+            if (application == null)
+            {
+                return false;
+            }
+
+            application.RejectionReason = rejectionReason?.Trim();
+            application.UpdatedAt = DateTime.Now;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
+       
+        // Trong ApplicationRepository.cs
+        public async Task<Application> GetApplicationDetailAsync(int applicationId, int jobId)
+        {
+            return await _context.Applications
+                .Include(a => a.User)
+                .Include(a => a.CV)
+                    .ThenInclude(cv => cv.Educations)
+                .Include(a => a.CV)
+                    .ThenInclude(cv => cv.Experiences)
+                .Include(a => a.CV)
+                    .ThenInclude(cv => cv.Skills)
+                .FirstOrDefaultAsync(a => a.ApplicationID == applicationId && a.JobID == jobId);
+        }
 
     }
 }

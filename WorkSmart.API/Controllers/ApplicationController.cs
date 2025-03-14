@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Threading.Tasks;
 using WorkSmart.API.SignalRService;
 using WorkSmart.Application.Services;
@@ -14,8 +15,9 @@ namespace WorkSmart.Api.Controllers
     public class ApplicationController : ControllerBase
     {
         private readonly ApplicationService _applicationService;
-        private readonly ISendMailService _sendMailService;  // Inject the SendMailService
+        private readonly ISendMailService _sendMailService;
         private readonly SignalRNotificationService _signalRService;
+
         public ApplicationController(ApplicationService applicationService, ISendMailService sendMailService, SignalRNotificationService signalRService)
         {
             _applicationService = applicationService;
@@ -51,39 +53,75 @@ namespace WorkSmart.Api.Controllers
             return Ok(new { message = "Application status updated successfully." });
         }
 
-        // Từ chối ứng viên
+        // Từ chối ứng viên - Cập nhật để xử lý lý do từ chối
         [HttpPut("{candidateId}/reject")]
         public async Task<IActionResult> RejectCandidate(int candidateId, [FromBody] UpdateCandidateRequest request)
         {
-             var candidate = await _applicationService.GetCandidateByIdAsync(candidateId);
-
+            var candidate = await _applicationService.GetCandidateByIdAsync(candidateId);
 
             if (candidate == null)
             {
                 return NotFound("Candidate not found.");
             }
-            // kHi lỡ ấn rejected 2 lanaf thì vẫn sẽ không bị double +2 number of re....
+
+            // Nếu đã bị từ chối trước đó, trả về thông báo
             if (candidate.Status == "Rejected")
             {
                 return Ok("Candidate has been rejected before");
             }
             else
             {
+                // Cập nhật trạng thái thành Rejected
                 var result = await _applicationService.UpdateApplicationStatusAsync(candidateId, "Rejected");
+
                 if (result)
                 {
+                    // Cập nhật lý do từ chối nếu được cung cấp
+                    if (!string.IsNullOrEmpty(request.RejectionReason))
+                    {
+                        await _applicationService.UpdateRejectionReasonAsync(candidateId, request.RejectionReason);
+                    }
+
+                    // Cập nhật số lượng ứng viên bị từ chối
                     var rejectResult = await _applicationService.RejectCandidateAsync(candidateId);
                     if (!rejectResult)
                     {
                         return BadRequest("Failed to update recruitment number.");
                     }
 
-                    //string subject = "Your Application Status - Rejected";
-                    //string body = $"Dear {candidate.User.FullName},\n\nWe regret to inform you that your application for the job has been rejected.\n\nBest regards,\nWorkSmart Team";
+                    // Lấy thông tin công việc cho email
+                    var jobDetails = await _applicationService.GetJobDetailForApplicationAsync(candidateId);
+                    string jobTitle = jobDetails?.Title ?? "the position";
 
-                    //// Gửi email
-                    //await _sendMailService.SendEmailAsync(candidate.User.Email, subject, body);
+                    // Chuẩn bị nội dung email từ chối
+                    string subject = "Your Application Status - Not Selected";
+                    string body = $@"Dear {candidate.User.FullName},
 
+We appreciate your interest in {jobTitle} at our company and the time you've taken to apply.
+
+After careful consideration, we regret to inform you that we have decided not to move forward with your application at this time.";
+
+                    // Thêm lý do từ chối vào email nếu có
+                    if (!string.IsNullOrEmpty(request.RejectionReason))
+                    {
+                        body += $@"
+
+Reason: {request.RejectionReason}";
+                    }
+
+                    body += $@"
+
+Although we are unable to offer you this position, we encourage you to apply for future openings that match your skills and experience.
+
+Thank you again for your interest in our company. We wish you the best in your job search and professional endeavors.
+
+Best regards,
+WorkSmart Team";
+
+                    // Gửi email với lý do từ chối
+                    await _sendMailService.SendEmailAsync(candidate.User.Email, subject, body);
+
+                    // Gửi thông báo realtime
                     await _signalRService.SendNotificationToUser(
                         candidate.UserID,
                         "Application Status Updated",
@@ -91,10 +129,13 @@ namespace WorkSmart.Api.Controllers
                         $"/applications/{candidateId}/details"
                     );
 
-                    return Ok("Candidate rejected successfully, recruitment number updated.");
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Candidate rejected successfully, recruitment number updated."
+                    });
                 }
             }
-            
 
             return BadRequest("Failed to update application status.");
         }
@@ -107,9 +148,9 @@ namespace WorkSmart.Api.Controllers
 
             if (candidate == null)
             {
-                return NotFound("Candidate not found."); 
+                return NotFound("Candidate not found.");
             }
-            if(candidate.Status == "Approved")
+            if (candidate.Status == "Approved")
             {
                 return Ok("Candidate has been approved before");
             }
@@ -125,8 +166,24 @@ namespace WorkSmart.Api.Controllers
                         return BadRequest("Failed to update recruitment number.");
                     }
 
-                    //await _sendMailService.SendEmailAsync(candidate.User.Email, "Your Application Status - Accepted",
-                    //    $"Dear {candidate.User.FullName},\n\nYour application for the job has been approved.\n\nBest regards,\nYour Team");
+                    // Lấy thông tin công việc cho email
+                    var jobDetails = await _applicationService.GetJobDetailForApplicationAsync(candidateId);
+                    string jobTitle = jobDetails?.Title ?? "the position";
+
+                    string subject = "Your Application Status - Accepted";
+                    string body = $@"Dear {candidate.User.FullName},
+
+Congratulations! We are pleased to inform you that your application for {jobTitle} has been accepted.
+
+Our team was impressed with your qualifications and experience, and we believe you would be a valuable addition to our company.
+
+We will contact you shortly with more details about the next steps in the hiring process.
+
+Best regards,
+WorkSmart Team";
+
+                    // Gửi email chấp nhận
+                    await _sendMailService.SendEmailAsync(candidate.User.Email, subject, body);
 
                     // Gửi thông báo realtime
                     await _signalRService.SendNotificationToUser(
@@ -138,7 +195,6 @@ namespace WorkSmart.Api.Controllers
                     return Ok("Candidate accepted successfully.");
                 }
             }
-            
 
             return BadRequest("Failed to update application status.");
         }
@@ -152,8 +208,26 @@ namespace WorkSmart.Api.Controllers
                 await _sendMailService.SendEmailAsync(email, "Thanks for your application",
                 $"Dear {fullname},\n\nYour application for the job has successfully.\n\nBest regards,\nYour Team");
             }
-          
+
             return Ok("Application submitted successfully.");
+        }
+
+        [HttpGet("Job/{jobId}/application/{applicationId}")]
+        public async Task<ActionResult<ApplicationJobDto>> GetApplicationDetail(int jobId, int applicationId)
+        {
+            try
+            {
+                var applicationDetail = await _applicationService.GetApplicationDetailAsync(applicationId, jobId);
+                return Ok(applicationDetail);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
     }
 }

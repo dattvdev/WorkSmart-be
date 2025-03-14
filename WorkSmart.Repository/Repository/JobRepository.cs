@@ -173,5 +173,15 @@ namespace WorkSmart.Repository.Repository
 
             return expiredJobs;
         }
+        
+
+        public async Task<Job> GetJobDetailForApplicationAsync(int applicationId)
+        {
+            var application = await _context.Applications
+                .Include(a => a.Job)
+                .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
+
+            return application?.Job;
+        }
     }
 }

@@ -85,12 +85,12 @@ namespace WorkSmart.API.Controllers
 
                 var result = await _employerService.VerifyTax(userId, taxVerificationDto);
 
-                await _signalRService.SendNotificationToUser(
-                       userId,
-                       "Send Verify Tax Success",
-                       "Please Wait For Admin To Approve Your Tax Verification"
-                //$"/applications/{userId}/details"
-                );
+                //await _signalRService.SendNotificationToUser(
+                //       userId,
+                //       "Send Verify Tax Success",
+                //       "Please Wait For Admin To Approve Your Tax Verification"
+                ////$"/applications/{userId}/details"
+                //);
 
                 string statusCheckUrl = $"/applications/{userId}/details";
                 var emailContent = new Core.Dto.MailDtos.MailContent

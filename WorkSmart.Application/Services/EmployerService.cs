@@ -24,20 +24,14 @@ namespace WorkSmart.Application.Services
         public async Task<GetEmployerProfileDto> GetEmployerProfile(int userId)
         {
             var user = await _accountRepository.GetById(userId);
-            if (user == null || user.Role != "Employer")
-                return null;
-
+            
             return _mapper.Map<GetEmployerProfileDto>(user);
         }
 
         public async Task<bool> EditEmployerProfile(int userId, EditEmployerRequest request)
         {
             var user = await _accountRepository.GetById(userId);
-            if (user == null || user.Role != "Employer")
-            {
-                return false;
-            }
-
+           
             // Cho phép null nếu người dùng muốn xóa
             if (request.CompanyName != null) user.CompanyName = request.CompanyName;
             if (request.CompanyDescription != null) user.CompanyDescription = request.CompanyDescription;
@@ -57,11 +51,7 @@ namespace WorkSmart.Application.Services
         public async Task<bool> VerifyTax(int userId, TaxVerificationDto request)
         {
             var user = await _accountRepository.GetById(userId);
-            if (user == null || user.Role != "Employer")
-            {
-                return false;
-            }
-
+            
             if (user.VerificationLevel >= 2)
             {
                 throw new InvalidOperationException("Tax verification already completed.");
@@ -96,11 +86,7 @@ namespace WorkSmart.Application.Services
         public async Task<bool> UploadBusinessLicense(int userId, string imageUrl)
         {
             var user = await _accountRepository.GetById(userId);
-            if (user == null || user.Role != "Employer")
-            {
-                return false;
-            }
-
+           
             if (user.VerificationLevel == 1)
             {
                 throw new InvalidOperationException("Company must verify tax first");

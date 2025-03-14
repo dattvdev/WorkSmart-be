@@ -100,7 +100,7 @@ namespace WorkSmart.API.Controllers
         {
             try
             {
-                var success = await _jobService.HideJob(id);
+                var success = await _jobService.HideJobAsync(id);
                 if (!success)
                     return NotFound(new { message = "Job not found." });
 
@@ -119,7 +119,7 @@ namespace WorkSmart.API.Controllers
         {
             try
             {
-                var success = await _jobService.UnhideJob(id);
+                var success = await _jobService.UnhideJobAsync(id);
                 if (!success)
                     return NotFound(new { message = "Job not found." });
 
@@ -192,5 +192,28 @@ namespace WorkSmart.API.Controllers
         //        return StatusCode(500, new { message = "An error occurred while retrieving jobs." });
         //    }
         //}
+        [HttpPost("hide-expired")]
+        public async Task<IActionResult> HideExpiredJobs()
+        {
+            try
+            {
+                var result = await _jobService.HideExpiredJobsAsync();
+                return Ok(new
+                {
+                    Success = true,
+                    Message = $"Đã ẩn {result.HiddenCount} job hết hạn",
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error hiding expired jobs: {Message}", ex.Message);
+                return StatusCode(500, new
+                {
+                    Success = false,
+                    Message = "Đã xảy ra lỗi khi ẩn job hết hạn."
+                });
+            }
+        }
     }
 }

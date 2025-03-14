@@ -46,7 +46,17 @@ namespace WorkSmart.Repository.Repository
             return await _dbSet.Where(j => j.UserID == employerId).ToListAsync();
         }
 
+        public async Task<bool> HideJobAsync(int jobId)
+        {
+            var job = await _dbSet.FindAsync(jobId);
+            if (job == null) return false;
 
+            job.IsHidden = true;
+            job.UpdatedAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
         public async Task<IEnumerable<Job>> GetJobsByStatus(JobStatus status)
         {
             return await _dbSet.Where(j => j.Status == status).ToListAsync();
@@ -112,9 +122,16 @@ namespace WorkSmart.Repository.Repository
             return (Jobs, total);
         }
 
-        public Task<bool> HideJobAsync(int jobId)
+        public async Task<bool> UnhideJobAsync(int jobId)
         {
-            throw new NotImplementedException();
+            var job = await _dbSet.FindAsync(jobId);
+            if (job == null) return false;
+
+            job.IsHidden = false;
+            job.UpdatedAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public Task<Job> UpdateJobAsync(Job job)
@@ -122,7 +139,6 @@ namespace WorkSmart.Repository.Repository
             throw new NotImplementedException();
         }
 
-        
         public async Task<bool> UpdateJobStatus(int jobId, JobStatus newStatus)
         {
             var job = await _dbSet.FindAsync(jobId);
@@ -131,6 +147,31 @@ namespace WorkSmart.Repository.Repository
             job.Status = newStatus;
             await _context.SaveChangesAsync();
             return true;
+        }
+        public async Task<List<Job>> GetExpiredJobsAsync()
+        {
+            var currentDate = DateTime.Now;
+            return await _dbSet
+                .Where(j => j.Deadline < currentDate && j.IsHidden != true)
+                .ToListAsync();
+        }
+
+        public async Task<List<Job>> HideExpiredJobsAsync()
+        {
+            var expiredJobs = await GetExpiredJobsAsync();
+
+            foreach (var job in expiredJobs)
+            {
+                job.IsHidden = true;
+                job.UpdatedAt = DateTime.Now;
+            }
+
+            if (expiredJobs.Any())
+            {
+                await _context.SaveChangesAsync();
+            }
+
+            return expiredJobs;
         }
     }
 }

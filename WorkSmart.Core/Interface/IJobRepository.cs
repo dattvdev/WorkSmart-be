@@ -13,5 +13,9 @@ namespace WorkSmart.Core.Interface
         Task<IEnumerable<Job>> GetJobsByStatus(JobStatus status);
         Task<bool> UpdateJobStatus(int jobId, JobStatus newStatus);
         Task<(IEnumerable<Job> Jobs, int Total)> GetListSearch(JobSearchRequestDto request);
+        Task<bool> HideJobAsync(int jobId);
+        Task<bool> UnhideJobAsync(int jobId);
+        Task<List<Job>> GetExpiredJobsAsync();
+        Task<List<Job>> HideExpiredJobsAsync();
     }
 }

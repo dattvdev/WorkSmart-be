@@ -12,7 +12,7 @@ namespace WorkSmart.Application.Mapper
         {
 
             CreateMap<Job, JobDto>();
-
+            CreateMap<Tag, JobDetailTagDto>();
             CreateMap<Job, JobDetailDto>()
                 .ForMember(dest => dest.CompanySize, opt => opt.MapFrom(src => src.User.CompanySize))
                 .ForMember(dest => dest.CompanyWebsite, opt => opt.MapFrom(src => src.User.CompanyWebsite))
@@ -23,6 +23,7 @@ namespace WorkSmart.Application.Mapper
                 .ForMember(dest => dest.CompanyDescription, opt => opt.MapFrom(src => src.User.CompanyDescription))
                 .ForMember(dest => dest.WorkLocation, opt => opt.MapFrom(src => src.User.WorkLocation))
                 .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.Select(t => t.TagID).ToList()))
+                .ForMember(dest => dest.JobDetailTags, opt => opt.MapFrom(src => src.Tags))
                 .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.User.Avatar));
             // Mapping CreateJobDto,Job
             CreateMap<CreateJobDto, Job>()

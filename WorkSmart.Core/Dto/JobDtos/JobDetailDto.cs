@@ -28,6 +28,8 @@ namespace WorkSmart.Core.Dto.JobDtos
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         //compay info
+        public string? Industry { get; set; }
+        public string? Avatar { get; set; }
         public string? CompanySize { get; set; }
         public string? CompanyWebsite { get; set; }
         public string? Email { get; set; }
@@ -37,5 +39,12 @@ namespace WorkSmart.Core.Dto.JobDtos
         public string? CompanyDescription { get; set; }
         public string? WorkLocation { get; set; }
         public List<int>? Tags { get; set; }
+        public List<JobDetailTagDto>? JobDetailTags { get; set; }
+    }
+
+    public class JobDetailTagDto
+    {
+        public int TagID { get; set; }
+        public string TagName { get; set; }
     }
 }

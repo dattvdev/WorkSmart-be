@@ -22,9 +22,7 @@ namespace WorkSmart.Core.Dto.EmployerDtos
         public string? CompanyDescription { get; set; }
         
         public DateTime? CreatedAt { get; set; }
-        
-        public string? Avatar { get; set; }
-        
+                
         public bool? IsPrivated { get; set; }
     }
 }

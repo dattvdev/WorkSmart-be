@@ -74,6 +74,29 @@ namespace WorkSmart.API.Controllers
             }
         }
 
+        [HttpPut("edit-avatar")]
+        public async Task<IActionResult> EditAvatar([FromBody] EditAvatarRequest request)
+        {
+
+            var userId = int.Parse(User.FindFirst("UserId")?.Value);
+
+            var user = await _accountRepository.GetById(userId);
+            if (user == null) return NotFound("User not found");
+
+            if (request.Avatar != null)
+            {
+                user.Avatar = request.Avatar;
+                user.UpdatedAt = DateTime.UtcNow;
+
+                _accountRepository.Update(user);
+                await _accountRepository.Save();
+
+                return Ok("Avatar updated successfully!");
+            }
+
+            return BadRequest("No avatar provided.");
+        }
+
         [HttpPost("verify-tax")]
         public async Task<IActionResult> VerifyTax([FromBody] TaxVerificationDto taxVerificationDto)
         {

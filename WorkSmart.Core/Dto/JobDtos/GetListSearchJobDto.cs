@@ -23,6 +23,8 @@ namespace WorkSmart.Core.Dto.JobDtos
         public bool? IsHidden { get; set; }
         public int? Exp { get; set; }
         public bool Priority { get; set; } = false;
+        public string? Avatar { get; set; }
+
         public DateTime? Deadline { get; set; }
         public JobStatus? Status { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;

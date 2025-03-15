@@ -11,7 +11,15 @@ namespace WorkSmart.Application.Mapper
         public JobProfile()
         {
            
-            CreateMap<Job, JobDto>();
+            CreateMap<Job, JobDto>()
+                .ForMember(dest => dest.CompanySize, opt => opt.MapFrom(src => src.User.CompanySize))
+                .ForMember(dest => dest.CompanyWebsite, opt => opt.MapFrom(src => src.User.CompanyWebsite))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.User.Address))
+                .ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src => src.User.CompanyName))
+                .ForMember(dest => dest.CompanyDescription, opt => opt.MapFrom(src => src.User.CompanyDescription))
+                .ForMember(dest => dest.WorkLocation, opt => opt.MapFrom(src => src.User.WorkLocation));
 
             // Mapping CreateJobDto,Job
             CreateMap<CreateJobDto, Job>()
@@ -19,7 +27,8 @@ namespace WorkSmart.Application.Mapper
 
             // Mapping UpdateJobDto,Job
             CreateMap<UpdateJobDto, Job>();
-            CreateMap<Job, GetListSearchJobDto>().ReverseMap(); ;
+            CreateMap<Job, GetListSearchJobDto>()
+                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.User.Avatar));
             CreateMap<Job, ExpiredJobDto>()
                 .ForMember(dest => dest.HiddenAt, opt => opt.MapFrom(src => DateTime.Now));
 

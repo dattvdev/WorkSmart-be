@@ -40,6 +40,10 @@ namespace WorkSmart.Repository.Repository
             throw new NotImplementedException();
         }
 
+        public async Task<Job> GetJobDetail(int id)
+        {
+            return await _dbSet.Include(j => j.User).FirstOrDefaultAsync(c => c.JobID == id);
+        }
 
         public async Task<IEnumerable<Job>> GetJobsByEmployerId(int employerId)
         {
@@ -65,8 +69,7 @@ namespace WorkSmart.Repository.Repository
         public async Task<(IEnumerable<Job> Jobs, int Total)> GetListSearch(JobSearchRequestDto request)
         {
             DbSet<Job> _JobdbSet = _context.Set<Job>();
-            var query = _JobdbSet.AsQueryable();
-
+            var query = _JobdbSet.Include(c => c.User).AsQueryable();
             if (!string.IsNullOrWhiteSpace(request.Title))
             {
                 query = query.Where(c => c.Title.ToLower().Contains(request.Title.ToLower()));

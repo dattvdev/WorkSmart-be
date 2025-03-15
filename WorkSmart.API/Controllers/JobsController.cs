@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -222,6 +223,20 @@ namespace WorkSmart.API.Controllers
                     Message = "Đã xảy ra lỗi khi ẩn job hết hạn."
                 });
             }
+        }
+        //aproved job
+        [HttpPut("{jobId}/approve")]
+        //[Authorize(Roles = "Admin")] 
+        public async Task<IActionResult> ApproveJob(int jobId)
+        {
+            var result = await _jobService.ApproveJobAsync(jobId);
+
+            if (!result)
+            {
+                return NotFound($"Job with ID {jobId} not found");
+            }
+
+            return Ok(new { success = true, message = "Job approved successfully" });
         }
     }
 }

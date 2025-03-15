@@ -15,11 +15,29 @@ namespace WorkSmart.Repository.Repository
         {
         }
 
-        public Task<bool> ApproveJobAsync(int jobId)
+        public async Task<bool> ApproveJobAsync(int jobId)
         {
-            throw new NotImplementedException();
-        }
+            var job = await _dbSet.FindAsync(jobId);
+            if (job == null) return false;
 
+            job.Status = JobStatus.Approved;
+            //job.UpdatedAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        public async Task<bool> RejectJobAsync(int jobId, string reason)
+        {
+            var job = await _dbSet.FindAsync(jobId);
+            if (job == null) return false;
+
+            job.Status = JobStatus.Rejected;
+            job.ReasonRejectedJob = reason; // Store the rejection reason
+            job.UpdatedAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
         public Task<Job> CreateJobAsync(Job job)
         {
             throw new NotImplementedException();

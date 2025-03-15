@@ -6,6 +6,7 @@ using System.Security.Claims;
 using WorkSmart.Application.Mapper;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.AdminDtos;
+using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Interface;
 
 namespace WorkSmart.API.Controllers
@@ -180,5 +181,34 @@ namespace WorkSmart.API.Controllers
 
             return Ok(result);
         }
+        // Add job approval endpoint
+        [HttpPut("jobs/{jobId}/approve")]
+        public async Task<IActionResult> ApproveJob(int jobId)
+        {
+            var result = await _adminService.ApproveJobAsync(jobId);
+
+            if (!result)
+            {
+                return NotFound($"Job with ID {jobId} not found");
+            }
+
+            return Ok(new { success = true, message = "Job approved successfully" });
+        }
+
+        // Add job rejection endpoint
+        [HttpPut("jobs/{jobId}/reject")]
+        public async Task<IActionResult> RejectJob(int jobId, [FromBody] JobRejectionRequestDto request)
+        {
+            var result = await _adminService.RejectJobAsync(jobId, request.Reason);
+
+            if (!result)
+            {
+                return NotFound($"Job with ID {jobId} not found");
+            }
+
+            return Ok(new { success = true, message = "Job rejected successfully" });
+        }
     }
+
+
 }

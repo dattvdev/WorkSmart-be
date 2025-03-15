@@ -9,6 +9,7 @@ namespace WorkSmart.Core.Interface
 {
     public interface IJobRepository  : IBaseRepository<Job>
     {
+        Task<Job> GetJobDetail(int id);
         Task<IEnumerable<Job>> GetJobsByEmployerId(int employerId);
         Task<IEnumerable<Job>> GetJobsByStatus(JobStatus status);
         Task<bool> UpdateJobStatus(int jobId, JobStatus newStatus);

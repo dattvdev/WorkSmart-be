@@ -57,6 +57,14 @@ namespace WorkSmart.API.Controllers
 
             }
         }
+        [HttpGet("getAllJobManage")]
+        public async Task<IActionResult> GetJobsForManagement([FromQuery] JobSearchRequestDto request)
+        {
+            var (jobs, total) = await _jobService.GetJobsForManagement(request);
+            var totalPage = (int)Math.Ceiling((double)total / request.PageSize);
+            var totalJob = total;
+            return Ok(new { totalJob, totalPage, jobs });
+        }
         [HttpDelete("delete/{jobId}")]
         public IActionResult DeleteJob(int jobId)
         {

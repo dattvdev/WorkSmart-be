@@ -101,8 +101,6 @@ namespace WorkSmart.Repository.Repository
             }
         }
 
-       
-        // Trong ApplicationRepository.cs
         public async Task<Application> GetApplicationDetailAsync(int applicationId, int jobId)
         {
             return await _context.Applications

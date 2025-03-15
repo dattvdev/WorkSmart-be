@@ -29,7 +29,6 @@ namespace WorkSmart.Core.Dto.JobDtos
         public string? Address { get; set; } 
         public string? CompanyName { get; set; } 
         public string? CompanyDescription { get; set; }
-        public string? WorkLocation { get; set; } //employer
-
+        public string? WorkLocation { get; set; } 
     }
 }

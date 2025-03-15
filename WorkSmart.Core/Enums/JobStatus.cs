@@ -12,8 +12,6 @@ namespace WorkSmart.Core.Enums
         Approved,    
         Rejected,    
         Hidden,
-        UnHidden,
         Active
-        
     }
 }

@@ -55,7 +55,7 @@ namespace WorkSmart.Repository.Repository
             var job = await _dbSet.FindAsync(jobId);
             if (job == null) return false;
 
-            job.IsHidden = true;
+            //job.IsHidden = true;
             job.UpdatedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();
@@ -93,11 +93,11 @@ namespace WorkSmart.Repository.Repository
 
             if (request.MinSalary.HasValue)
             {
-                query = query.Where(c => c.Salary >= request.MinSalary);
+                //query = query.Where(c => c.Salary >= request.MinSalary);
             }
             if (request.MaxSalary.HasValue)
             {
-                query = query.Where(c => c.Salary <= request.MaxSalary);
+                //query = query.Where(c => c.Salary <= request.MaxSalary);
             }
 
             if (request.Tags != null && request.Tags.Any())
@@ -130,7 +130,7 @@ namespace WorkSmart.Repository.Repository
             var job = await _dbSet.FindAsync(jobId);
             if (job == null) return false;
 
-            job.IsHidden = false;
+            //job.IsHidden = false;
             job.UpdatedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();

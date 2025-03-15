@@ -39,6 +39,7 @@ namespace WorkSmart.Application.Services
             if (request.CreatedAt != null) user.CreatedAt = (DateTime)request.CreatedAt;
             if (request.IsPrivated != null) user.IsPrivated = (bool)request.IsPrivated;
             if (request.Address != null) user.Address = request.Address;
+            if (request.Avatar != null) user.Avatar = request.Avatar;
 
             user.UpdatedAt = DateTime.UtcNow;
             _accountRepository.Update(user);
@@ -73,6 +74,7 @@ namespace WorkSmart.Application.Services
             user.CompanyDescription = request.CompanyDescription;
             user.PhoneNumber = request.PhoneNumber;
             user.Address = request.Address;
+            user.CompanyWebsite = request.CompanyWebsite;
             user.TaxVerificationStatus = "Pending";
             user.TaxVerificationReason = null;
             user.UpdatedAt = DateTime.UtcNow;

@@ -403,8 +403,8 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<bool>("Priority")
                         .HasColumnType("bit");
 
-                    b.Property<double?>("Salary")
-                        .HasColumnType("float");
+                    b.Property<string>("Salary")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("Status")
                         .HasColumnType("int");

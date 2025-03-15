@@ -93,11 +93,11 @@ namespace WorkSmart.Repository.Repository
 
             if (request.MinSalary.HasValue)
             {
-                query = query.Where(c => c.Salary >= request.MinSalary);
+                //query = query.Where(c => c.Salary >= request.MinSalary);
             }
             if (request.MaxSalary.HasValue)
             {
-                query = query.Where(c => c.Salary <= request.MaxSalary);
+                //query = query.Where(c => c.Salary <= request.MaxSalary);
             }
 
             if (request.Tags != null && request.Tags.Any())

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WorkSmart.Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class init_db : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -189,7 +189,7 @@ namespace WorkSmart.Repository.Migrations
                     WorkType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Location = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     JobPosition = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Salary = table.Column<double>(type: "float", nullable: true),
+                    Salary = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Exp = table.Column<int>(type: "int", nullable: true),
                     Priority = table.Column<bool>(type: "bit", nullable: false),
                     Deadline = table.Column<DateTime>(type: "datetime2", nullable: true),

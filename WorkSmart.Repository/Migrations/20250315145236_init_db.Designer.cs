@@ -12,8 +12,8 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-    [Migration("20250315141358_init")]
-    partial class init
+    [Migration("20250315145236_init_db")]
+    partial class init_db
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -406,8 +406,8 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<bool>("Priority")
                         .HasColumnType("bit");
 
-                    b.Property<double?>("Salary")
-                        .HasColumnType("float");
+                    b.Property<string>("Salary")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("Status")
                         .HasColumnType("int");

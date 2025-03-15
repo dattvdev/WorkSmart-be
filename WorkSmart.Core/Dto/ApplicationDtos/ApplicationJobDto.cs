@@ -23,5 +23,8 @@ namespace WorkSmart.Core.Dto.ApplicationDtos
         public DateTime? DateOfBirth { get; set; }
         public string? Address { get; set; }
         public string Gender { get; set; }
+        //public ICollection<CV_Education> CV_Educations { get; set; }
+        //public ICollection<CV_Experience> CV_Experiences { get; set; }
+        //public ICollection<CV_Skill> CV_Skills { get; set; }
     }
 }

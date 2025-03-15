@@ -23,10 +23,17 @@ namespace WorkSmart.Application.Services
             _tagRepository = tagRepository;
         }
 
-        public async Task<JobDto> GetJobById(int jobId)
+        public async Task<(JobDetailDto, IEnumerable<JobDetailDto> similarJobs)> GetJobById(int jobId)
         {
             var job = await _jobRepository.GetJobDetail(jobId);
-            return job == null ? null : _mapper.Map<JobDto>(job);
+            var similarJobs = await _jobRepository.GetSimilarJob(jobId);
+            return (_mapper.Map<JobDetailDto>(job), _mapper.Map<IEnumerable<JobDetailDto>>(similarJobs));
+        }
+        public async Task<(IEnumerable<GetListSearchJobDto> Jobs, int Total)> GetJobsForManagement(JobSearchRequestDto request)
+        {
+            var (jobs, total) = await _jobRepository.GetJobsForManagement(request);
+            var mappedJobs = _mapper.Map<IEnumerable<GetListSearchJobDto>>(jobs);
+            return (mappedJobs, total);
         }
         public async Task<IEnumerable<JobDto>> GetAllJobsAsync()
         {

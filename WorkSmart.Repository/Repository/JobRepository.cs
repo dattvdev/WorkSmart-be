@@ -71,7 +71,7 @@ namespace WorkSmart.Repository.Repository
             DbSet<Job> _JobdbSet = _context.Set<Job>();
 
             var query = _JobdbSet.Include(c => c.User).AsQueryable();
-
+            query = query.Where(c => c.Status == JobStatus.Active || c.Status== JobStatus.Approved);
             if (!string.IsNullOrWhiteSpace(request.Title))
             {
                 query = query.Where(c => c.Title.ToLower().Contains(request.Title.ToLower()));

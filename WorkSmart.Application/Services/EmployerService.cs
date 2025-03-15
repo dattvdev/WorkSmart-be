@@ -74,7 +74,9 @@ namespace WorkSmart.Application.Services
             user.CompanyDescription = request.CompanyDescription;
             user.PhoneNumber = request.PhoneNumber;
             user.Address = request.Address;
+            user.CompanyWebsite = request.CompanyWebsite;
             user.TaxVerificationStatus = "Pending";
+            user.TaxVerificationReason = null;
             user.UpdatedAt = DateTime.UtcNow;
 
             _accountRepository.Update(user);
@@ -114,6 +116,7 @@ namespace WorkSmart.Application.Services
 
             user.BusinessLicenseImage = imageUrl;
             user.LicenseVerificationStatus = "Pending";
+            user.LicenseVerificationReason = null;
             user.UpdatedAt = DateTime.Now;
 
             _accountRepository.Update(user);

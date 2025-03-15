@@ -55,7 +55,7 @@ namespace WorkSmart.Repository.Repository
             var job = await _dbSet.FindAsync(jobId);
             if (job == null) return false;
 
-            job.IsHidden = true;
+            //job.IsHidden = true;
             job.UpdatedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();
@@ -69,7 +69,9 @@ namespace WorkSmart.Repository.Repository
         public async Task<(IEnumerable<Job> Jobs, int Total)> GetListSearch(JobSearchRequestDto request)
         {
             DbSet<Job> _JobdbSet = _context.Set<Job>();
+
             var query = _JobdbSet.Include(c => c.User).AsQueryable();
+
             if (!string.IsNullOrWhiteSpace(request.Title))
             {
                 query = query.Where(c => c.Title.ToLower().Contains(request.Title.ToLower()));
@@ -91,36 +93,45 @@ namespace WorkSmart.Repository.Repository
                 query = query.Where(c => c.Location.ToLower().Contains(request.Location.ToLower()));
             }
 
-            if (request.MinSalary.HasValue)
-            {
-                query = query.Where(c => c.Salary >= request.MinSalary);
-            }
-            if (request.MaxSalary.HasValue)
-            {
-                query = query.Where(c => c.Salary <= request.MaxSalary);
-            }
-
             if (request.Tags != null && request.Tags.Any())
             {
                 query = query.Where(c => c.Tags.Any(t => request.Tags.Contains(t.TagID)));
             }
+
             if (!request.MostRecent)
             {
                 query = query.OrderByDescending(c => c.UpdatedAt);
             }
-            //query = query.Where(c => c.Status != JobStatus.Hidden);
-            // Lấy tổng số bản ghi trước khi phân trang
-            int total = await query.CountAsync();
+           
+            // Tải dữ liệu về bộ nhớ trước khi xử lý Salary
+            var jobList = await query.ToListAsync();
 
-            var Jobs = await query
+            if (request.MinSalary.HasValue)
+            {
+                double minSalary = request.MinSalary.Value;
+                jobList = jobList.Where(c => c.Salary != null
+                    && c.Salary.Contains("-")
+                    && c.Salary.Split('-').Length == 2
+                    && double.TryParse(c.Salary.Split('-')[0], out double min)
+                    && min >= minSalary).ToList();
+            }
+
+            /*if (request.MaxSalary.HasValue)
+            {
+                double maxSalary = request.MaxSalary.Value;
+                jobList = jobList.Where(c => c.Salary != null
+                    && c.Salary.Contains("-")
+                    && c.Salary.Split('-').Length == 2
+                    && double.TryParse(c.Salary.Split('-')[1], out double max)
+                    && max <= maxSalary).ToList();
+            }*/
+            // Lấy tổng số bản ghi trước khi phân trang
+            int total = jobList.Count();
+
+            var Jobs = jobList
                 .Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
-                .ToListAsync();
-
-            if (!Jobs.Any())
-            {
-                return (new List<Job>(), total);
-            }
+                .ToList();
 
             return (Jobs, total);
         }
@@ -130,7 +141,7 @@ namespace WorkSmart.Repository.Repository
             var job = await _dbSet.FindAsync(jobId);
             if (job == null) return false;
 
-            job.IsHidden = false;
+            //job.IsHidden = false;
             job.UpdatedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();
@@ -176,7 +187,7 @@ namespace WorkSmart.Repository.Repository
 
             return expiredJobs;
         }
-        
+
 
         public async Task<Job> GetJobDetailForApplicationAsync(int applicationId)
         {

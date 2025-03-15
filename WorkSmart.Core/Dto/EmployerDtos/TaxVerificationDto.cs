@@ -15,5 +15,6 @@ namespace WorkSmart.Core.Dto.EmployerDtos
         public string? CompanyDescription { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Address { get; set; }
+        public string? CompanyWebsite { get; set; }
     }
 }

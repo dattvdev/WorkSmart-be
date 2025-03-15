@@ -20,7 +20,7 @@ namespace WorkSmart.Core.Dto.JobDtos
         public string? WorkType { get; set; }
         public string? Location { get; set; }
         public string? JobPosition { get; set; }
-        public double? Salary { get; set; }
+        public string? Salary { get; set; }
         public int? Exp { get; set; }
         public bool Priority { get; set; } = false;
         public DateTime? Deadline { get; set; }
@@ -36,8 +36,6 @@ namespace WorkSmart.Core.Dto.JobDtos
         public string? CompanyName { get; set; }
         public string? CompanyDescription { get; set; }
         public string? WorkLocation { get; set; }
-
-        //similar
         public List<int>? Tags { get; set; }
     }
 }

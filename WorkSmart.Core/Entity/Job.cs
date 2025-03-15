@@ -21,12 +21,13 @@ namespace WorkSmart.Core.Entity
         public string? WorkType { get; set; }
         public string? Location { get; set; }
         public string? JobPosition { get; set; }
-        public double? Salary { get; set; }
+        //public double? Salary { get; set; }
+        public string? Salary { get; set; }
         public int? Exp { get; set; }
         public bool Priority { get; set; } = false;
         public DateTime? Deadline { get; set; }
         public JobStatus? Status { get; set; }
-        public bool? IsHidden { get; set; }
+        //public bool? IsHidden { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
 

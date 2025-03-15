@@ -146,11 +146,11 @@ namespace WorkSmart.API.Controllers
         {
             try
             {
-                var job = await _jobService.GetJobById(id);
+                var (job, similarJobs) = await _jobService.GetJobById(id);
                 if (job == null)
                     return NotFound(new { message = "Job not found." });
 
-                return Ok(job);
+                return Ok(new { job, similarJobs });
             }
             catch (Exception ex)
             {

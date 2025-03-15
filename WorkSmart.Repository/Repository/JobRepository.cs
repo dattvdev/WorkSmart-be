@@ -42,7 +42,7 @@ namespace WorkSmart.Repository.Repository
 
         public async Task<Job> GetJobDetail(int id)
         {
-            return await _dbSet.Include(j => j.User).FirstOrDefaultAsync(c => c.JobID == id);
+            return await _dbSet.Include(j => j.User).Include(t => t.Tags).FirstOrDefaultAsync(c => c.JobID == id);
         }
 
         public async Task<IEnumerable<Job>> GetJobsByEmployerId(int employerId)
@@ -69,77 +69,73 @@ namespace WorkSmart.Repository.Repository
         public async Task<(IEnumerable<Job> Jobs, int Total)> GetListSearch(JobSearchRequestDto request)
         {
             DbSet<Job> _JobdbSet = _context.Set<Job>();
-            var query = _JobdbSet.Include(c => c.User).AsQueryable();
 
-            // Filter by title
+            var query = _JobdbSet.Include(c => c.User).AsQueryable();
+            query = query.Where(c => c.Status == JobStatus.Active || c.Status == JobStatus.Approved);
             if (!string.IsNullOrWhiteSpace(request.Title))
             {
                 query = query.Where(c => c.Title.ToLower().Contains(request.Title.ToLower()));
             }
 
-            // Filter by job position
             if (!string.IsNullOrWhiteSpace(request.JobPosition))
             {
                 query = query.Where(c => c.JobPosition.ToLower().Contains(request.JobPosition.ToLower()));
             }
 
-            // Filter by work types
             if (request.WorkTypes != null && request.WorkTypes.Any())
             {
                 query = query.Where(c => request.WorkTypes.Select(wt => wt.ToLower()).Contains(c.WorkType.ToLower()));
+
             }
 
-            // Filter by location
             if (!string.IsNullOrWhiteSpace(request.Location))
             {
                 query = query.Where(c => c.Location.ToLower().Contains(request.Location.ToLower()));
             }
 
-            // Filter by salary range
-            if (request.MinSalary.HasValue)
-            {
-                query = query.Where(c => c.Salary >= request.MinSalary);
-            }
-            if (request.MaxSalary.HasValue)
-            {
-                query = query.Where(c => c.Salary <= request.MaxSalary);
-            }
-
-            // Filter by tags
             if (request.Tags != null && request.Tags.Any())
             {
                 query = query.Where(c => c.Tags.Any(t => request.Tags.Contains(t.TagID)));
             }
 
-            //// Filter out hidden jobs
-            query = query.Where(c => c.Status != JobStatus.Hidden);
-
-            // Apply sorting
             if (!request.MostRecent)
             {
                 query = query.OrderByDescending(c => c.UpdatedAt);
             }
-            else
+
+            // Tải dữ liệu về bộ nhớ trước khi xử lý Salary
+            var jobList = await query.ToListAsync();
+
+            if (request.MinSalary.HasValue)
             {
-                query = query.OrderByDescending(c => c.CreatedAt);
+                double minSalary = request.MinSalary.Value;
+                jobList = jobList.Where(c => c.Salary != null
+                    && c.Salary.Contains("-")
+                    && c.Salary.Split('-').Length == 2
+                    && double.TryParse(c.Salary.Split('-')[0], out double min)
+                    && min >= minSalary).ToList();
             }
 
-            // Get total count before pagination
-            int total = await query.CountAsync();
+            /*if (request.MaxSalary.HasValue)
+            {
+                double maxSalary = request.MaxSalary.Value;
+                jobList = jobList.Where(c => c.Salary != null
+                    && c.Salary.Contains("-")
+                    && c.Salary.Split('-').Length == 2
+                    && double.TryParse(c.Salary.Split('-')[1], out double max)
+                    && max <= maxSalary).ToList();
+            }*/
+            // Lấy tổng số bản ghi trước khi phân trang
+            int total = jobList.Count();
 
-            // Apply pagination
-            var Jobs = await query
+            var Jobs = jobList
                 .Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
-                .ToListAsync();
-
-            if (!Jobs.Any())
-            {
-                return (new List<Job>(), total);
-            }
+                .ToList();
 
             return (Jobs, total);
         }
+
         public async Task<(IEnumerable<Job> Jobs, int Total)> GetJobsForManagement(JobSearchRequestDto request)
         {
             DbSet<Job> _JobdbSet = _context.Set<Job>();
@@ -169,44 +165,45 @@ namespace WorkSmart.Repository.Repository
                 query = query.Where(c => c.Location.ToLower().Contains(request.Location.ToLower()));
             }
 
-            // Filter by salary range
-            if (request.MinSalary.HasValue)
-            {
-                query = query.Where(c => c.Salary >= request.MinSalary);
-            }
-            if (request.MaxSalary.HasValue)
-            {
-                query = query.Where(c => c.Salary <= request.MaxSalary);
-            }
-
-            // Filter by tags
             if (request.Tags != null && request.Tags.Any())
             {
                 query = query.Where(c => c.Tags.Any(t => request.Tags.Contains(t.TagID)));
             }
-            // Apply sorting
+
             if (!request.MostRecent)
             {
                 query = query.OrderByDescending(c => c.UpdatedAt);
             }
-            else
+           
+            // Tải dữ liệu về bộ nhớ trước khi xử lý Salary
+            var jobList = await query.ToListAsync();
+
+            if (request.MinSalary.HasValue)
             {
-                query = query.OrderByDescending(c => c.CreatedAt);
+                double minSalary = request.MinSalary.Value;
+                jobList = jobList.Where(c => c.Salary != null
+                    && c.Salary.Contains("-")
+                    && c.Salary.Split('-').Length == 2
+                    && double.TryParse(c.Salary.Split('-')[0], out double min)
+                    && min >= minSalary).ToList();
             }
 
-            // Get total count before pagination
-            int total = await query.CountAsync();
+            /*if (request.MaxSalary.HasValue)
+            {
+                double maxSalary = request.MaxSalary.Value;
+                jobList = jobList.Where(c => c.Salary != null
+                    && c.Salary.Contains("-")
+                    && c.Salary.Split('-').Length == 2
+                    && double.TryParse(c.Salary.Split('-')[1], out double max)
+                    && max <= maxSalary).ToList();
+            }*/
+            // Lấy tổng số bản ghi trước khi phân trang
+            int total = jobList.Count();
 
-            // Apply pagination
-            var Jobs = await query
+            var Jobs = jobList
                 .Skip((request.PageIndex - 1) * request.PageSize)
                 .Take(request.PageSize)
-                .ToListAsync();
-
-            if (!Jobs.Any())
-            {
-                return (new List<Job>(), total);
-            }
+                .ToList();
 
             return (Jobs, total);
         }
@@ -271,6 +268,27 @@ namespace WorkSmart.Repository.Repository
                 .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
 
             return application?.Job;
+        }
+
+        public async Task<List<Job>> GetSimilarJob(int jobId)
+        {
+            var job = await _dbSet.Include(j => j.Tags)
+                      .FirstOrDefaultAsync(j => j.JobID == jobId);
+
+            if (job == null || job.Tags == null || !job.Tags.Any())
+                return new List<Job>(); // Trả về danh sách rỗng nếu không tìm thấy job hoặc không có Tags
+
+            var jobTagIds = job.Tags.Select(t => t.TagID).ToList(); // Lấy danh sách TagID của job
+
+            var similarJobs = _dbSet.Include(j => j.Tags)
+    .Where(j => j.JobID != jobId)
+    .AsEnumerable() // Chuyển truy vấn về bộ nhớ
+    .Where(j => j.Tags.Any(t => jobTagIds.Contains(t.TagID))) // Lọc các job có Tag trùng
+    .OrderByDescending(j => j.Tags.Count)
+    .Take(3)
+    .ToList(); // Đổi ToListAsync() thành ToList()
+
+            return similarJobs;
         }
     }
 }

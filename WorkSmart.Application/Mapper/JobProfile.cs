@@ -22,6 +22,7 @@ namespace WorkSmart.Application.Mapper
                 .ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src => src.User.CompanyName))
                 .ForMember(dest => dest.CompanyDescription, opt => opt.MapFrom(src => src.User.CompanyDescription))
                 .ForMember(dest => dest.WorkLocation, opt => opt.MapFrom(src => src.User.WorkLocation))
+                .ForMember(dest => dest.Industry, opt => opt.MapFrom(src => src.User.Industry))
                 .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.Select(t => t.TagID).ToList()))
                 .ForMember(dest => dest.JobDetailTags, opt => opt.MapFrom(src => src.Tags))
                 .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.User.Avatar));

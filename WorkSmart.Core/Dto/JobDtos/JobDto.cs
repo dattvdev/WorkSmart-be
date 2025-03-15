@@ -21,7 +21,7 @@ namespace WorkSmart.Core.Dto.JobDtos
         public DateTime? Deadline { get; set; }
         public JobStatus? Status { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
     }
 }

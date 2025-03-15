@@ -29,7 +29,8 @@ namespace WorkSmart.Application.Mapper
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => JobStatus.Pending));
 
             // Mapping UpdateJobDto,Job
-            CreateMap<UpdateJobDto, Job>();
+            CreateMap<UpdateJobDto, Job>()
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));
             CreateMap<Job, GetListSearchJobDto>()
                 .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.User.Avatar));
             CreateMap<Job, ExpiredJobDto>()

@@ -93,12 +93,33 @@ namespace WorkSmart.Application.Services
 
             return true;
         }
+        public async Task<ApplicationJobDto> GetApplicationDetailAsync(int applicationId, int jobId)
+        {
+            var application = await _applicationRepository.GetApplicationDetailAsync(applicationId, jobId);
 
+            if (application == null)
+            {
+                throw new KeyNotFoundException($"Application with ID {applicationId} for job {jobId} not found.");
+            }
+
+            // Map to DTO using AutoMapper
+            var applicationDto = _mapper.Map<ApplicationJobDto>(application);
+            return applicationDto;
+        }
         public async Task<(string email, string fullname)> ApplyToJob(int userId, int jobId)
         {
             await _applicationRepository.ApplyToJob(userId, jobId);
             var user = await _userRepository.GetById(userId);
             return (user.Email, user.FullName);
+        }
+        public async Task<bool> UpdateRejectionReasonAsync(int applicationId, string rejectionReason)
+        {
+            return await _applicationRepository.UpdateRejectionReasonAsync(applicationId, rejectionReason);
+        }
+
+        public async Task<Job> GetJobDetailForApplicationAsync(int applicationId)
+        {
+            return await _applicationRepository.GetJobDetailForApplicationAsync(applicationId);
         }
     }
 }

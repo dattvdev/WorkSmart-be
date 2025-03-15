@@ -69,6 +69,9 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<int>("JobID")
                         .HasColumnType("int");
 
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");

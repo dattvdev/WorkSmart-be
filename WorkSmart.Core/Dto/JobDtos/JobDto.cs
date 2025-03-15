@@ -21,7 +21,15 @@ namespace WorkSmart.Core.Dto.JobDtos
         public JobStatus? Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-
+        //compay info
+        public string? CompanySize { get; set; }
+        public string? CompanyWebsite { get; set; }
+        public string? Email { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? Address { get; set; } 
+        public string? CompanyName { get; set; } 
+        public string? CompanyDescription { get; set; }
+        public string? WorkLocation { get; set; } //employer
 
     }
 }

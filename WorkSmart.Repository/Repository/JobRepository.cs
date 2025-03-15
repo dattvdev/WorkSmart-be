@@ -40,6 +40,10 @@ namespace WorkSmart.Repository.Repository
             throw new NotImplementedException();
         }
 
+        public async Task<Job> GetJobDetail(int id)
+        {
+            return await _dbSet.Include(j => j.User).FirstOrDefaultAsync(c => c.JobID == id);
+        }
 
         public async Task<IEnumerable<Job>> GetJobsByEmployerId(int employerId)
         {
@@ -65,8 +69,7 @@ namespace WorkSmart.Repository.Repository
         public async Task<(IEnumerable<Job> Jobs, int Total)> GetListSearch(JobSearchRequestDto request)
         {
             DbSet<Job> _JobdbSet = _context.Set<Job>();
-            var query = _JobdbSet.AsQueryable();
-
+            var query = _JobdbSet.Include(c => c.User).AsQueryable();
             if (!string.IsNullOrWhiteSpace(request.Title))
             {
                 query = query.Where(c => c.Title.ToLower().Contains(request.Title.ToLower()));
@@ -152,7 +155,7 @@ namespace WorkSmart.Repository.Repository
         {
             var currentDate = DateTime.Now;
             return await _dbSet
-                .Where(j => j.Deadline < currentDate && j.IsHidden != true)
+                .Where(j => j.Deadline < currentDate && j.Status.Equals("3"))
                 .ToListAsync();
         }
 
@@ -162,7 +165,7 @@ namespace WorkSmart.Repository.Repository
 
             foreach (var job in expiredJobs)
             {
-                job.IsHidden = true;
+                job.Status = (JobStatus?)3;
                 job.UpdatedAt = DateTime.Now;
             }
 
@@ -172,6 +175,16 @@ namespace WorkSmart.Repository.Repository
             }
 
             return expiredJobs;
+        }
+        
+
+        public async Task<Job> GetJobDetailForApplicationAsync(int applicationId)
+        {
+            var application = await _context.Applications
+                .Include(a => a.Job)
+                .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
+
+            return application?.Job;
         }
     }
 }

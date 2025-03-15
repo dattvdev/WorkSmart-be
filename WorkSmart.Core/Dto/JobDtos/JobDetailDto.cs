@@ -28,6 +28,7 @@ namespace WorkSmart.Core.Dto.JobDtos
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         //compay info
+        public string? Avatar { get; set; }
         public string? CompanySize { get; set; }
         public string? CompanyWebsite { get; set; }
         public string? Email { get; set; }

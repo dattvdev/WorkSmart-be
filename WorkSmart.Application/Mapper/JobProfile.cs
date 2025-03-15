@@ -22,8 +22,8 @@ namespace WorkSmart.Application.Mapper
                 .ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src => src.User.CompanyName))
                 .ForMember(dest => dest.CompanyDescription, opt => opt.MapFrom(src => src.User.CompanyDescription))
                 .ForMember(dest => dest.WorkLocation, opt => opt.MapFrom(src => src.User.WorkLocation))
-                .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.Select(t => t.TagID).ToList()));
-                
+                .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.Select(t => t.TagID).ToList()))
+                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.User.Avatar));
             // Mapping CreateJobDto,Job
             CreateMap<CreateJobDto, Job>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => JobStatus.Pending));

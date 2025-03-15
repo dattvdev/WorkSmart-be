@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WorkSmart.Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class intitttttt : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -194,7 +194,6 @@ namespace WorkSmart.Repository.Migrations
                     Priority = table.Column<bool>(type: "bit", nullable: false),
                     Deadline = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: true),
-                    IsHidden = table.Column<bool>(type: "bit", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },

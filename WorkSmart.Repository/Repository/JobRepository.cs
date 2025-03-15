@@ -55,7 +55,7 @@ namespace WorkSmart.Repository.Repository
             var job = await _dbSet.FindAsync(jobId);
             if (job == null) return false;
 
-            job.IsHidden = true;
+            //job.IsHidden = true;
             job.UpdatedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();
@@ -130,7 +130,7 @@ namespace WorkSmart.Repository.Repository
             var job = await _dbSet.FindAsync(jobId);
             if (job == null) return false;
 
-            job.IsHidden = false;
+            //job.IsHidden = false;
             job.UpdatedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();

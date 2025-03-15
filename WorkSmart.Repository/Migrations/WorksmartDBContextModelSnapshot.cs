@@ -388,9 +388,6 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<int?>("Exp")
                         .HasColumnType("int");
 
-                    b.Property<bool?>("IsHidden")
-                        .HasColumnType("bit");
-
                     b.Property<string>("JobPosition")
                         .HasColumnType("nvarchar(max)");
 

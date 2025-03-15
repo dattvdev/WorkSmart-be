@@ -24,9 +24,6 @@ namespace WorkSmart.Core.Dto.CandidateDtos
 
         public string? Avatar { get; set; }
 
-        [RegularExpression(@"^\d{9,12}$", ErrorMessage = "Invalid identity number format")]
-        public string? IdentityNumber { get; set; }
-
         public bool? IsPrivated { get; set; }
     }
 }

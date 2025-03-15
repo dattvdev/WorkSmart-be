@@ -1,5 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using CloudinaryDotNet;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MimeKit;
+using Org.BouncyCastle.Pqc.Crypto.Lms;
+using System.ComponentModel;
+using System.Drawing;
+using System.Reflection.Metadata;
 using System.Security.Claims;
 using WorkSmart.API.SignalRService;
 using WorkSmart.Application.Services;
@@ -7,6 +13,7 @@ using WorkSmart.Core.Dto.EmployerDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository.Repository;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace WorkSmart.API.Controllers
 {
@@ -103,7 +110,7 @@ namespace WorkSmart.API.Controllers
 <head>
     <meta charset=""UTF-8"">
     <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-    <title>Tax Verification</title>
+    <title>Tax Verification Submitted</title>
     <style>
         body {{
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -144,40 +151,26 @@ namespace WorkSmart.API.Controllers
             font-size: 12px;
             color: #777;
         }}
-        .button {{
-            display: inline-block;
-            background-color: #4285f4;
-            color: white;
-            text-decoration: none;
-            padding: 12px 24px;
-            border-radius: 4px;
-            font-weight: bold;
-            margin-top: 15px;
-            text-align: center;
-        }}
     </style>
 </head>
 <body>
     <div class=""email-container"">
         <div class=""header"">
-            <h2>Tax Verification System</h2>
+            <h2>Tax Verification Submitted</h2>
         </div>
-        
         <div class=""content"">
-            <h1 style=""color: #4285f4; text-align: center;"">Tax Verification Submitted Successfully</h1>
-            
+            <h1 style=""color: #4285f4; text-align: center;"">Verify Tax Submission</h1>
             <div class=""message"">
-                <p>Dear Customer,</p>
-                <p>We have received your tax verification request. Please wait for an administrator to approve your tax verification.</p>
+                <p>Dear {user.FullName},</p>
+                <p>Your tax verification request has been successfully submitted. Please wait for the admin to review and approve your verification.</p>
+                <p>You can check the status of your verification by clicking the link below:</p>
             </div>
-            
-            <div style=""text-align: center;"">
-                <a href=""{statusCheckUrl}"" class=""button"">Check Status</a>
-            </div>
+            <p style=""text-align: center;"">
+                <a href=""#"" style=""display: inline-block; background-color: #4285f4; color: white; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; text-align: center;"">Check Status</a>
+            </p>
         </div>
-        
         <div class=""footer"">
-            <p>© 2025 Company Name. All rights reserved.</p>
+            <p>© 2025 WorkSmart. All rights reserved.</p>
         </div>
     </div>
 </body>
@@ -229,7 +222,77 @@ namespace WorkSmart.API.Controllers
                 {
                     To = user.Email,
                     Subject = "Send Verify Business License Success",
-                    Body = "<p>Please Wait For Admin To Approve Your Business License Verification</p>"
+                    Body = $@"<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>Business License Verification</title>
+    <style>
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }}
+        .email-container {{
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }}
+        .header {{
+            background-color: #4285f4;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }}
+        .content {{
+            padding: 30px;
+        }}
+        .message {{
+            background-color: #f1f8ff;
+            border-left: 4px solid #4285f4;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }}
+        .footer {{
+            background-color: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+        }}
+    </style>
+</head>
+<body>
+    <div class=""email-container"">
+        <div class=""header"">
+            <h2>Business License Verification Submitted</h2>
+        </div>
+        <div class=""content"">
+            <h1 style=""color: #4285f4; text-align: center;"">Business License Verification</h1>
+            <div class=""message"">
+                <p>Dear {user.FullName},</p>
+                <p>Your business license verification request has been successfully submitted. Our team will review your submission and update you on the approval status.</p>
+                <p>You will receive a notification once your verification is approved.</p>
+            </div>
+        </div>
+            <p style=""text-align: center;"">
+                <a href=""#"" style=""display: inline-block; background-color: #4285f4; color: white; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; text-align: center;"">Check Status</a>
+            </p>
+        <div class=""footer"">
+            <p>© 2025 Your Company. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
+"
                 };
                 await _sendMailService.SendMail(emailContent);
 

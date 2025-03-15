@@ -18,5 +18,6 @@ namespace WorkSmart.Core.Interface
         Task<bool> UnhideJobAsync(int jobId);
         Task<List<Job>> GetExpiredJobsAsync();
         Task<List<Job>> HideExpiredJobsAsync();
+        Task<List<Job>> GetSimilarJob(int jobId);
     }
 }

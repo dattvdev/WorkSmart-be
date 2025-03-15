@@ -42,7 +42,7 @@ namespace WorkSmart.Repository.Repository
 
         public async Task<Job> GetJobDetail(int id)
         {
-            return await _dbSet.Include(j => j.User).FirstOrDefaultAsync(c => c.JobID == id);
+            return await _dbSet.Include(j => j.User).Include(t => t.Tags).FirstOrDefaultAsync(c => c.JobID == id);
         }
 
         public async Task<IEnumerable<Job>> GetJobsByEmployerId(int employerId)
@@ -185,6 +185,27 @@ namespace WorkSmart.Repository.Repository
                 .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
 
             return application?.Job;
+        }
+
+        public async Task<List<Job>> GetSimilarJob(int jobId)
+        {
+            var job = await _dbSet.Include(j => j.Tags)
+                      .FirstOrDefaultAsync(j => j.JobID == jobId);
+
+            if (job == null || job.Tags == null || !job.Tags.Any())
+                return new List<Job>(); // Trả về danh sách rỗng nếu không tìm thấy job hoặc không có Tags
+
+            var jobTagIds = job.Tags.Select(t => t.TagID).ToList(); // Lấy danh sách TagID của job
+
+            var similarJobs = _dbSet.Include(j => j.Tags)
+    .Where(j => j.JobID != jobId)
+    .AsEnumerable() // Chuyển truy vấn về bộ nhớ
+    .Where(j => j.Tags.Any(t => jobTagIds.Contains(t.TagID))) // Lọc các job có Tag trùng
+    .OrderByDescending(j => j.Tags.Count)
+    .Take(3)
+    .ToList(); // Đổi ToListAsync() thành ToList()
+
+            return similarJobs;
         }
     }
 }

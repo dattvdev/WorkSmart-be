@@ -1,8 +1,14 @@
-﻿using WorkSmart.Core.Enums;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using WorkSmart.Core.Entity;
+using WorkSmart.Core.Enums;
 
 namespace WorkSmart.Core.Dto.JobDtos
 {
-    public class JobDto
+    public class JobDetailDto
     {
         public int JobID { get; set; }
         public int UserID { get; set; }
@@ -21,6 +27,17 @@ namespace WorkSmart.Core.Dto.JobDtos
         public JobStatus? Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        //compay info
+        public string? CompanySize { get; set; }
+        public string? CompanyWebsite { get; set; }
+        public string? Email { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? Address { get; set; }
+        public string? CompanyName { get; set; }
+        public string? CompanyDescription { get; set; }
+        public string? WorkLocation { get; set; }
 
+        //similar
+        public List<int>? Tags { get; set; }
     }
 }

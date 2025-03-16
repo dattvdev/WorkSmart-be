@@ -21,6 +21,8 @@ namespace WorkSmart.Core.Entity
         public string? Borderstyle { get; set; }
         public string? Colorhex { get; set; }
         public bool? IsFeatured { get; set; }
+        public string? FileName { get; set; }
+        public string? FilePath { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
         public User User { get; set; }
@@ -31,7 +33,5 @@ namespace WorkSmart.Core.Entity
         public ICollection<CV_Experience>? Experiences { get; set; }
         public ICollection<CV_Certification>? Certifications { get; set; }
         public ICollection<CV_Skill>? Skills { get; set; }
-       
-        
     }
 }

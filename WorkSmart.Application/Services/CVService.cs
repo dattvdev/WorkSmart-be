@@ -67,5 +67,22 @@ namespace WorkSmart.Application.Services
             _cvRepository.SetFeature(cvId, userId);
         }
 
+        public async Task<CvUploadDto> UploadCvAsync(CvUploadDto cvUploadDto)
+        {
+            if (cvUploadDto == null)
+            {
+                throw new ArgumentNullException(nameof(cvUploadDto), "CV upload data cannot be null.");
+            }
+
+            if (string.IsNullOrEmpty(cvUploadDto.FilePath) || string.IsNullOrEmpty(cvUploadDto.FileName))
+            {
+                throw new ArgumentException("File path and file name are required.");
+            }
+
+            var cvUpload = _mapper.Map<CV>(cvUploadDto);
+            await _cvRepository.Add(cvUpload);
+
+            return _mapper.Map<CvUploadDto>(cvUpload);
+        }
     }
 }

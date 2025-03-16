@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WorkSmart.Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class inttt : Migration
+    public partial class addCVField : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -127,6 +127,8 @@ namespace WorkSmart.Repository.Migrations
                     Borderstyle = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Colorhex = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsFeatured = table.Column<bool>(type: "bit", nullable: true),
+                    FileName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FilePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },

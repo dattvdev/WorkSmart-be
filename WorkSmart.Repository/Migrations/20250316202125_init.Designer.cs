@@ -12,8 +12,8 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-    [Migration("20250316180408_addCVField")]
-    partial class addCVField
+    [Migration("20250316202125_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -411,6 +411,9 @@ namespace WorkSmart.Repository.Migrations
 
                     b.Property<bool>("Priority")
                         .HasColumnType("bit");
+
+                    b.Property<string>("ReasonRejectedJob")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Salary")
                         .HasColumnType("nvarchar(max)");

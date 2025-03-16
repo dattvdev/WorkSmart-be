@@ -409,6 +409,9 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<bool>("Priority")
                         .HasColumnType("bit");
 
+                    b.Property<string>("ReasonRejectedJob")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Salary")
                         .HasColumnType("nvarchar(max)");
 

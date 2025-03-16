@@ -30,7 +30,7 @@ namespace WorkSmart.Core.Entity
         //public bool? IsHidden { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
-
+        public string? ReasonRejectedJob { get; set; }
         public User User { get; set; }
         public ICollection<Application>? Applications { get; set; }
         public ICollection<FavoriteJob>? FavoriteJobs { get; set; }

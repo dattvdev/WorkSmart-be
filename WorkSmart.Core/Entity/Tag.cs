@@ -10,7 +10,7 @@ namespace WorkSmart.Core.Entity
     {
         public int TagID { get; set; }
         public string TagName { get; set; }
-        public int CategoryID { get; set; }
+        public string? CategoryID { get; set; }
 
         public ICollection<NotificationJobTag>? NotificationJobTags { get; set; }
         public ICollection<Job>? Jobs { get; set; }

@@ -84,5 +84,19 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        [HttpGet("getByCategory/{category}")]
+        public async Task<IActionResult> GetByCategory(string category)
+        {
+            try
+            {
+                var tags = await _tagService.GetByCategory(category);
+                return Ok(tags);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 }

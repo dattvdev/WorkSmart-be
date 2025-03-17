@@ -36,5 +36,10 @@ namespace WorkSmart.Application.Services
         {
             _tagRepository.Delete(id);
         }
+
+        public async Task<IEnumerable<Tag>> GetByCategory(string category)
+        {
+            return await _tagRepository.GetByCategory(category);
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,12 @@ namespace WorkSmart.Repository.Repository
     {
         public TagRepository(WorksmartDBContext context) : base(context)
         {
+        }
+
+        public async Task<IEnumerable<Tag>> GetByCategory(string category)
+        {
+            if (category == null) return new List<Tag>();
+            return await _dbSet.Where(t => t.CategoryID == category).ToListAsync();
         }
     }
 }

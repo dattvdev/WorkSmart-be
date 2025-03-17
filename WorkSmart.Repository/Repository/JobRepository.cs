@@ -90,6 +90,11 @@ namespace WorkSmart.Repository.Repository
 
             var query = _JobdbSet.Include(c => c.User).AsQueryable();
             query = query.Where(c => c.Status == JobStatus.Active || c.Status == JobStatus.Approved);
+            if (!string.IsNullOrWhiteSpace(request.Category) && !request.Category.Equals("All Categories"))
+            {
+                query = query.Where(c => c.CategoryID.Contains(request.Category)); 
+            }
+
             if (!string.IsNullOrWhiteSpace(request.Title))
             {
                 query = query.Where(c => c.Title.ToLower().Contains(request.Title.ToLower()));
@@ -116,7 +121,7 @@ namespace WorkSmart.Repository.Repository
                 query = query.Where(c => c.Tags.Any(t => request.Tags.Contains(t.TagID)));
             }
 
-            if (!request.MostRecent)
+            if (request.MostRecent)
             {
                 query = query.OrderByDescending(c => c.UpdatedAt);
             }

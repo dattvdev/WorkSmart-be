@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WorkSmart.Core.Dto.CVDtos;
 using WorkSmart.Application.Services;
+using iTextSharp.text.pdf.parser;
+using iTextSharp.text.pdf;
+using System.Text.RegularExpressions;
+using System.Text;
 namespace WorkSmart.API.Controllers
 {
     [ApiController]
@@ -82,5 +86,48 @@ namespace WorkSmart.API.Controllers
         {
             _cvService.SetFeature(cvId, userId);
         }
+
+        [HttpPost("upload-cv")]
+        public async Task<IActionResult> UploadCV([FromBody] CvUploadDto request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(request.FilePath))
+                {
+                    return BadRequest(new { message = "Vui lòng cung cấp đường dẫn file." });
+                }
+
+                // Kiểm tra file có tồn tại không
+                if (!System.IO.File.Exists(request.FilePath))
+                {
+                    return BadRequest(new { message = "File không tồn tại." });
+                }
+
+                // Kiểm tra file có phải PDF không
+                if (!request.FilePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest(new { message = "Chỉ hỗ trợ tệp PDF." });
+                }
+
+                // Trích xuất nội dung từ CV
+                var extractedData = CvParserService.ExtractCvSections(request.FilePath);
+
+                // Loại bỏ các phần trống
+                extractedData = extractedData.Where(kvp => !string.IsNullOrWhiteSpace(kvp.Value))
+                                             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+                return Ok(new
+                {
+                    message = "Trích xuất thành công",
+                    extractedData
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi xử lý file: " + ex.Message });
+
+            }
+        }
     }
 }
+

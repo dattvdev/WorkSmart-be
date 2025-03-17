@@ -6,5 +6,4 @@
         public int CVID { get; set; }
         public string? SkillName { get; set; }
     }
-
 }

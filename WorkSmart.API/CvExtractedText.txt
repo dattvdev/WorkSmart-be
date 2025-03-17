@@ -1,0 +1,160 @@
+Ng o T h i en T h an g
+PERSONAL DETAILS
+ Name Ngo Thien Thang
+ Nationality Vietnamese
+st
+ Date of Birth September, 1 2003
+ Sex Male
+ Marital status Single
+ Phone No. (+84) 944 395 357
+ Email thien.thangg03@gmail.com
+EDUCATIONAL BACKGROUND
+ Software Development – Danang FPT University, Vietnam
+CERTIFICATE AND AWARD
+ Fresher ASP.NET at FPT Software(2024)
+ Web Design for Everybody: Basics of Web Development & Coding Specialization (2022)
+ User Experience Research and Design (2024)
+PROFESSIONAL SUMMARY
+ Hard working, seft-confidence, good communication skill.
+ High teamwork spirit and eager to learn and share.
+ Sociable, friendly communication in team work.
+ Good English communication.
+SOFTWARE
+ Databases etc : SQL Server
+ Programming Languages: Java, C#, .NET Core, .NET API, HTML & CSS, ReactJS.
+ Programming Tools: Visual Studio 2022, NetBeans, IntelliJ.
+ App server / Middleware : Tomcat, Apache
+ OOAD/OOP : Object Oriented Analysis (OOA), Object Oriented Design (OOD), Object Oriented
+Programming (OOP), Unified Modeling Language (UML).
+DATA COMMUNICATION & NETWORKS
+ TCP/IP
+ LAN
+ Computer Network
+EXPERIENCE
+ Data Entry Staff at Hikari B.P.O.: Accurate Japanese data entry, document processing and
+improving Japanese language skills.(2023)
+ Intern - Media/Economics at Do Agency: Support marketing campaigns, market research and data
+analysis.(10/2024)
+Ngo Thien Thang’s CV - Confidential
+1PROJECT
+PROJECT AND PRACTICE
+Project name Blind Box Website Duration
+Position(s) Leader and Developer 9/2024 – 11/2024
+General
+ Customer: Vietnam
+information
+ Team Size: 4 members
+Description
+Blind Box E-commerce: A platform that sells blind boxes and suggests
+Shopee products based on user quiz results.
+Project Scope  Requirement
+ Design
+ Coding
+ Deployment
+Technology used  ASP.NET Core 8.0
+ HTML/CSS
+ JavaScript
+ SqlServer & EntityFramework LINQ
+Dev Tools
+ Visual Studio 2022 & Visual Studio Code
+ CI/CD GitHub
+Hosting & Deployment
+ Azure Hosting
+ Cloud Hosting Windows(maintenance)
+Outcome This is a startup project of cooperation between IT and economics of FPT
+University. Successfully completed the project on time and achieving
+positive feedback from clients.
+Project name Library System Duration
+Position(s) Analysis and Developer 9/2023 – 11/2023
+General
+ Customer: Vietnam
+information
+ Team Size: 3 members
+Description Library management system that provides functions such as book
+reservations, online reading, book rentals, and tracking borrowing and
+returning status, helping users easily access and manage library
+resources.
+Project Scope - Requirement
+- Design
+- Coding
+Technology used Run-time environment
+ Java Servlet
+ Java Server Pages(JSP)
+ Apache Tomcat
+ CSS/JavaScript
+Ngo Thien Thang’s CV - Confidential
+2 SqlServer
+Dev Tools
+ NetBeans
+ GitHub
+ Microsoft Word
+ Draw.io
+Hosting & Deployment
+ Apache Tomcat Server
+Documentation SRS Document: Defined project requirements, workflows, and system
+architecture.
+Outcome  Thesis has been defended before the council, basically completed
+with full functionality, successfully delivered the system on time,
+meeting client requirements.
+Project name WebAirline Duration
+Position(s) Analyst and Developer 3/2023 – 4/2023
+General
+ Customer: Vietnam
+information
+ Team Size: 4 members
+Description WebAirline is an online booking and management system for airline
+services. The system provides features such as:
+ User-friendly interfaces for customers to search and book flights.
+ Secure and efficient APIs for data management between the front-
+end and back-end.
+ Support for flight schedules, ticket bookings, and payment
+integration.
+This system was developed during the OJT program at FPT Software and
+won 2nd Pri ze for its innovation and execution.
+Project Scope - Requirement gathering and analysis.
+- System design with database schema and architectural flow.
+- Coding and implementation.
+Technology used  RESTful API
+ Entity Framework Core
+ SQL Server
+ ASP.NET Core MVC
+ HTML/CSS
+Run-time environment
+ ASP .NET MVC
+Development environment
+ Visual Studio 2022 & Visual Studio Code
+ GitHub
+nd
+Achievements  Received the 2 price in the OJT program at FPT Software,
+recognized for innovation, functionality, and teamwork.
+Project name Japanese Business Application Duration
+Conversion Project
+Ngo Thien Thang’s CV - Confidential
+3Position(s) Fresher Developer 6/2024 – 8/2024
+General
+ Customer: Japan
+information
+ Team Size: 2 members
+Description The project involved the migration and modernization of a legacy business
+application from VB to ASP . NET Core for a Japanese client. The system
+required high precision and strict compliance with Japanese business
+standards, ensuring bug-free operation and maintainability.
+Project Scope - Requirement gathering through Japanese documentation
+- Debugging and fixing existing functionalities.
+- Code migration from VB to ASP.NET Core.
+- Writing and maintaining test cases for the system.
+Technology used Run-time environment
+ ASP.NET Core
+ SQL Server
+Documentation
+ Utilized Japanese documentation to analyze requirements and
+technical details.
+ Created detailed test cases and debugging logs for tracking issues
+and verifying fixes.
+Achievements  Improved the application's maintainability and scalability by
+refactoring legacy code.
+ Enhanced skills in Japanese technical reading and comprehension,
+enabling better understanding of business logic and client
+expectations.
+Ngo Thien Thang’s CV - Confidential
+4

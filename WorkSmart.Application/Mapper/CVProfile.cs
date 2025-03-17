@@ -11,5 +11,6 @@ public class CVProfile : Profile
         CreateMap<CV_Experience,CVExperienceDto>().ReverseMap();
         CreateMap<CV_Skill,CVSkillDto>().ReverseMap();
         CreateMap<CV_Education,CVEducationDto>().ReverseMap();
+        CreateMap<CV,CvUploadDto>().ReverseMap();
     }
 }

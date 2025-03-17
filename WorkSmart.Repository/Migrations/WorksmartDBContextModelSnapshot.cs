@@ -122,6 +122,12 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("FileName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FilePath")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FirstName")
                         .HasColumnType("nvarchar(max)");
 
@@ -402,6 +408,9 @@ namespace WorkSmart.Repository.Migrations
 
                     b.Property<bool>("Priority")
                         .HasColumnType("bit");
+
+                    b.Property<string>("ReasonRejectedJob")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Salary")
                         .HasColumnType("nvarchar(max)");

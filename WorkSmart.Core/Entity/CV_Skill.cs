@@ -8,6 +8,7 @@ namespace WorkSmart.Core.Entity
         public int SkillID { get; set; }
         public int CVID { get; set; }
         public string? SkillName { get; set; }
+        public string? Description { get; set; }
         public CV CV { get; set; }
     }
 }

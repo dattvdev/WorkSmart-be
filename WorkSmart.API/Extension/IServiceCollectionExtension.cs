@@ -64,6 +64,7 @@ namespace WorkSmart.API.Extension
             //cv
             services.AddScoped<ICVRepository, CVRepository>();
             services.AddScoped<CVService>();
+            services.AddScoped<ICvParserService, CvParserService>();
             //mail
             services.AddScoped<SendMailService>();
 

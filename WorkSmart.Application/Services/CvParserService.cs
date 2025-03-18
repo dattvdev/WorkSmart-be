@@ -6,12 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using WorkSmart.Core.Interface;
 
 namespace WorkSmart.Application.Services
 {
-    public class CvParserService
+    public class CvParserService : ICvParserService
     {
-        public static Dictionary<string, string> ExtractCvSections(string filePath)
+        public Dictionary<string, string> ExtractCvSections(string filePath)
         {
             StringBuilder text = new StringBuilder();
 
@@ -25,8 +26,6 @@ namespace WorkSmart.Application.Services
 
             string content = text.ToString();
 
-            File.WriteAllText("CvExtractedText.txt", content);
-
             // Loại bỏ ký tự Unicode đặc biệt, khoảng trắng thừa
             content = Regex.Replace(content, @"[\uE000-\uF8FF]", ""); // Loại bỏ ký tự đặc biệt
             content = Regex.Replace(content, @"\s{2,}", " "); // Chuẩn hóa khoảng trắng
@@ -34,35 +33,27 @@ namespace WorkSmart.Application.Services
             return ParseCvContent(content);
         }
 
-        private static Dictionary<string, string> ParseCvContent(string content)
+        private Dictionary<string, string> ParseCvContent(string content)
         {
             var sections = new Dictionary<string, string>();
-            // Tạo map of common section title thường gặp
             var sectionTitleVariations = new Dictionary<string, List<string>>
-            {
-                { "Skills", new List<string> { "Skills", "Technical Skills", "Software", "Professional Skills", "Key Skills", "Core Skills", "Skill Set" } },
-                { "Experience", new List<string> { "Experience", "Work Experience", "Employment History", "Career History", "Work History" } },
-                { "Education", new List<string> { "Education", "Academic Background", "Educational Background", "Academic Qualifications", "Qualifications" } },
-                { "Certifications", new List<string> { "Certifications", "Certificates", "Professional Certifications", "Credentials" } },
-                { "Projects", new List<string> { "Projects", "Project", "Personal Projects", "Professional Projects", "Key Projects", "Recent Projects", "PROJECT", "PROJECT AND PRACTICE" } },
-                { "Summary", new List<string> { "Professional Summary", "Summary", "Profile", "About Me", "Career Objective", "Objective" } },
-                { "Personal", new List<string> { "Personal Information", "Personal Details", "Contact Information", "Contact Details" } }
-            };
-                    // Tạo flattened list cho tìm kiếm regex
+        {
+            { "Skills", new List<string> { "Skills", "Technical Skills", "Software", "Professional Skills", "Key Skills", "Core Skills", "Skill Set" } },
+            { "Experience", new List<string> { "Experience", "Work Experience", "Employment History", "Career History", "Work History" } },
+            { "Education", new List<string> { "Education", "Academic Background", "EDUCATIONAL BACKGROUND", "Academic Qualifications", "Qualifications" } },
+            { "Certifications", new List<string> { "Certifications", "Certificate And Award", "Certificate", "Professional Certifications", "Credentials" } },
+            { "Projects", new List<string> { "Projects", "Project", "Personal Projects", "Professional Projects", "Key Projects", "Recent Projects", "PROJECT", "PROJECT AND PRACTICE" } },
+            { "Summary", new List<string> { "Professional Summary", "Summary", "Profile", "About Me", "Career Objective", "Objective" } },
+            { "Personal", new List<string> { "Personal Information", "Personal Details", "Contact Information", "Contact Details" } }
+        };
+
             var allTitles = sectionTitleVariations.Values.SelectMany(x => x).ToList();
             foreach (var key in sectionTitleVariations.Keys)
             {
                 sections[key] = "";
             }
 
-            // Phương pháp 1: Sử dụng regex gốc với danh sách tiêu đề mở rộng
             string pattern = @"(?<title>" + string.Join("|", allTitles.Select(Regex.Escape)) + @")\s*[:.]?\s*(?:\n|\r\n)?(?<content>(?:.|\n)*?)(?=\n\s*(?:" + string.Join("|", allTitles.Select(t => Regex.Escape(t))) + @")\s*[:.]?|$)";
-
-            // Phương pháp 2: Regex bổ sung để nhận diện các tiêu đề dựa trên định dạng (viết hoa hoặc số)
-            // Đây là mẫu regex thay thế nhận diện tiêu đề dựa trên định dạng 
-            string formatBasedPattern = @"(?<title>(?:" + string.Join("|", allTitles.Select(Regex.Escape)) + @")|\n[A-Z][A-Z\s]+(?:\s*&\s*[A-Z][A-Z\s]+)?|\n\d+[A-Z][A-Z\s]+)\s*[:.]?\s*(?:\n|\r\n)?(?<content>(?:.|\n)*?)(?=\n(?:[A-Z][A-Z\s]+(?:\s*&\s*[A-Z][A-Z\s]+)?|\d+[A-Z][A-Z\s]+)|(?:" + string.Join("|", allTitles.Select(t => Regex.Escape(t))) + @")|\Z)";
-
-            // Sử dụng mẫu regex đã chọn
             var matches = Regex.Matches(content, pattern, RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
             foreach (Match match in matches)
@@ -70,16 +61,13 @@ namespace WorkSmart.Application.Services
                 string matchedTitle = match.Groups["title"].Value.Trim();
                 string sectionContent = match.Groups["content"].Value.Trim();
 
-                // Standardize the section key
                 string standardKey = sectionTitleVariations
-                    .FirstOrDefault(kvp => kvp.Value.Any(v => v.Equals(matchedTitle, StringComparison.OrdinalIgnoreCase)))
+                    .FirstOrDefault(kvp => kvp.Value.Contains(matchedTitle, StringComparer.OrdinalIgnoreCase))
                     .Key;
 
                 if (!string.IsNullOrEmpty(standardKey))
                 {
-                    // Xử lý các dấu đầu dòng
                     sectionContent = Regex.Replace(sectionContent, @"(\n\s*[-•⚫●○⚪⚫★☆♦◆■□➢➤➥➔→▶►])", "\n-");
-                    // Chuẩn hóa khoảng trắng
                     sectionContent = Regex.Replace(sectionContent, @"\s{2,}", " ");
                     sections[standardKey] = sectionContent;
                 }
@@ -88,4 +76,5 @@ namespace WorkSmart.Application.Services
             return sections;
         }
     }
+
 }

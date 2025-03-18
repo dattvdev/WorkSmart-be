@@ -1,4 +1,5 @@
-﻿using WorkSmart.Core.Entity;
+﻿using WorkSmart.Core.Dto.CVDtos;
+using WorkSmart.Core.Entity;
 
 namespace WorkSmart.Core.Interface
 {
@@ -10,5 +11,4 @@ namespace WorkSmart.Core.Interface
         Task Delete(int id);
         void SetFeature(int cvId, int userId);
     }
-
 }

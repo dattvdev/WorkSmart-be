@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WorkSmart.Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class @int : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -426,6 +426,7 @@ namespace WorkSmart.Repository.Migrations
                     Major = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SchoolName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Degree = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     StartedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     EndedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
@@ -472,7 +473,8 @@ namespace WorkSmart.Repository.Migrations
                     SkillID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CVID = table.Column<int>(type: "int", nullable: false),
-                    SkillName = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    SkillName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {

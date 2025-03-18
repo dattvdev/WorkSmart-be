@@ -109,23 +109,17 @@ namespace WorkSmart.API.Controllers
                     return BadRequest(new { message = "Chỉ hỗ trợ tệp PDF." });
                 }
 
-                // Trích xuất nội dung từ CV
-                var extractedData = CvParserService.ExtractCvSections(request.FilePath);
-
-                // Loại bỏ các phần trống
-                extractedData = extractedData.Where(kvp => !string.IsNullOrWhiteSpace(kvp.Value))
-                                             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                var cvDto = await _cvService.UploadCVAsync(request.FilePath, request.UserId);
 
                 return Ok(new
                 {
                     message = "Trích xuất thành công",
-                    extractedData
+                    cvDto,
                 });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Lỗi khi xử lý file: " + ex.Message });
-
             }
         }
     }

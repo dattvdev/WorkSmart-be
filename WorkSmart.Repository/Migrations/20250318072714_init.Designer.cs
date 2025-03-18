@@ -12,8 +12,8 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-    [Migration("20250317134436_int")]
-    partial class @int
+    [Migration("20250318072714_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -214,6 +214,9 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<string>("Degree")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("EndedAt")
                         .HasColumnType("datetime2");
 
@@ -279,6 +282,9 @@ namespace WorkSmart.Repository.Migrations
 
                     b.Property<int>("CVID")
                         .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SkillName")
                         .HasColumnType("nvarchar(max)");

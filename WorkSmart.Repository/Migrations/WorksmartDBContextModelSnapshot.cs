@@ -211,6 +211,9 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<string>("Degree")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("EndedAt")
                         .HasColumnType("datetime2");
 
@@ -276,6 +279,9 @@ namespace WorkSmart.Repository.Migrations
 
                     b.Property<int>("CVID")
                         .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SkillName")
                         .HasColumnType("nvarchar(max)");

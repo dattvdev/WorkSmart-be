@@ -12,7 +12,6 @@ namespace WorkSmart.Core.Dto.JobDtos
     {
         public int UserID { get; set; }
         public List<int>? JobTagID { get; set; }
-        public List<Tag>? Tags { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public string? Level { get; set; }

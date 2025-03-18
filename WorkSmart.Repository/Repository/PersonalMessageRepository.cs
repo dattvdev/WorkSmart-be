@@ -1,110 +1,66 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using WorkSmart.Core.Dto.MessageDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Interface;
 
 namespace WorkSmart.Repository.Repository
 {
-    public class PersonalMessageRepository : IPersonalMessageRepository
+    public class PersonalMessageRepository : BaseRepository<PersonalMessage>, IPersonalMessageRepository
     {
         private readonly WorksmartDBContext _context;
 
-        public PersonalMessageRepository(WorksmartDBContext context)
+        public PersonalMessageRepository(WorksmartDBContext context) : base(context)
         {
             _context = context;
         }
 
-        public async Task<PersonalMessage> AddAsync(PersonalMessage message)
-        {
-            await _context.PersonalMessages.AddAsync(message);
-            await _context.SaveChangesAsync();
-            return message;
-        }
-
-        public async Task<PersonalMessage> UpdateAsync(PersonalMessage message)
-        {
-            _context.PersonalMessages.Update(message);
-            await _context.SaveChangesAsync();
-            return message;
-        }
-
-        public async Task<PersonalMessage> GetByIdAsync(int id)
+        public async Task<IEnumerable<PersonalMessage>> FindAsync(Expression<Func<PersonalMessage, bool>> predicate)
         {
             return await _context.PersonalMessages
-                .Include(m => m.Sender)
-                .Include(m => m.Receiver)
-                .FirstOrDefaultAsync(m => m.PersonalMessageID == id);
-        }
-
-        public async Task<IEnumerable<PersonalMessage>> GetConversationMessagesAsync(int senderId, int receiverId, int skip = 0, int take = 20)
-        {
-            return await _context.PersonalMessages
-                .Where(m =>
-                    (m.SenderID == senderId && m.ReceiverID == receiverId) ||
-                    (m.SenderID == receiverId && m.ReceiverID == senderId))
-                .OrderByDescending(m => m.CreatedAt)
-                .Skip(skip)
-                .Take(take)
-                .Include(m => m.Sender)
-                .Include(m => m.Receiver)
-                .OrderBy(m => m.CreatedAt)
+                .Include(pm => pm.Sender)
+                .Include(pm => pm.Receiver)
+                .Where(predicate)
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<ConversationUserDto>> GetUserConversationsAsync(int userId)
+        public async Task<IEnumerable<PersonalMessage>> GetMessagesBetweenUsersAsync(int userId1, int userId2, int pageNumber, int pageSize)
         {
-            // Lấy danh sách người dùng đang có hội thoại với userId
-            var conversationPartnerIds = await _context.PersonalMessages
-                .Where(m => m.SenderID == userId || m.ReceiverID == userId)
-                .Select(m => m.SenderID == userId ? m.ReceiverID : m.SenderID)
-                .Distinct()
+            var mess = await _context.PersonalMessages
+                .Include(pm => pm.Sender)
+                .Include(pm => pm.Receiver)
+                .Where(pm =>
+                    (pm.SenderID == userId1 && pm.ReceiverID == userId2) ||
+                    (pm.SenderID == userId2 && pm.ReceiverID == userId1))
+                .OrderByDescending(pm => pm.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
-
-            var result = new List<ConversationUserDto>();
-
-            foreach (var partnerId in conversationPartnerIds)
+            Console.WriteLine(mess);
+            if (mess != null)
             {
-                // Lấy thông tin user
-                var user = await _context.Users.FindAsync(partnerId);
-                if (user == null) continue;
-
-                // Đếm số tin nhắn chưa đọc
-                var unreadCount = await _context.PersonalMessages
-                    .CountAsync(m => m.SenderID == partnerId && m.ReceiverID == userId && !m.IsRead);
-
-                // Lấy tin nhắn cuối cùng
-                var lastMessage = await _context.PersonalMessages
-                    .Where(m => (m.SenderID == userId && m.ReceiverID == partnerId) ||
-                                (m.SenderID == partnerId && m.ReceiverID == userId))
-                    .OrderByDescending(m => m.CreatedAt)
-                    .FirstOrDefaultAsync();
-
-                // Thêm vào kết quả
-                result.Add(new ConversationUserDto
-                {
-                    UserId = user.UserID,
-                    FullName = user.FullName,
-                    Avatar = user.Avatar,
-                    LastMessageTime = lastMessage?.CreatedAt,
-                    UnreadCount = unreadCount,
-                    LastMessage = lastMessage?.Content
-                });
+                return mess;
             }
-
-            // Sắp xếp theo thời gian tin nhắn cuối cùng
-            return result.OrderByDescending(x => x.LastMessageTime);
+            return new List<PersonalMessage>();
         }
 
-        public async Task<int> CountUnreadMessagesAsync(int receiverId)
+        public async Task<int> GetUnreadMessageCountAsync(int receiverId)
+        {
+            var count = await _context.PersonalMessages
+                .CountAsync(pm => pm.ReceiverID == receiverId && !pm.IsRead);
+            return count;
+        }
+
+        public async Task<int> GetUnreadMessageCountFromSenderAsync(int senderId, int receiverId)
         {
             return await _context.PersonalMessages
-                .CountAsync(m => m.ReceiverID == receiverId && !m.IsRead);
+                .CountAsync(pm => pm.SenderID == senderId && pm.ReceiverID == receiverId && !pm.IsRead);
         }
 
-        public async Task MarkAllAsReadAsync(int senderId, int receiverId)
+        public async Task MarkMessagesAsReadAsync(int senderId, int receiverId)
         {
             var unreadMessages = await _context.PersonalMessages
-                .Where(m => m.SenderID == senderId && m.ReceiverID == receiverId && !m.IsRead)
+                .Where(pm => pm.SenderID == senderId && pm.ReceiverID == receiverId && !pm.IsRead)
                 .ToListAsync();
 
             foreach (var message in unreadMessages)
@@ -113,6 +69,66 @@ namespace WorkSmart.Repository.Repository
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task MarkAllMessagesAsReadAsync(int receiverId)
+        {
+            var unreadMessages = await _context.PersonalMessages
+                .Where(pm => pm.ReceiverID == receiverId && !pm.IsRead)
+                .ToListAsync();
+
+            foreach (var message in unreadMessages)
+            {
+                message.IsRead = true;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<ConversationDto>> GetConversationUsersAsync(int userId)
+        {
+            // Get all unique users who have exchanged messages with this user
+            var userIds = await _dbSet
+                .Where(pm => pm.SenderID == userId || pm.ReceiverID == userId)
+                .Select(pm => pm.SenderID == userId ? pm.ReceiverID : pm.SenderID)
+                .Distinct()
+                .ToListAsync();
+
+            var _UserDbSet= _context.Set<User>();
+            var users = await _UserDbSet
+                .Where(u => userIds.Contains(u.UserID))
+                .ToListAsync();
+            var conversations = new List<ConversationDto>();
+
+            foreach (var otherUser in users)
+            {
+                // Get the most recent message between these users
+                var lastMessage = await _dbSet
+                    .Where(pm =>
+                        (pm.SenderID == userId && pm.ReceiverID == otherUser.UserID) ||
+                        (pm.SenderID == otherUser.UserID && pm.ReceiverID == userId))
+                    .OrderByDescending(pm => pm.CreatedAt)
+                    .FirstOrDefaultAsync();
+
+                // Count unread messages from the other user
+                var unreadCount = await GetUnreadMessageCountFromSenderAsync(otherUser.UserID, userId);
+
+                if (lastMessage != null)
+                {
+                    conversations.Add(new ConversationDto
+                    {
+                        UserId = otherUser.UserID,
+                        UserName = otherUser.UserName,
+                        FullName = otherUser.FullName,
+                        Avatar = otherUser.Avatar,
+                        LastMessage = lastMessage.Content,
+                        LastMessageTime = lastMessage.CreatedAt,
+                        UnreadCount = unreadCount,
+                        IsOnline = false // This would be set by the online user tracking system
+                    });
+                }
+            }
+            return conversations;
         }
     }
 }

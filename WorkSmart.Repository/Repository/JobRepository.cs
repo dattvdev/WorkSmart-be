@@ -313,5 +313,9 @@ namespace WorkSmart.Repository.Repository
 
             return similarJobs;
         }
+        public async Task<Job> GetByJobId(int id)
+        {
+            return await _dbSet.Include(t => t.Tags).FirstOrDefaultAsync(j => j.JobID == id);
+        }
     }
 }

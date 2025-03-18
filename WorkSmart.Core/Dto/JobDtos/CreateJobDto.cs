@@ -17,6 +17,7 @@ namespace WorkSmart.Core.Dto.JobDtos
         public string? Level { get; set; }
         public string? Education { get; set; }
         public int? NumberOfRecruitment { get; set; }
+        public string? CategoryID { get; set; }
         public string? WorkType { get; set; }
         public string? Location { get; set; }
         //public double? Salary { get; set; }

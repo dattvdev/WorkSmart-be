@@ -15,10 +15,31 @@ namespace WorkSmart.Repository.Repository
         {
         }
 
+        
+
         public async Task<IEnumerable<Tag>> GetByCategory(string category)
         {
             if (category == null) return new List<Tag>();
             return await _dbSet.Where(t => t.CategoryID == category).ToListAsync();
+        }
+
+        //public async Task<IEnumerable<Tag>> GetTagByListID(List<int> tagID)
+        //{
+        //    var tags = await _dbSet
+        //    .Where(t => tagID.Contains(t.TagID))
+        //    .ToListAsync();
+        //    return tags;
+        //}
+        public async Task<IEnumerable<Tag>> GetTagByListID(List<int> tagID)
+        {
+            if (tagID == null || !tagID.Any())
+            {
+                return new List<Tag>();
+            }
+
+            return await _dbSet
+                .Where(t => tagID.Contains(t.TagID))
+                .ToListAsync();
         }
     }
 }

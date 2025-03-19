@@ -81,10 +81,6 @@ namespace WorkSmart.Application.Services
                 {
                     throw new ArgumentException("Đường dẫn file không được để trống", nameof(filePath));
                 }
-                if (!File.Exists(filePath))
-                {
-                    throw new FileNotFoundException("File không tồn tại", filePath);
-                }
 
                 // Sử dụng CvParserService để phân tích CV
                 var cvSections = _cvParserService.ExtractCvSections(filePath);

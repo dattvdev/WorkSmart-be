@@ -109,10 +109,15 @@ namespace WorkSmart.Application.Services
 
             return result;
         }
+
         public async Task<bool> ApproveJobAsync(int jobId)
         {
-            return await _jobRepository.ApproveJobAsync(jobId);
+            throw new NotImplementedException();
         }
+        //public async Task<bool> ApproveJobAsync(int jobId)
+        //{
+        //    return await _jobRepository.ApproveJobAsync(jobId);
+        //}
 
     }
 }

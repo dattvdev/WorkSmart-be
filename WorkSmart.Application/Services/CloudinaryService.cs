@@ -49,14 +49,35 @@ namespace WorkSmart.Application.Services
 
             await using var stream = file.OpenReadStream();
 
-            var uploadParams = new RawUploadParams
-            {
-                File = new FileDescription(file.FileName, stream),
-                Folder = folderName
-            };
+            // Kiểm tra xem file có phải là PDF không
+            bool isPdf = file.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase) ||
+                         file.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase);
 
-            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
-            return uploadResult.SecureUrl.AbsoluteUri; // Trả về link file đã upload
+            if (isPdf)
+            {
+                // Nếu là PDF, sử dụng ImageUploadParams thay vì RawUploadParams
+                var uploadParams = new ImageUploadParams
+                {
+                    File = new FileDescription(file.FileName, stream),
+                    Folder = folderName,
+                    Format = "pdf" // Giữ nguyên định dạng PDF
+                };
+
+                var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                return uploadResult.SecureUrl.AbsoluteUri;
+            }
+            else
+            {
+                // Nếu không phải PDF, tiếp tục sử dụng RawUploadParams cho các loại file khác
+                var uploadParams = new RawUploadParams
+                {
+                    File = new FileDescription(file.FileName, stream),
+                    Folder = folderName
+                };
+
+                var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                return uploadResult.SecureUrl.AbsoluteUri;
+            }
         }
 
         public async Task<bool> DeleteImage(string imageUrl)

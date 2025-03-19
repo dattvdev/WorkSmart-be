@@ -17,12 +17,17 @@ namespace WorkSmart.Api.Controllers
         private readonly ApplicationService _applicationService;
         private readonly ISendMailService _sendMailService;
         private readonly SignalRNotificationService _signalRService;
+        private readonly IJobRepository _jobRepository;
 
-        public ApplicationController(ApplicationService applicationService, ISendMailService sendMailService, SignalRNotificationService signalRService)
+        public ApplicationController(ApplicationService applicationService
+            , ISendMailService sendMailService
+            , SignalRNotificationService signalRService
+            , IJobRepository jobRepository)
         {
             _applicationService = applicationService;
             _sendMailService = sendMailService;
             _signalRService = signalRService;
+            _jobRepository = jobRepository;
         }
 
         // Lấy danh sách ứng viên theo JobID
@@ -125,8 +130,8 @@ WorkSmart Team";
                     await _signalRService.SendNotificationToUser(
                         candidate.UserID,
                         "Application Status Updated",
-                        "We regret to inform you that your application has been rejected.",
-                        $"/applications/{candidateId}/details"
+                        $"We regret to inform you that your application \"{jobDetails.Title}\" has been rejected.",
+                        "/candidate/applied-jobs"
                     );
 
                     return Ok(new
@@ -189,8 +194,8 @@ WorkSmart Team";
                     await _signalRService.SendNotificationToUser(
                         candidate.UserID,
                         "Application Status Updated",
-                        "Congratulations! Your application has been approved.",
-                        $"/applications/{candidateId}/details"
+                        $"Congratulations! Your application \"{jobDetails.Title}\" has been approved.",
+                        "/candidate/applied-jobs"
                     );
                     return Ok("Candidate accepted successfully.");
                 }
@@ -207,6 +212,14 @@ WorkSmart Team";
             {
                 await _sendMailService.SendEmailAsync(email, "Thanks for your application",
                 $"Dear {fullname},\n\nYour application for the job has successfully.\n\nBest regards,\nYour Team");
+
+                var jobDetail = await _jobRepository.GetById(jobId);
+                await _signalRService.SendNotificationToUser(
+                       jobDetail.UserID,
+                       "New Application",
+                       $"Your application for \"{jobDetail.Title}\" job has new Application.",
+                       $"/employer/manage-jobs/applied-candidates/{jobDetail.JobID}"
+                   );
             }
 
             return Ok("Application submitted successfully.");

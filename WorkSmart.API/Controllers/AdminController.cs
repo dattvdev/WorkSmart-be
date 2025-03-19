@@ -10,6 +10,7 @@ using WorkSmart.Core.Dto.AdminDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Interface;
+using WorkSmart.Repository.Repository;
 
 namespace WorkSmart.API.Controllers
 {
@@ -22,14 +23,16 @@ namespace WorkSmart.API.Controllers
         private readonly IMapper _mapper;
         private readonly SendMailService _sendMailService;
         private readonly SignalRNotificationService _signalRService;
+        private readonly IJobRepository _jobRepository;
 
-        public AdminController(IAccountRepository accountRepository, AdminService adminService, IMapper mapper, SendMailService sendMailService, SignalRNotificationService signalRService)
+        public AdminController(IAccountRepository accountRepository, AdminService adminService, IMapper mapper, SendMailService sendMailService, SignalRNotificationService signalRService, IJobRepository jobRepository)
         {
             _accountRepository = accountRepository;
             _adminService = adminService;
             _mapper = mapper;
             _sendMailService = sendMailService;
             _signalRService = signalRService;
+            _jobRepository = jobRepository;
         }
 
         [HttpGet("test-auth")]
@@ -707,7 +710,13 @@ namespace WorkSmart.API.Controllers
             {
                 return NotFound($"Job with ID {jobId} not found");
             }
-
+            var jobDetail = await _jobRepository.GetById(jobId);
+            await _signalRService.SendNotificationToUser(
+                   jobDetail.UserID,
+                   "Job Status Updated",
+                   $"Congratulations! Your Job \"{jobDetail.Title}\" has been approved.",
+                   "/employer/manage-jobs"
+               );
             return Ok(new { success = true, message = "Job approved successfully" });
         }
 
@@ -721,7 +730,13 @@ namespace WorkSmart.API.Controllers
             {
                 return NotFound($"Job with ID {jobId} not found");
             }
-
+            var jobDetail = await _jobRepository.GetById(jobId);
+            await _signalRService.SendNotificationToUser(
+                   jobDetail.UserID,
+                   "Job Status Updated",
+                   $"We regret to inform you that your Job \"{jobDetail.Title}\" has been rejected.",
+                   "/employer/manage-jobs"
+                   );
             return Ok(new { success = true, message = "Job rejected successfully" });
         }
     }

@@ -296,6 +296,84 @@ namespace WorkSmart.API.Controllers
                 //$"/applications/{userId}/details"
                 );
 
+                var emailContent = new Core.Dto.MailDtos.MailContent
+                {
+                    To = user.Email,
+                    Subject = "Tax Verification Approved - Complete Your Business License Verification",
+                    Body = $@"
+<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>Tax Verification Approved</title>
+    <style>
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }}
+        .email-container {{
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }}
+        .header {{
+            background-color: #4285f4;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }}
+        .content {{
+            padding: 30px;
+        }}
+        .message {{
+            background-color: #e6ffed;
+            border-left: 4px solid #4285f4;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }}
+        .footer {{
+            background-color: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+        }}
+    </style>
+</head>
+<body>
+    <div class=""email-container"">
+        <div class=""header"">
+            <h2>Tax Verification Approved</h2>
+        </div>
+        <div class=""content"">
+            <h1 style=""color: #4285f4; text-align: center;"">Congratulations!</h1>
+            <div class=""message"">
+                <p>Dear {user.FullName},</p>
+                <p>We are pleased to inform you that your tax verification has been successfully approved.</p>
+                <p>Before you can post your first job listing, please complete your business license verification.</p>
+            </div>
+            <p style=""text-align: center;"">
+                <a href=""#"" style=""display: inline-block; background-color: #4285f4; color: white; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; text-align: center;"">Verify Business License</a>
+            </p>
+        </div>
+        <div class=""footer"">
+            <p>© 2025 WorkSmart. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>"
+                };
+
+                await _sendMailService.SendMail(emailContent);
             }
             else
             {
@@ -314,6 +392,85 @@ namespace WorkSmart.API.Controllers
                 //$"/applications/{userId}/details"
                 );
 
+                var emailContent = new Core.Dto.MailDtos.MailContent
+                {
+                    To = user.Email,
+                    Subject = "Tax Verification Rejected - Please Resubmit Your Information",
+                    Body = $@"
+<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>Tax Verification Rejected</title>
+    <style>
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }}
+        .email-container {{
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }}
+        .header {{
+            background-color: #dc3545;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }}
+        .content {{
+            padding: 30px;
+        }}
+        .message {{
+            background-color: #ffe6e6;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }}
+        .footer {{
+            background-color: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+        }}
+    </style>
+</head>
+<body>
+    <div class=""email-container"">
+        <div class=""header"">
+            <h2>Tax Verification Rejected</h2>
+        </div>
+        <div class=""content"">
+            <h1 style=""color: #dc3545; text-align: center;"">Action Required!</h1>
+            <div class=""message"">
+                <p>Dear {user.FullName},</p>
+                <p>We regret to inform you that your tax verification request has been rejected due to the following reason:</p>
+                <p><strong>{user.TaxVerificationReason}</strong></p>
+                <p>Please update your tax verification details and resubmit your request.</p>
+            </div>
+            <p style=""text-align: center;"">
+                <a href=""#"" style=""display: inline-block; background-color: #dc3545; color: white; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; text-align: center;"">Resubmit Tax Verification</a>
+            </p>
+        </div>
+        <div class=""footer"">
+            <p>© 2025 WorkSmart. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>"
+                };
+
+                await _sendMailService.SendMail(emailContent);
             }
 
             user.UpdatedAt = DateTime.UtcNow;

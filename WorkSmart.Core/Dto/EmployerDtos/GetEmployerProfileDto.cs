@@ -17,6 +17,7 @@ namespace WorkSmart.Core.Dto.EmployerDtos
         public DateTime CreatedAt { get; set; }
         public string Avatar { get; set; }
         public int VerificationLevel { get; set; }
+        public string BusinessLicenseImage { get; set; }
         public string TaxVerificationStatus { get; set; }
         public string LicenseVerificationStatus { get; set; }
     }

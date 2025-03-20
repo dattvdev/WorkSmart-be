@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
+using iTextSharp.text.pdf.parser;
+using iTextSharp.text.pdf;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 using WorkSmart.Core.Dto.CVDtos;
 using WorkSmart.Core.Entity;
@@ -73,7 +76,7 @@ namespace WorkSmart.Application.Services
             _cvRepository.SetFeature(cvId, userId);
         }
 
-        public async Task<CVDto> UploadCVAsync(string filePath, int userId)
+        public async Task<CVDto> UploadCVAsync(string filePath, int userId, string fileName)
         {
             try
             {
@@ -92,7 +95,7 @@ namespace WorkSmart.Application.Services
                 {
                     UserID = userId,
                     FilePath = filePath,
-                    FileName = Path.GetFileName(filePath),
+                    FileName = fileName,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
                 };
@@ -118,7 +121,7 @@ namespace WorkSmart.Application.Services
 
                 // Thêm thông tin Skills
                 if (cvSections.ContainsKey("Skills") && !string.IsNullOrEmpty(cvSections["Skills"]))
-                    {
+                {
                     var skillsText = cvSections["Skills"];
                     var skillsList = ParseSkills(skillsText);
 
@@ -315,7 +318,6 @@ namespace WorkSmart.Application.Services
             return educations;
         }
 
-
         private List<string> ParseCertifications(string certText)
         {
             var certifications = new List<string>();
@@ -343,5 +345,26 @@ namespace WorkSmart.Application.Services
             return certifications;
         }
 
+        // Add this method to your CVService class
+        //public string ExtractCvContent(string filePath)
+        //{
+        //    StringBuilder text = new StringBuilder();
+
+        //    using (PdfReader reader = new PdfReader(filePath))
+        //    {
+        //        for (int i = 1; i <= reader.NumberOfPages; i++)
+        //        {
+        //            text.Append(PdfTextExtractor.GetTextFromPage(reader, i));
+        //        }
+        //    }
+
+        //    string content = text.ToString();
+
+        //    // Loại bỏ ký tự Unicode đặc biệt, khoảng trắng thừa
+        //    content = Regex.Replace(content, @"[\uE000-\uF8FF]", ""); // Loại bỏ ký tự đặc biệt
+        //    content = Regex.Replace(content, @"\s{2,}", " "); // Chuẩn hóa khoảng trắng
+
+        //    return content;
+        //}
     }
 }

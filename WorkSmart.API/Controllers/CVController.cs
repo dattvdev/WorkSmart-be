@@ -103,7 +103,8 @@ namespace WorkSmart.API.Controllers
                     return BadRequest(new { message = "Chỉ hỗ trợ tệp PDF." });
                 }
 
-                var cvDto = await _cvService.UploadCVAsync(request.FilePath, request.UserId);
+                //string cvContent = _cvService.ExtractCvContent(request.FilePath);
+                var cvDto = await _cvService.UploadCVAsync(request.FilePath, request.UserId, request.FileName);
 
                 return Ok(new
                 {

@@ -78,7 +78,7 @@ namespace WorkSmart.API.Controllers
                     user.PhoneNumber = request.PhoneNumber;
                     user.Gender = request.Gender;
                     user.CompanyName = request.CompanyName;
-                    user.WorkLocation = request.WorkLocation;
+                    user.Address = request.Address;
                 }
 
                 await _accountRepository.Add(user);
@@ -247,103 +247,103 @@ namespace WorkSmart.API.Controllers
                     return Unauthorized(new { Error = "Your account is banned. Contact fanpage to get more information" });
                 }
 
-                var emailContent = new Core.Dto.MailDtos.MailContent
-                {
-                    To = user.Email,
-                    Subject = "Email Confirmation",
-                    Body = $@"<!DOCTYPE html>
-<html lang=""en"">
-<head>
-    <meta charset=""UTF-8"">
-    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-    <title>Welcome to WorkSmart</title>
-    <style>
-        body {{
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            margin: 0;
-            padding: 0;
-            background-color: #f9f9f9;
-        }}
-        .email-container {{
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }}
-        .header {{
-            background-color: #4285f4;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }}
-        .content {{
-            padding: 30px;
-        }}
-        .message {{
-            background-color: #f1f8ff;
-            border-left: 4px solid #4285f4;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-        }}
-        .footer {{
-            background-color: #f5f5f5;
-            padding: 20px;
-            text-align: center;
-            font-size: 12px;
-            color: #777;
-        }}
-        .button {{
-            display: inline-block;
-            background-color: #4285f4;
-            color: white;
-            text-decoration: none;
-            padding: 12px 24px;
-            border-radius: 4px;
-            font-weight: bold;
-            margin-top: 15px;
-            text-align: center;
-        }}
-    </style>
-</head>
-<body>
-    <div class=""email-container"">
-        <div class=""header"">
-            <h2>Welcome to WorkSmart</h2>
-        </div>
+//                var emailContent = new Core.Dto.MailDtos.MailContent
+//                {
+//                    To = user.Email,
+//                    Subject = "Email Confirmation",
+//                    Body = $@"<!DOCTYPE html>
+//<html lang=""en"">
+//<head>
+//    <meta charset=""UTF-8"">
+//    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+//    <title>Welcome to WorkSmart</title>
+//    <style>
+//        body {{
+//            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+//            line-height: 1.6;
+//            color: #333;
+//            margin: 0;
+//            padding: 0;
+//            background-color: #f9f9f9;
+//        }}
+//        .email-container {{
+//            max-width: 600px;
+//            margin: 0 auto;
+//            background-color: #ffffff;
+//            border-radius: 8px;
+//            overflow: hidden;
+//            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+//        }}
+//        .header {{
+//            background-color: #4285f4;
+//            color: white;
+//            padding: 20px;
+//            text-align: center;
+//        }}
+//        .content {{
+//            padding: 30px;
+//        }}
+//        .message {{
+//            background-color: #f1f8ff;
+//            border-left: 4px solid #4285f4;
+//            padding: 15px;
+//            margin-bottom: 20px;
+//            border-radius: 4px;
+//        }}
+//        .footer {{
+//            background-color: #f5f5f5;
+//            padding: 20px;
+//            text-align: center;
+//            font-size: 12px;
+//            color: #777;
+//        }}
+//        .button {{
+//            display: inline-block;
+//            background-color: #4285f4;
+//            color: white;
+//            text-decoration: none;
+//            padding: 12px 24px;
+//            border-radius: 4px;
+//            font-weight: bold;
+//            margin-top: 15px;
+//            text-align: center;
+//        }}
+//    </style>
+//</head>
+//<body>
+//    <div class=""email-container"">
+//        <div class=""header"">
+//            <h2>Welcome to WorkSmart</h2>
+//        </div>
         
-        <div class=""content"">
-            <h1 style=""color: #4285f4; text-align: center;"">Hello, {user.FullName}!</h1>
+//        <div class=""content"">
+//            <h1 style=""color: #4285f4; text-align: center;"">Hello, {user.FullName}!</h1>
             
-            <div class=""message"">
-                <p>We are thrilled to have you on board. Thank you for choosing WorkSmart!</p>
-                <p>Here are some things you can do now:</p>
-                <ul>
-                    <li>Complete your profile to get the best experience.</li>
-                    <li>Explore our features and start working smart.</li>
-                    <li>Join our community and connect with like-minded professionals.</li>
-                </ul>
-            </div>
+//            <div class=""message"">
+//                <p>We are thrilled to have you on board. Thank you for choosing WorkSmart!</p>
+//                <p>Here are some things you can do now:</p>
+//                <ul>
+//                    <li>Complete your profile to get the best experience.</li>
+//                    <li>Explore our features and start working smart.</li>
+//                    <li>Join our community and connect with like-minded professionals.</li>
+//                </ul>
+//            </div>
             
-            <p style=""text-align: center;""><a href=""#"" class=""button"">Go to Dashboard</a></p>
+//            <p style=""text-align: center;""><a href=""#"" class=""button"">Go to Dashboard</a></p>
             
-            <p style=""margin-top: 30px; font-size: 14px; color: #777;"">If you have any questions, feel free to contact our support team. We are here to help!</p>
-        </div>
+//            <p style=""margin-top: 30px; font-size: 14px; color: #777;"">If you have any questions, feel free to contact our support team. We are here to help!</p>
+//        </div>
         
-        <div class=""footer"">
-            <p>© 2025 WorkSmart. All rights reserved.</p>
-        </div>
-    </div>
-</body>
-</html>
-"
-                };
+//        <div class=""footer"">
+//            <p>© 2025 WorkSmart. All rights reserved.</p>
+//        </div>
+//    </div>
+//</body>
+//</html>
+//"
+//                };
 
-                await _sendMailService.SendMail(emailContent);
+//                await _sendMailService.SendMail(emailContent);
                 var token = GenerateJwtToken(user);
                 return Ok(new
                 {

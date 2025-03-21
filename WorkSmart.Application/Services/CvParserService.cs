@@ -37,15 +37,15 @@ namespace WorkSmart.Application.Services
         {
             var sections = new Dictionary<string, string>();
             var sectionTitleVariations = new Dictionary<string, List<string>>
-        {
-            { "Skills", new List<string> { "Skills", "Technical Skills", "Software", "Professional Skills", "Key Skills", "Core Skills", "Skill Set" } },
-            { "Experience", new List<string> { "Experience", "Work Experience", "Employment History", "Career History", "Work History" } },
-            { "Education", new List<string> { "Education", "Academic Background", "EDUCATIONAL BACKGROUND", "Academic Qualifications", "Qualifications" } },
-            { "Certifications", new List<string> { "Certifications", "Certificate And Award", "Certificate", "Professional Certifications", "Credentials" } },
-            { "Projects", new List<string> { "Projects", "Project", "Personal Projects", "Professional Projects", "Key Projects", "Recent Projects", "PROJECT", "PROJECT AND PRACTICE" } },
-            { "Summary", new List<string> { "Professional Summary", "Summary", "Profile", "About Me", "Career Objective", "Objective" } },
-            { "Personal", new List<string> { "Personal Information", "Personal Details", "Contact Information", "Contact Details" } }
-        };
+            {
+                { "Skills", new List<string> { "Skills", "Technical Skills", "Software", "Professional Skills", "Key Skills", "Core Skills", "Skill Set" } },
+                { "Experience", new List<string> { "Experience", "Work Experience", "Employment History", "Career History", "Work History" } },
+                { "Education", new List<string> { "Education", "Academic Background", "EDUCATIONAL BACKGROUND", "Academic Qualifications", "Qualifications" } },
+                { "Certifications", new List<string> { "Certifications", "Certificate And Award", "Certificate", "Professional Certifications", "Credentials" } },
+                { "Projects", new List<string> { "Projects", "Project", "Personal Projects", "Professional Projects", "Key Projects", "Recent Projects", "PROJECT", "PROJECT AND PRACTICE" } },
+                { "Summary", new List<string> { "Professional Summary", "Summary", "Profile", "About Me", "Career Objective", "Objective" } },
+                { "Personal", new List<string> { "Personal Information", "Personal Details", "Contact Information", "Contact Details" } }
+            };
 
             var allTitles = sectionTitleVariations.Values.SelectMany(x => x).ToList();
             foreach (var key in sectionTitleVariations.Keys)

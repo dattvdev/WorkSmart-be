@@ -245,7 +245,7 @@ namespace WorkSmart.API.Controllers
         <div class=""content"">
             <h1 style=""color: #4285f4; text-align: center;"">Welcome Back!</h1>
             <div class=""message"">
-                <p>Dear {{user.FullName}},</p>
+                <p>Dear {user.FullName},</p>
                 <p>We are pleased to inform you that your account has been successfully unbanned. You may now log in and continue using our services.</p>
                 <p>If you have any questions or concerns, please contact our support team.</p>
             </div>

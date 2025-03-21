@@ -97,19 +97,14 @@ namespace WorkSmart.API.Controllers
                     return BadRequest(new { message = "Vui lòng cung cấp đường dẫn file." });
                 }
 
-                // Kiểm tra file có tồn tại không
-                if (!System.IO.File.Exists(request.FilePath))
-                {
-                    return BadRequest(new { message = "File không tồn tại." });
-                }
-
                 // Kiểm tra file có phải PDF không
                 if (!request.FilePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
                 {
                     return BadRequest(new { message = "Chỉ hỗ trợ tệp PDF." });
                 }
 
-                var cvDto = await _cvService.UploadCVAsync(request.FilePath, request.UserId);
+                //string cvContent = _cvService.ExtractCvContent(request.FilePath);
+                var cvDto = await _cvService.UploadCVAsync(request.FilePath, request.UserId, request.FileName);
 
                 return Ok(new
                 {

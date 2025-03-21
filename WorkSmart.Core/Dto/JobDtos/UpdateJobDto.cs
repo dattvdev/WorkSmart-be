@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
 
 namespace WorkSmart.Core.Dto.JobDtos
@@ -10,6 +11,8 @@ namespace WorkSmart.Core.Dto.JobDtos
     public class UpdateJobDto
     {
         public string Title { get; set; }
+        public string? CategoryID { get; set; }
+        public List<int>? Tags { get; set; }
         public string Description { get; set; }
         public string? Level { get; set; }
         public string? Education { get; set; }

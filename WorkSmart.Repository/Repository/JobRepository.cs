@@ -261,7 +261,7 @@ namespace WorkSmart.Repository.Repository
         {
             var currentDate = DateTime.Now;
             return await _dbSet
-                .Where(j => j.Deadline < currentDate && j.Status == JobStatus.Active)
+                .Where(j => j.Deadline < currentDate)
                 .ToListAsync();
         }
 
@@ -272,7 +272,6 @@ namespace WorkSmart.Repository.Repository
             foreach (var job in expiredJobs)
             {
                 job.Status = JobStatus.Hidden;
-                job.UpdatedAt = DateTime.Now;
             }
 
             if (expiredJobs.Any())
@@ -312,6 +311,10 @@ namespace WorkSmart.Repository.Repository
                 .ToList(); // Đổi ToListAsync() thành ToList()
 
             return similarJobs;
+        }
+        public async Task<Job> GetByJobId(int id)
+        {
+            return await _dbSet.Include(t => t.Tags).FirstOrDefaultAsync(j => j.JobID == id);
         }
     }
 }

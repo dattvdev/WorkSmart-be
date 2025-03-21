@@ -64,10 +64,14 @@ namespace WorkSmart.Application.Services
         }
         public async Task<JobDto> UpdateJobAsync(int jobId, UpdateJobDto jobDto)
         {
-            var job = await _jobRepository.GetById(jobId);
+            var job = await _jobRepository.GetByJobId(jobId);
             if (job == null) return null;
-
-            _mapper.Map(jobDto, job);
+            var tags = await _tagRepository.GetTagByListID(jobDto.Tags);
+            if(job.Tags != null)
+            {
+                job.Tags.Clear();
+            }
+            _mapper.Map(jobDto, job, opts => opts.Items["Tags"] = tags);
             await _jobRepository.Save();
             return _mapper.Map<JobDto>(job);
         }
@@ -105,9 +109,15 @@ namespace WorkSmart.Application.Services
 
             return result;
         }
+
         public async Task<bool> ApproveJobAsync(int jobId)
         {
-            return await _jobRepository.ApproveJobAsync(jobId);
+            throw new NotImplementedException();
         }
+        //public async Task<bool> ApproveJobAsync(int jobId)
+        //{
+        //    return await _jobRepository.ApproveJobAsync(jobId);
+        //}
+
     }
 }

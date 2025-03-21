@@ -20,7 +20,7 @@ namespace WorkSmart.Repository.Repository
             var job = await _dbSet.FindAsync(jobId);
             if (job == null) return false;
 
-            job.Status = JobStatus.Approved;
+            job.Status = JobStatus.Active;
             //job.UpdatedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();
@@ -89,7 +89,7 @@ namespace WorkSmart.Repository.Repository
             DbSet<Job> _JobdbSet = _context.Set<Job>();
 
             var query = _JobdbSet.Include(c => c.User).AsQueryable();
-            query = query.Where(c => c.Status == JobStatus.Active || c.Status == JobStatus.Approved);
+            query = query.Where(c => c.Status == JobStatus.Active);
             if (!string.IsNullOrWhiteSpace(request.Category) && !request.Category.Equals("All Categories"))
             {
                 query = query.Where(c => c.CategoryID.Contains(request.Category)); 

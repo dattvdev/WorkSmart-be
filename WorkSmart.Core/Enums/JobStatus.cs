@@ -9,7 +9,6 @@ namespace WorkSmart.Core.Enums
     public enum JobStatus
     {
         Pending,    
-        Approved,    
         Rejected,    
         Hidden,
         Active

@@ -37,7 +37,6 @@ namespace WorkSmart.Application.Services
             if (request.CompanyDescription != null) user.CompanyDescription = request.CompanyDescription;
             if (request.PhoneNumber != null) user.PhoneNumber = request.PhoneNumber;
             if (request.CreatedAt != null) user.CreatedAt = (DateTime)request.CreatedAt;
-            if (request.IsPrivated != null) user.IsPrivated = (bool)request.IsPrivated;
             if (request.Address != null) user.Address = request.Address;
             if (request.Avatar != null) user.Avatar = request.Avatar;
 

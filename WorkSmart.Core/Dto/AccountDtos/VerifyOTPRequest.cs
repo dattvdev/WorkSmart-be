@@ -7,12 +7,10 @@ using System.Threading.Tasks;
 
 namespace WorkSmart.Core.Dto.AccountDtos
 {
-    public class ResetPasswordRequest
+    public class VerifyOTPRequest
     {
         public string Email { get; set; }
 
-        public string? ResetToken { get; set; }
-
-        public string NewPassword { get; set; }
+        public string Otp { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using CloudinaryDotNet;
+﻿using AutoMapper;
+using CloudinaryDotNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MimeKit;
@@ -25,13 +26,15 @@ namespace WorkSmart.API.Controllers
         private readonly SignalRNotificationService _signalRService;
         private readonly SendMailService _sendMailService;
         private readonly IAccountRepository _accountRepository;
+        private readonly IMapper _mapper;
 
-        public EmployerController(EmployerService employerService, SignalRNotificationService signalRService, SendMailService sendMailService, IAccountRepository accountRepository)
+        public EmployerController(EmployerService employerService, SignalRNotificationService signalRService, SendMailService sendMailService, IAccountRepository accountRepository, IMapper mapper)
         {
             _employerService = employerService;
             _signalRService = signalRService;
             _sendMailService = sendMailService;
             _accountRepository = accountRepository;
+            _mapper = mapper;
         }
 
         [HttpGet("profile")]
@@ -55,6 +58,21 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new { Error = "An error occurred while getting profile.", Details = ex.Message });
             }
         }
+
+        [HttpGet("company-profile/{companyId}")]
+        public async Task<IActionResult> GetCompanyProfile(int companyId)
+        {
+            var company = await _accountRepository.GetById(companyId);
+
+            if (company == null)
+            {
+                return NotFound(new { Message = "Company not found" });
+            }
+
+            var result = _mapper.Map<GetEmployerProfileDto>(company);
+            return Ok(result);
+        }
+
 
         [HttpPut("edit-profile")]
         public async Task<IActionResult> EditEmployerProfile([FromBody] EditEmployerRequest request)

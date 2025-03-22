@@ -15,5 +15,11 @@ namespace WorkSmart.Core.Interface
         Task SaveOtpAsync(string email, string otp);
 
         Task<bool> ValidateOtpAsync(string email, string otp);
+
+        Task SaveResetTokenAsync(string email, string resetToken, TimeSpan expiry);
+
+        Task<bool> ValidateResetTokenAsync(string email, string resetToken);
+
+        Task RemoveResetTokenAsync(string email);
     }
 }

@@ -24,7 +24,5 @@ namespace WorkSmart.Core.Dto.EmployerDtos
         public DateTime? CreatedAt { get; set; }
         
         public string? Avatar { get; set; }
-        
-        public bool? IsPrivated { get; set; }
     }
 }

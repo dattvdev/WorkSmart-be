@@ -67,6 +67,20 @@ namespace WorkSmart.API.Controllers
             return Ok(result);
         }
 
+        [HttpGet("user-profile/{userId}")]
+        public async Task<IActionResult> GetUserProfile(int userId)
+        {
+            var user = await _accountRepository.GetById(userId);
+
+            if (user == null)
+            {
+                return NotFound(new { Message = "User not found" });
+            }
+
+            var result = _mapper.Map<AccountDto>(user);
+            return Ok(result);
+        }
+
         [HttpPost("ban/{id}")]
         public async Task<IActionResult> BanUser(int id)
         {
@@ -503,7 +517,7 @@ namespace WorkSmart.API.Controllers
 
                 await _signalRService.SendNotificationToUser(
                       userId,
-                      "Your Verify Business License Has Been Rejected",
+                      "Your Verify Business License Has Been Approved",
                       "Let Create Your First Job Post"
                 //$"/applications/{userId}/details"
                 );
@@ -700,7 +714,7 @@ namespace WorkSmart.API.Controllers
 
             return Ok(result);
         }
-        // Add job approval endpoint
+
         [HttpPut("jobs/{jobId}/approve")]
         public async Task<IActionResult> ApproveJob(int jobId)
         {
@@ -720,7 +734,6 @@ namespace WorkSmart.API.Controllers
             return Ok(new { success = true, message = "Job approved successfully" });
         }
 
-        // Add job rejection endpoint
         [HttpPut("jobs/{jobId}/reject")]
         public async Task<IActionResult> RejectJob(int jobId, [FromBody] JobRejectionRequestDto request)
         {

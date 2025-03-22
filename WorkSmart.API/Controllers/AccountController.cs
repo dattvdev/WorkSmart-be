@@ -633,6 +633,34 @@ namespace WorkSmart.API.Controllers
             }
         }
 
+        [HttpPost("verifyOTP")]
+        public async Task<IActionResult> VerifyOtp([FromBody] VerifyOTPRequest request)
+        {
+            try
+            {
+                var user = _accountRepository.GetByEmail(request.Email);
+                if (user == null)
+                {
+                    return BadRequest("Email does not exist.");
+                }
+
+                if (!await _tokenRepository.ValidateOtpAsync(request.Email, request.Otp))
+                {
+                    return BadRequest("OTP code is invalid or expired.");
+                }
+
+                // Tạo token xác thực reset password
+                var resetToken = Guid.NewGuid().ToString();
+                await _tokenRepository.SaveResetTokenAsync(request.Email, resetToken, TimeSpan.FromMinutes(15));
+
+                return Ok(new { resetToken = resetToken });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = ex.Message });
+            }
+        }
+
         [HttpPost("resetPassword")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
         {
@@ -640,7 +668,7 @@ namespace WorkSmart.API.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    return BadRequest(ModelState);  
+                    return BadRequest(ModelState);
                 }
 
                 var user = _accountRepository.GetByEmail(request.Email);
@@ -649,14 +677,16 @@ namespace WorkSmart.API.Controllers
                     return BadRequest("Email does not exist.");
                 }
 
-                if (!await _tokenRepository.ValidateOtpAsync(user.Email, request.Token))
+                if (!await _tokenRepository.ValidateResetTokenAsync(user.Email, request.ResetToken))
                 {
-                    return BadRequest("OTP code is invalid or expired.");
+                    return BadRequest("Reset token is invalid or expired.");
                 }
 
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
                 _accountRepository.Update(user);
                 await _accountRepository.Save();
+
+                await _tokenRepository.RemoveResetTokenAsync(user.Email);
 
                 return Ok("Password has been reset successfully.");
             }

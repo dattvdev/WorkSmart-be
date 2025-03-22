@@ -47,7 +47,11 @@ namespace WorkSmart.Repository.Repository
         public async Task<int> GetUnreadMessageCountAsync(int receiverId)
         {
             var count = await _context.PersonalMessages
-                .CountAsync(pm => pm.ReceiverID == receiverId && !pm.IsRead);
+                .Where(pm => pm.ReceiverID == receiverId && !pm.IsRead)
+                .Select(pm => pm.SenderID) // Lấy danh sách sender
+                .Distinct() // Lọc trùng
+                .CountAsync(); // Đếm số lượng sender duy nhất
+
             return count;
         }
 

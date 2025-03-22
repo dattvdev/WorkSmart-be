@@ -220,6 +220,12 @@ WorkSmart Team";
                        $"Your application for \"{jobDetail.Title}\" job has new Application.",
                        $"/employer/manage-jobs/applied-candidates/{jobDetail.JobID}"
                    );
+                await _signalRService.SendNotificationToUser(
+                       userId,
+                       "Application Notification",
+                       $"Your Apply to \"{jobDetail.Title}\" has been applied",
+                       $"/candidate/applied-jobs"
+                   );
             }
 
             return Ok("Application submitted successfully.");

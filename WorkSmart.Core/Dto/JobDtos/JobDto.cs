@@ -7,6 +7,7 @@ namespace WorkSmart.Core.Dto.JobDtos
         public int JobID { get; set; }
         public int UserID { get; set; }
         public string Title { get; set; }
+        public string? CategoryID { get; set; }
         public string Description { get; set; }
         public string? Level { get; set; }
         public string? Education { get; set; }

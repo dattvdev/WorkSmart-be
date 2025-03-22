@@ -32,7 +32,10 @@ namespace WorkSmart.Application.Mapper
 
             // Mapping UpdateJobDto,Job
             CreateMap<UpdateJobDto, Job>()
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now))
+                .ForMember(dest => dest.Tags, opt => opt.MapFrom((src, dest, destMember, context) =>
+        context.Items.ContainsKey("Tags") ? context.Items["Tags"] as ICollection<Tag> : new List<Tag>()
+    ));
             CreateMap<Job, GetListSearchJobDto>()
                 .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.User.Avatar));
             CreateMap<Job, ExpiredJobDto>()

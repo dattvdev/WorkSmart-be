@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using WorkSmart.API.SignalRService;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.CandidateDtos;
 using WorkSmart.Core.Dto.JobDtos;
@@ -18,11 +19,12 @@ namespace WorkSmart.API.Controllers
     {
         private readonly JobService _jobService;
         private readonly ILogger<JobController> _logger;
-
-        public JobController(JobService jobService, ILogger<JobController> logger)
+        private readonly SignalRNotificationService _signalRService;
+        public JobController(JobService jobService, ILogger<JobController> logger, SignalRNotificationService signalRService)
         {
             _jobService = jobService;
             _logger = logger;
+            _signalRService = signalRService;
         }
         
         [HttpPost("create")]
@@ -33,6 +35,13 @@ namespace WorkSmart.API.Controllers
             try
             {
                 await _jobService.CreateJobAsync(createJobDto);
+
+                await _signalRService.SendNotificationToUser(
+                       createJobDto.UserID,
+                       "Job Notification",
+                       $"Your Job \"{createJobDto.Title}\" Create Successfilly",
+                       $"/employer/manage-jobs"
+                   );
                 return Ok();
             }
             catch (Exception ex)

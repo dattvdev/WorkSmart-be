@@ -52,8 +52,6 @@ namespace WorkSmart.Application.Services
             if (request.Gender != null) user.Gender = request.Gender;
             if (request.Address != null) user.Address = request.Address;
             if (request.Avatar != null) user.Avatar = request.Avatar;
-            //if (request.DateOfBirth != null) user.DateOfBirth = request.DateOfBirth;
-            if (request.IsPrivated != null) user.IsPrivated = (bool)request.IsPrivated;
 
             user.UpdatedAt = DateTime.UtcNow;
             _candidateRepository.Update(user);

@@ -503,7 +503,7 @@ namespace WorkSmart.API.Controllers
 
                 await _signalRService.SendNotificationToUser(
                       userId,
-                      "Your Verify Business License Has Been Rejected",
+                      "Your Verify Business License Has Been Approved",
                       "Let Create Your First Job Post"
                 //$"/applications/{userId}/details"
                 );

@@ -345,26 +345,25 @@ namespace WorkSmart.Application.Services
             return certifications;
         }
 
-        // Add this method to your CVService class
-        //public string ExtractCvContent(string filePath)
-        //{
-        //    StringBuilder text = new StringBuilder();
+        public string ExtractCvContent(string filePath)
+        {
+            StringBuilder text = new StringBuilder();
 
-        //    using (PdfReader reader = new PdfReader(filePath))
-        //    {
-        //        for (int i = 1; i <= reader.NumberOfPages; i++)
-        //        {
-        //            text.Append(PdfTextExtractor.GetTextFromPage(reader, i));
-        //        }
-        //    }
+            using (PdfReader reader = new PdfReader(filePath))
+            {
+                for (int i = 1; i <= reader.NumberOfPages; i++)
+                {
+                    text.Append(PdfTextExtractor.GetTextFromPage(reader, i));
+                }
+            }
 
-        //    string content = text.ToString();
+            string content = text.ToString();
 
-        //    // Loại bỏ ký tự Unicode đặc biệt, khoảng trắng thừa
-        //    content = Regex.Replace(content, @"[\uE000-\uF8FF]", ""); // Loại bỏ ký tự đặc biệt
-        //    content = Regex.Replace(content, @"\s{2,}", " "); // Chuẩn hóa khoảng trắng
+            // Loại bỏ ký tự Unicode đặc biệt, khoảng trắng thừa
+            content = Regex.Replace(content, @"[\uE000-\uF8FF]", ""); // Loại bỏ ký tự đặc biệt
+            content = Regex.Replace(content, @"\s{2,}", " "); // Chuẩn hóa khoảng trắng
 
-        //    return content;
-        //}
+            return content;
+        }
     }
 }

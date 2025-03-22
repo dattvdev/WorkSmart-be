@@ -35,14 +35,6 @@ namespace WorkSmart.Application.Services
             await _cache.SetStringAsync(token, "used", options);
         }
 
-        public async Task SaveOtpAsync(string email, string otp)
-        {
-            await _cache.SetStringAsync(email, otp, new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
-            });
-        }
-
         public async Task<bool> ValidateOtpAsync(string email, string otp)
         {
             var storedOtp = await _cache.GetStringAsync(email);
@@ -52,6 +44,38 @@ namespace WorkSmart.Application.Services
                 return true;
             }
             return false;
+        }
+
+        public async Task SaveOtpAsync(string email, string otp)
+        {
+            await _cache.SetStringAsync(email, otp, new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+            });
+        }
+
+        public async Task SaveResetTokenAsync(string email, string resetToken, TimeSpan expiry)
+        {
+            string resetTokenKey = $"reset_token_{email}";
+
+            await _cache.SetStringAsync(resetTokenKey, resetToken, new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = expiry
+            });
+        }
+
+        public async Task<bool> ValidateResetTokenAsync(string email, string resetToken)
+        {
+            string resetTokenKey = $"reset_token_{email}";
+            var storedToken = await _cache.GetStringAsync(resetTokenKey);
+
+            return storedToken == resetToken;
+        }
+
+        public async Task RemoveResetTokenAsync(string email)
+        {
+            string resetTokenKey = $"reset_token_{email}";
+            await _cache.RemoveAsync(resetTokenKey);
         }
     }
 }

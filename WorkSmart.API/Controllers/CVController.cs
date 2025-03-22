@@ -117,6 +117,37 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new { message = "Lỗi khi xử lý file: " + ex.Message });
             }
         }
+
+        [HttpPost("upload-read-cv")]
+        public IActionResult UploadReadCV([FromBody] CvUploadDto request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(request.FilePath))
+                {
+                    return BadRequest(new { message = "Vui lòng cung cấp đường dẫn file." });
+                }
+                // Kiểm tra file có phải PDF không
+                if (!request.FilePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest(new { message = "Chỉ hỗ trợ tệp PDF." });
+                }
+
+                // Gọi trực tiếp hàm ExtractCvContent để lấy nội dung
+                string cvContent = _cvService.ExtractCvContent(request.FilePath);
+
+                return Ok(new
+                {
+                    message = "Trích xuất thành công",
+                    content = cvContent
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi xử lý file CV");
+                return StatusCode(500, new { message = "Lỗi khi xử lý file: " + ex.Message });
+            }
+        }
     }
 }
 

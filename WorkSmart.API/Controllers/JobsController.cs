@@ -26,8 +26,6 @@ namespace WorkSmart.API.Controllers
             _logger = logger;
             _signalRService = signalRService;
         }
-
-        /// Create a new job post
         
         [HttpPost("create")]
         public async Task<IActionResult> CreateJob([FromBody] CreateJobDto createJobDto)
@@ -52,6 +50,7 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new { message = "An error occurred while creating the job." });
             }
         }
+
         [HttpGet("getAllJob")]
         public async Task<IActionResult> GetAllJob()
         {
@@ -64,9 +63,9 @@ namespace WorkSmart.API.Controllers
             {
                 _logger.LogError("Error lits job: {Message}", ex.Message);
                 return StatusCode(500, new { message = "An error occurred while list the job." });
-
             }
         }
+
         [HttpGet("getAllJobManage")]
         public async Task<IActionResult> GetJobsForManagement([FromQuery] JobSearchRequestDto request)
         {
@@ -75,6 +74,7 @@ namespace WorkSmart.API.Controllers
             var totalJob = total;
             return Ok(new { totalJob, totalPage, jobs });
         }
+
         [HttpDelete("delete/{jobId}")]
         public IActionResult DeleteJob(int jobId)
         {
@@ -88,7 +88,6 @@ namespace WorkSmart.API.Controllers
                 return BadRequest(new { message = "Failed to delete job", error = ex.Message });
             }
         }
-
 
         /// Update an existing job post
         [HttpPut("update/{id}")]

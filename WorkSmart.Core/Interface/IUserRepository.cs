@@ -9,6 +9,6 @@ namespace WorkSmart.Core.Interface
 {
     public interface IUserRepository : IBaseRepository<User>
     {
-        
+        Task<User> GetEmployerByCompanyName(string companyName);
     }
 }

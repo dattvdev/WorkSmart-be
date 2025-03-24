@@ -18,7 +18,9 @@ namespace WorkSmart.Application.Services
         private readonly ICvParserService _cvParserService;
         private readonly IMapper _mapper;
 
-        public CVService(ICVRepository cvRepository,IMapper mapper, ICvParserService cvParserService)
+        public CVService(ICVRepository cvRepository
+            ,IMapper mapper
+            , ICvParserService cvParserService)
         {
             _cvRepository = cvRepository;
             _mapper = mapper;
@@ -41,9 +43,11 @@ namespace WorkSmart.Application.Services
         public async Task<IEnumerable<CVDto>> GetAllCVsAsync(int userId)
         {
             var cvs = await _cvRepository.GetAllCVsByUserId(userId);
-            return _mapper.Map<IEnumerable<CVDto>>(cvs);
+            var result = _mapper.Map<IEnumerable<CVDto>>(cvs);
+            return result;
         }
 
+        
         public async Task<CVDto> UpdateCVAsync(int userId, CVDto cvDto)
         {
             var existingCv = await _cvRepository.GetCVWithDetails(cvDto.CVID);
@@ -364,6 +368,11 @@ namespace WorkSmart.Application.Services
             content = Regex.Replace(content, @"\s{2,}", " "); // Chuẩn hóa khoảng trắng
 
             return content;
+        }
+
+        public void HideCV(int cvId)
+        {
+            _cvRepository.HideCV(cvId);
         }
     }
 }

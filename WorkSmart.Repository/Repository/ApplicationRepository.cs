@@ -114,5 +114,25 @@ namespace WorkSmart.Repository.Repository
                 .FirstOrDefaultAsync(a => a.ApplicationID == applicationId && a.JobID == jobId);
         }
 
+        public string CheckApplyJob(int UserId, int JobId)
+        {
+            var apply =_dbSet.Where(a => a.UserID == UserId && a.JobID == JobId).FirstOrDefault();
+            if (apply != null)
+            {
+                return apply.Status;
+            }
+            return "None";
+        }
+
+        public void ChangeCV(int applicationId, int cvId)
+        {
+            var application = _dbSet.FirstOrDefault(a => a.ApplicationID == applicationId);
+            if (application != null)
+            {
+                application.CVID = cvId;
+                _dbSet.Update(application);
+                _context.SaveChanges();
+            }
+        }
     }
 }

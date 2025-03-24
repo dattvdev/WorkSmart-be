@@ -12,8 +12,8 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-    [Migration("20250318104654_init_DB")]
-    partial class init_DB
+    [Migration("20250324131433_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -135,6 +135,9 @@ namespace WorkSmart.Repository.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool?>("IsFeatured")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsHidden")
                         .HasColumnType("bit");
 
                     b.Property<string>("JobPosition")
@@ -511,7 +514,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("NotificationJobTag");
+                    b.ToTable("NotificationJobs");
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.Package", b =>

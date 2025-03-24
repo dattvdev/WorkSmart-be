@@ -23,6 +23,7 @@ namespace WorkSmart.Core.Entity
         public bool? IsFeatured { get; set; }
         public string? FileName { get; set; }
         public string? FilePath { get; set; }
+        public bool? IsHidden { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
         public User User { get; set; }

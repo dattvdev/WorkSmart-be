@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WorkSmart.Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class init_DB : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -130,6 +130,7 @@ namespace WorkSmart.Repository.Migrations
                     IsFeatured = table.Column<bool>(type: "bit", nullable: true),
                     FileName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FilePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsHidden = table.Column<bool>(type: "bit", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -214,7 +215,7 @@ namespace WorkSmart.Repository.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "NotificationJobTag",
+                name: "NotificationJobs",
                 columns: table => new
                 {
                     NotificationJobTagID = table.Column<int>(type: "int", nullable: false)
@@ -226,15 +227,15 @@ namespace WorkSmart.Repository.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_NotificationJobTag", x => x.NotificationJobTagID);
+                    table.PrimaryKey("PK_NotificationJobs", x => x.NotificationJobTagID);
                     table.ForeignKey(
-                        name: "FK_NotificationJobTag_Tags_TagID",
+                        name: "FK_NotificationJobs_Tags_TagID",
                         column: x => x.TagID,
                         principalTable: "Tags",
                         principalColumn: "TagID",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_NotificationJobTag_Users_UserID",
+                        name: "FK_NotificationJobs_Users_UserID",
                         column: x => x.UserID,
                         principalTable: "Users",
                         principalColumn: "UserID",
@@ -675,13 +676,13 @@ namespace WorkSmart.Repository.Migrations
                 column: "TagsTagID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_NotificationJobTag_TagID",
-                table: "NotificationJobTag",
+                name: "IX_NotificationJobs_TagID",
+                table: "NotificationJobs",
                 column: "TagID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_NotificationJobTag_UserID",
-                table: "NotificationJobTag",
+                name: "IX_NotificationJobs_UserID",
+                table: "NotificationJobs",
                 column: "UserID");
 
             migrationBuilder.CreateIndex(
@@ -768,7 +769,7 @@ namespace WorkSmart.Repository.Migrations
                 name: "JobTag");
 
             migrationBuilder.DropTable(
-                name: "NotificationJobTag");
+                name: "NotificationJobs");
 
             migrationBuilder.DropTable(
                 name: "Notifications");

@@ -134,6 +134,9 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<bool?>("IsFeatured")
                         .HasColumnType("bit");
 
+                    b.Property<bool?>("IsHidden")
+                        .HasColumnType("bit");
+
                     b.Property<string>("JobPosition")
                         .HasColumnType("nvarchar(max)");
 
@@ -508,7 +511,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("NotificationJobTag");
+                    b.ToTable("NotificationJobs");
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.Package", b =>

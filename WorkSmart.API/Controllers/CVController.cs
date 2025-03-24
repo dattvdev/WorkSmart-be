@@ -148,6 +148,29 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new { message = "Lỗi khi xử lý file: " + ex.Message });
             }
         }
+
+    
+        [HttpPut("hidecv/{cvId}")]
+        public IActionResult HideCV(int cvId)
+        {
+            try
+            {
+                if (cvId == 0)
+                {
+                    return BadRequest(new { message = "Vui lòng cung cấp ID CV." });
+                }
+                _cvService.HideCV(cvId);
+                return Ok(new
+                {
+                    message = "Ẩn thành công",
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi ẩn CV");
+                return StatusCode(500, new { message = "Lỗi khi ẩn CV: " + ex.Message });
+            }
+        }
     }
 }
 

@@ -37,7 +37,7 @@ namespace WorkSmart.API.Extension
             services.AddScoped<SignalRNotificationService>();
             //notificationJobTag
             services.AddScoped<INotificationJobTagRepository, NotificationJobTagRepository>();
-
+            services.AddScoped<NotificationJobTagService>();
             //candidate
             services.AddScoped<ICandidateRepository, CandidateRepository>();
             services.AddAutoMapper(typeof(CandidateProfile));

@@ -12,7 +12,7 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-    [Migration("20250325154435_init")]
+    [Migration("20250325203544_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -531,6 +531,9 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<int?>("CVLimit")
                         .HasColumnType("int");
 
+                    b.Property<int>("DurationInDays")
+                        .HasColumnType("int");
+
                     b.Property<int?>("FeaturedJobPostLimit")
                         .HasColumnType("int");
 
@@ -723,6 +726,9 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("UserID")
                         .HasColumnType("int");

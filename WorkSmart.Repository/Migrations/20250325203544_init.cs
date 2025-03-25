@@ -34,6 +34,7 @@ namespace WorkSmart.Repository.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Price = table.Column<double>(type: "float", nullable: false),
+                    DurationInDays = table.Column<int>(type: "int", nullable: false),
                     JobPostLimitPerDay = table.Column<int>(type: "int", nullable: true),
                     FeaturedJobPostLimit = table.Column<int>(type: "int", nullable: true),
                     AccessToPremiumCandidates = table.Column<bool>(type: "bit", nullable: true),
@@ -382,7 +383,8 @@ namespace WorkSmart.Repository.Migrations
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Price = table.Column<double>(type: "float", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {

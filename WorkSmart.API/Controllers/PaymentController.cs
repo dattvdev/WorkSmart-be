@@ -71,8 +71,8 @@ namespace WorkSmart.API.Controllers
                     (int)package.Price,
                     $"Pay {package.Name}",
                     items,
-                    "http://localhost:5173/payment/cancel",
-                    "http://localhost:5173/payment/success"
+                    "http://localhost:5173/employer/payment-cancel",
+                    "http://localhost:5173/employer/payment-return"
                 );
 
                 var createPayment = await _payOS.createPaymentLink(paymentData);
@@ -88,12 +88,11 @@ namespace WorkSmart.API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { Error = "An error occurred while create payment", Details = ex.Message });
-
             }
         }
 
         [HttpPost("webhook")]
-        public async Task<IActionResult> HandlePaymentWebhook(WebhookType body)
+        public async Task<IActionResult> HandlePaymentWebhook([FromBody] WebhookType body)
         {
             try
             {
@@ -110,12 +109,11 @@ namespace WorkSmart.API.Controllers
                 var package = await _context.Packages
                     .FirstOrDefaultAsync(p => p.Name == transaction.Content.Replace("Pay ", ""));
 
-                if (package == null)
-                {
-                    return NotFound("Package not found");
-                }
+                bool paymentSuccess = body.success &&
+                               data.amount > 0 &&
+                               (data.code == "00" || data.desc.ToLower() == "success");
 
-                if (body.success)
+                if (paymentSuccess)
                 {
                     transaction.Status = "SUCCESS";
 
@@ -164,18 +162,184 @@ namespace WorkSmart.API.Controllers
                     return NotFound("Payment not found");
                 }
 
-                return Ok(new PaymentStatusDto
+                if (transaction.Status == "PAID")
                 {
-                    OrderCode = transaction.OrderCode,
-                    Status = transaction.Status,
-                    Price = transaction.Price,
-                    Content = transaction.Content
+                    return Ok(new
+                    {
+                        status = "SUCCESS",
+                        message = "Thanh toán thành công",
+                        details = transaction
+                    });
+                }
+
+                // Các trạng thái khác
+                return Ok(new
+                {
+                    status = transaction.Status,
+                    message = "Trạng thái thanh toán chưa hoàn tất"
                 });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { Error = "An error occurred while payment", Details = ex.Message });
 
+            }
+        }
+
+        [HttpGet("payment-return")]
+        public async Task<IActionResult> ProcessPaymentReturn([FromQuery] string code, [FromQuery] string id, [FromQuery] bool cancel, [FromQuery] string status, [FromQuery] long orderCode)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                if (code != "00" || status != "PAID")
+                {
+                    return BadRequest("Invalid payment status");
+                }
+
+                // Tìm transaction dựa trên orderCode
+                var existingTransaction = await _context.Transactions
+                    .FirstOrDefaultAsync(t => t.OrderCode == orderCode);
+
+                if (existingTransaction == null)
+                {
+                    return NotFound("Transaction not found");
+                }
+
+                // Trích xuất thông tin Package từ nội dung giao dịch
+                var packageName = existingTransaction.Content.Replace("Pay ", "").Trim();
+
+                var package = await _context.Packages
+                    .FirstOrDefaultAsync(p => p.Name == packageName);
+
+                if (package == null)
+                {
+                    return NotFound($"Package not found for name: {packageName}");
+                }
+
+                var existingSubscription = await _context.Subscriptions
+                    .FirstOrDefaultAsync(s =>
+                        s.UserID == existingTransaction.UserID &&
+                        s.PackageID == package.PackageID);
+
+                if (existingSubscription != null)
+                {
+                    return Ok(new
+                    {
+                        status = "SUCCESS",
+                        message = "Subscription already exists",
+                        orderCode = orderCode
+                    });
+                }
+
+                var newSubscription = new Subscription
+                {
+                    PackageID = package.PackageID,
+                    UserID = existingTransaction.UserID,
+                    ExpDate = DateTime.Now.AddDays(package.DurationInDays),
+                    CreatedAt = DateTime.Now
+                };
+
+                // Cập nhật trạng thái thanh toán
+                existingTransaction.Status = "PAID";
+                existingTransaction.UpdatedAt = DateTime.Now;
+
+                _context.Subscriptions.Add(newSubscription);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                // Thực hiện các bước tiếp theo sau khi thanh toán thành công 
+                // (ví dụ: kích hoạt gói, cập nhật quyền hạn, v.v.)
+
+                return Ok(new
+                {
+                    status = "SUCCESS",
+                    message = "Thanh toán và tạo subscription thành công",
+                    orderCode = orderCode,
+                    subscriptionId = newSubscription.SubscriptionID,
+                    packageName = package.Name
+                }); ;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+
+                return StatusCode(500, new
+                {
+                    Error = "An error occurred while processing payment",
+                    Details = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("cancel")]
+        public async Task<IActionResult> CancelPayment([FromBody] CancelPaymentDto cancelRequest)
+        {
+            try
+            {
+                // Tìm giao dịch trong database
+                var transaction = await _context.Transactions
+                    .FirstOrDefaultAsync(t => t.OrderCode == cancelRequest.OrderCode);
+
+                if (transaction == null)
+                {
+                    return NotFound(new
+                    {
+                        StatusCode = 404,
+                        Message = "Giao dịch không tồn tại"
+                    });
+                }
+
+                // Kiểm tra trạng thái hiện tại của giao dịch
+                if (transaction.Status == "CANCELLED")
+                {
+                    return BadRequest(new
+                    {
+                        StatusCode = 400,
+                        Message = "Giao dịch đã được hủy trước đó"
+                    });
+                }
+
+                // Hủy giao dịch trên PayOS
+                try
+                {
+                    var cancelResult = await _payOS.cancelPaymentLink(transaction.OrderCode);
+
+                    // Cập nhật trạng thái giao dịch trong database
+                    transaction.Status = "CANCELLED";
+                    transaction.CreatedAt = DateTime.Now;
+                    transaction.Status = cancelRequest.Reason ?? "User cancelled";
+
+                    await _context.SaveChangesAsync();
+
+                    return Ok(new
+                    {
+                        StatusCode = 200,
+                        Message = "Hủy thanh toán thành công",
+                        OrderCode = transaction.OrderCode
+                    });
+                }
+                catch (Exception payOsEx)
+                {
+
+                    return StatusCode(500, new
+                    {
+                        StatusCode = 500,
+                        Message = "Lỗi trong quá trình hủy thanh toán",
+                        Details = payOsEx.Message
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, new
+                {
+                    StatusCode = 500,
+                    Message = "Đã xảy ra lỗi trong quá trình xử lý",
+                    Details = ex.Message
+                });
             }
         }
     }

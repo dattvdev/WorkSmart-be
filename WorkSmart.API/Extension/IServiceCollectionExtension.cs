@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using WorkSmart.API.SignalRService;
 using WorkSmart.Application.Mapper;
 using WorkSmart.Application.Services;
@@ -67,6 +68,11 @@ namespace WorkSmart.API.Extension
             services.AddScoped<ICvParserService, CvParserService>();
             //mail
             services.AddScoped<SendMailService>();
+            //report
+            services.AddScoped<IReportRepository, ReportRepository>();
+            services.AddScoped<ReportService>();
+            services.AddAutoMapper(typeof(ReportProfile));
+            //payOS
 
             services.AddMemoryCache();
             services.AddSignalR();

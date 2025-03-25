@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.CandidateDtos;
+using WorkSmart.Core.Dto.ReportDtos;
 
 namespace WorkSmart.API.Controllers
 {
@@ -10,10 +11,12 @@ namespace WorkSmart.API.Controllers
     public class CandidateController : ControllerBase
     {
         private readonly CandidateService _candidateService;
+        private readonly ReportService _reportService;
 
-        public CandidateController(CandidateService candidateService)
+        public CandidateController(CandidateService candidateService, ReportService reportService)
         {
             _candidateService = candidateService;
+            _reportService = reportService;
         }
 
         [HttpGet("GetListSearch")]
@@ -72,6 +75,26 @@ namespace WorkSmart.API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { Error = "An error occurred while editing candidate profile" });
+            }
+        }
+
+        [HttpPost("report-job")]
+        public async Task<IActionResult> ReportJob([FromBody] CreateReportJobDto reportDto)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+
+                var result = await _reportService.CreateJobReport(userId, reportDto);
+
+                if (!result)
+                    return BadRequest(new { Error = "Unable to create report. Check job or user status." });
+
+                return Ok(new { Message = "Job reported successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = "An error occurred while reporting job" });
             }
         }
     }

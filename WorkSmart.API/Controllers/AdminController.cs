@@ -24,8 +24,9 @@ namespace WorkSmart.API.Controllers
         private readonly SendMailService _sendMailService;
         private readonly SignalRNotificationService _signalRService;
         private readonly IJobRepository _jobRepository;
+        private readonly ReportService _reportService;
 
-        public AdminController(IAccountRepository accountRepository, AdminService adminService, IMapper mapper, SendMailService sendMailService, SignalRNotificationService signalRService, IJobRepository jobRepository)
+        public AdminController(IAccountRepository accountRepository, AdminService adminService, ReportService reportService,IMapper mapper, SendMailService sendMailService, SignalRNotificationService signalRService, IJobRepository jobRepository)
         {
             _accountRepository = accountRepository;
             _adminService = adminService;
@@ -33,6 +34,7 @@ namespace WorkSmart.API.Controllers
             _sendMailService = sendMailService;
             _signalRService = signalRService;
             _jobRepository = jobRepository;
+            _reportService = reportService;
         }
 
         [HttpGet("test-auth")]
@@ -751,6 +753,28 @@ namespace WorkSmart.API.Controllers
                    "/employer/manage-jobs"
                    );
             return Ok(new { success = true, message = "Job rejected successfully" });
+        }
+
+        [HttpGet("report-list")]
+        public async Task<IActionResult> GetReportsForAdmin([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var (reports, total) = await _reportService.GetReportsForAdmin(pageNumber, pageSize);
+                var totalPages = (int)Math.Ceiling((double)total / pageSize);
+
+                return Ok(new
+                {
+                    TotalPages = totalPages,
+                    CurrentPage = pageNumber,
+                    TotalReports = total,
+                    Reports = reports
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = "An error occurred while fetching reports" });
+            }
         }
     }
 

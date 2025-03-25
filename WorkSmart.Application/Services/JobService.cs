@@ -15,8 +15,10 @@ namespace WorkSmart.Application.Services
         private readonly IJobRepository _jobRepository;
         private readonly IMapper _mapper;
         private readonly ITagRepository _tagRepository;
-
-        public JobService(IJobRepository jobRepository, IMapper mapper, ITagRepository tagRepository)
+        public JobService(IJobRepository jobRepository
+            , IMapper mapper
+            , ITagRepository tagRepository
+            , INotificationJobTagRepository notificationJobTagRepository)
         {
             _jobRepository = jobRepository;
             _mapper = mapper;
@@ -118,6 +120,5 @@ namespace WorkSmart.Application.Services
         //{
         //    return await _jobRepository.ApproveJobAsync(jobId);
         //}
-
     }
 }

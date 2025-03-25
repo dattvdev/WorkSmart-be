@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WorkSmart.Core.Dto.EmployerDtos;
 using WorkSmart.Core.Dto.UserDtos;
 using WorkSmart.Core.Interface;
 
@@ -23,6 +24,12 @@ namespace WorkSmart.Application.Services
         {
             var users = await _userRepository.GetById(userID);
             return _mapper.Map<UserMessageInfoDto>(users);
+        }
+
+        public async Task<CompanyDto> GetEmployerByCompanyName(string companyName)
+        {
+            var users = await _userRepository.GetEmployerByCompanyName(companyName);
+            return _mapper.Map<CompanyDto>(users);
         }
     }
 }

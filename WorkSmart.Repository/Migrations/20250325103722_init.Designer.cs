@@ -12,8 +12,8 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-    [Migration("20250324131433_initial")]
-    partial class initial
+    [Migration("20250325103722_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -514,7 +514,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("NotificationJobs");
+                    b.ToTable("NotificationJobTags");
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.Package", b =>

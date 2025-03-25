@@ -15,7 +15,6 @@ namespace WorkSmart.Application.Services
         private readonly IJobRepository _jobRepository;
         private readonly IMapper _mapper;
         private readonly ITagRepository _tagRepository;
-        private readonly INotificationJobTagRepository _notificationJobTagRepository;
         public JobService(IJobRepository jobRepository
             , IMapper mapper
             , ITagRepository tagRepository
@@ -24,7 +23,6 @@ namespace WorkSmart.Application.Services
             _jobRepository = jobRepository;
             _mapper = mapper;
             _tagRepository = tagRepository;
-            _notificationJobTagRepository = notificationJobTagRepository;
         }
 
         public async Task<(JobDetailDto, IEnumerable<JobDetailDto> similarJobs)> GetJobById(int jobId)
@@ -122,9 +120,5 @@ namespace WorkSmart.Application.Services
         //{
         //    return await _jobRepository.ApproveJobAsync(jobId);
         //}
-        public async Task<List<string>> GetUserIDByTagID(List<int> tagIDs)
-        {
-            return await _notificationJobTagRepository.GetUserIDByTagID(tagIDs);
-        }
     }
 }

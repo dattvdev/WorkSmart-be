@@ -511,7 +511,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("NotificationJobs");
+                    b.ToTable("NotificationJobTags");
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.Package", b =>

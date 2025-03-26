@@ -696,8 +696,145 @@ namespace WorkSmart.API.Controllers
             }
         }
 
-        [HttpPatch("changePassword")]
-        public async Task<IActionResult> ChangePass([FromBody] ChangePasswordRequest request)
+        [HttpPost("changePassword/requestOTP")]
+        public async Task<IActionResult> RequestChangePasswordOTP([FromBody] RequestChangePasswordOTPRequest request)
+        {
+            try
+            {
+                var user = _accountRepository.GetByEmail(request.Email);
+                if (user == null)
+                {
+                    return BadRequest("Email does not exist.");
+                }
+
+                var token = new Random().Next(100000, 999999).ToString();
+
+                await _tokenRepository.SaveOtpAsync(user.Email, token);
+
+                var emailContent = new Core.Dto.MailDtos.MailContent
+                {
+                    To = user.Email,
+                    Subject = "OTP code to change password",
+                    Body = $@"<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>Change Password Verification</title>
+    <style>
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }}
+        .email-container {{
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }}
+        .header {{
+            background-color: #4285f4;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }}
+        .content {{
+            padding: 30px;
+        }}
+        .message {{
+            background-color: #f2dede;
+            border-left: 4px solid #4285f4;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }}
+        .otp-code {{
+            font-size: 32px;
+            letter-spacing: 5px;
+            text-align: center;
+            margin: 30px 0;
+            color: #4285f4;
+            font-weight: bold;
+        }}
+        .footer {{
+            background-color: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+        }}
+    </style>
+</head>
+<body>
+    <div class=""email-container"">
+        <div class=""header"">
+            <h2>Change Password Verification</h2>
+        </div>
+        <div class=""content"">
+            <h1 style=""color: #4285f4; text-align: center;"">Verify Your Request</h1>
+            <div class=""message"">
+                <p>Hello,</p>
+                <p>You recently requested to change your password. Please use the OTP code below to proceed:</p>
+            </div>
+            <div class=""otp-code"">
+                {token}
+            </div>
+            <p style=""text-align: center;"">This code will expire in 10 minutes.</p>
+            <p style=""margin-top: 30px; font-size: 14px; color: #777;"">If you did not request a password change, please contact our support team immediately.</p>
+        </div>
+        <div class=""footer"">
+            <p>© 2025 WorkSmart. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
+"
+                };
+                await _sendMailService.SendMail(emailContent);
+
+                return Ok("OTP for password change has been sent to your email.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = ex.Message });
+            }
+        }
+        [HttpPost("changePassword/verifyOTP")]
+        public async Task<IActionResult> VerifyChangePasswordOtp([FromBody] VerifyChangePasswordOTPRequest request)
+        {
+            try
+            {
+                var user = _accountRepository.GetByEmail(request.Email);
+                if (user == null)
+                {
+                    return BadRequest("Email does not exist.");
+                }
+
+                if (!await _tokenRepository.ValidateOtpAsync(request.Email, request.Otp))
+                {
+                    return BadRequest("OTP code is invalid or expired.");
+                }
+
+                // Tạo token xác thực đổi mật khẩu
+                var changePasswordToken = Guid.NewGuid().ToString();
+                await _tokenRepository.SaveResetTokenAsync(request.Email, changePasswordToken, TimeSpan.FromMinutes(15));
+
+                return Ok(new { changePasswordToken = changePasswordToken });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = ex.Message });
+            }
+        }
+
+        [HttpPost("changePassword/confirm")]
+        public async Task<IActionResult> ConfirmChangePassword([FromBody] ConfirmChangePasswordRequest request)
         {
             try
             {
@@ -706,22 +843,21 @@ namespace WorkSmart.API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var userId = int.Parse(User.FindFirst("UserId")?.Value);
-
-                var user = await _accountRepository.GetById(userId);
+                var user = _accountRepository.GetByEmail(request.Email);
                 if (user == null)
                 {
-                    return NotFound(new { Error = "User not found" });
+                    return BadRequest("Email does not exist.");
                 }
 
-                if (!BCrypt.Net.BCrypt.Verify(request.OldPassword, user.PasswordHash))
+                if (!await _tokenRepository.ValidateResetTokenAsync(user.Email, request.ChangePasswordToken))
                 {
-                    return BadRequest(new { Error = "Old password is incorrect." });
+                    return BadRequest("Token is invalid or expired.");
                 }
 
-                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
-                _accountRepository.Update(user);
-                await _accountRepository.Save();
+                if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
+                {
+                    return BadRequest("Current password is incorrect.");
+                }
 
                 var emailContent = new Core.Dto.MailDtos.MailContent
                 {
@@ -798,7 +934,14 @@ namespace WorkSmart.API.Controllers
 "
                 };
                 await _sendMailService.SendMail(emailContent);
-                return Ok("Password Changed Successfully");
+
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+                _accountRepository.Update(user);
+                await _accountRepository.Save();
+
+                await _tokenRepository.RemoveResetTokenAsync(user.Email);
+
+                return Ok("Password has been changed successfully.");
             }
             catch (Exception ex)
             {

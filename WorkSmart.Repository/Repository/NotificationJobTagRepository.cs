@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 using WorkSmart.Core.Dto.UserDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Interface;
@@ -39,5 +40,43 @@ namespace WorkSmart.Repository.Repository
 
             return result;
         }
+        
+        public async Task<List<UserNotificationTagManageDto>> GetListRegisterTag(int UserID)
+        {
+            var result = await _dbSet.Include(njt => njt.Tag)
+                .Where(njt => njt.UserID == UserID)
+                .GroupBy(njt => njt.Tag.CategoryID)
+                .Select(g => new UserNotificationTagManageDto
+                {
+                    Category = g.Key, // Nếu CategoryID là int
+                    EmailTags = g.GroupBy(x => x.Email) // Nhóm tiếp theo Email
+                        .Select(emailGroup => new EmailTag
+                        {
+                            Email = emailGroup.Key,
+                            Tags = emailGroup.Select(x => x.Tag).ToList()
+                        })
+                        .ToList()
+                })  
+                .ToListAsync();
+
+            return result;
+        }   
+
+        public async Task AddNotificationTag(int userId, List<int> tagId, string email)
+        {
+            foreach (var tag in tagId)
+            {
+                var notificationJobTag = new NotificationJobTag
+                {
+                    UserID = userId,
+                    TagID = tag,
+                    Email = email
+                };
+                if (!_dbSet.Any(njt => njt.UserID == userId && njt.TagID == tag && njt.Email == email))
+                await _dbSet.AddAsync(notificationJobTag);
+            }
+            await _context.SaveChangesAsync();
+        }
+
     }
 }

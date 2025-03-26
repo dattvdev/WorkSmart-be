@@ -10,10 +10,11 @@ namespace WorkSmart.API.Controllers
     public class CandidateController : ControllerBase
     {
         private readonly CandidateService _candidateService;
-
-        public CandidateController(CandidateService candidateService)
+        private readonly NotificationJobTagService _notificationJobTagService;
+        public CandidateController(CandidateService candidateService, NotificationJobTagService notificationJobTagService)
         {
             _candidateService = candidateService;
+            _notificationJobTagService = notificationJobTagService;
         }
 
         [HttpGet("GetListSearch")]
@@ -74,5 +75,13 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new { Error = "An error occurred while editing candidate profile" });
             }
         }
+
+        [HttpGet("notification-tags/{userId}")]
+        public async Task<IActionResult> GetNotificationTags(int userId)
+        {
+            var tags = await _notificationJobTagService.GetListRegisterTag(userId);
+            return Ok(tags);
+        }
+
     }
 }

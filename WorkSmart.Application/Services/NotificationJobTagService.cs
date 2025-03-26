@@ -21,5 +21,10 @@ namespace WorkSmart.Application.Services
             return list;
         }
 
+        public async Task<List<UserNotificationTagManageDto>> GetListRegisterTag(int UserID)
+        {
+            var list = await _notificationJobTagRepository.GetListRegisterTag(UserID);
+            return list;
+        }
     }
 }

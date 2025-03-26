@@ -9,7 +9,6 @@ namespace WorkSmart.Core.Dto.ReportDtos
     public class CreateReportJobDto
     {
         public int JobId { get; set; }
-        public string Title { get; set; }
         public string? Content { get; set; }
     }
 }

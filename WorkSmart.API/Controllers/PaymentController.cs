@@ -72,7 +72,8 @@ namespace WorkSmart.API.Controllers
                     $"Pay {package.Name}",
                     items,
                     "http://localhost:5173/employer/payment-cancel",
-                    "http://localhost:5173/employer/payment-return"
+                    "http://localhost:5173/employer/payment-return",
+                    expiredAt: DateTimeOffset.Now.AddMinutes(15).ToUnixTimeSeconds()
                 );
 
                 var createPayment = await _payOS.createPaymentLink(paymentData);

@@ -9,11 +9,11 @@ using WorkSmart.Core.Interface;
 
 namespace WorkSmart.Repository.Repository
 {
-    public class ReportRepository : IReportRepository
+    public class ReportRepository : BaseRepository<ReportPost>, IReportRepository
     {
         private readonly WorksmartDBContext _context;
 
-        public ReportRepository(WorksmartDBContext context)
+        public ReportRepository(WorksmartDBContext context) : base(context) 
         {
             _context = context;
         }
@@ -25,25 +25,14 @@ namespace WorkSmart.Repository.Repository
             return report;
         }
 
-        public async Task<(IEnumerable<ReportPost> Reports, int Total)> GetReportsByAdmin(int pageNumber, int pageSize)
+        public async Task<IEnumerable<ReportPost>> GetReportsByAdmin()
         {
             var reports = await _context.ReportPosts
                 .Include(r => r.Sender)
                 .Include(r => r.Job)
                 .OrderByDescending(r => r.CreatedAt)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
                 .ToListAsync();
-
-            int total = await _context.ReportPosts.CountAsync();
-
-            return (reports, total);
-        }
-
-
-        public async Task<int> GetTotalReportCount()
-        {
-            return await _context.ReportPosts.CountAsync();
+            return reports;
         }
     }
 }

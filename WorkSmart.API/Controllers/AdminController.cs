@@ -26,14 +26,9 @@ namespace WorkSmart.API.Controllers
         private readonly IJobRepository _jobRepository;
         private readonly JobService _jobService;
         private readonly NotificationJobTagService _notificationJobTagService;
-        public AdminController(IAccountRepository accountRepository
-                            , AdminService adminService
-                            , IMapper mapper
-                            , SendMailService sendMailService
-                            , SignalRNotificationService signalRService
-                            , IJobRepository jobRepository
-                            , JobService jobService
-                            , NotificationJobTagService notificationJobTagService)
+        private readonly ReportService _reportService;
+
+        public AdminController(IAccountRepository accountRepository, AdminService adminService, IMapper mapper, SendMailService sendMailService, SignalRNotificationService signalRService, IJobRepository jobRepository, JobService jobService, NotificationJobTagService notificationJobTagService, ReportService reportService)
         {
             _accountRepository = accountRepository;
             _adminService = adminService;
@@ -43,6 +38,7 @@ namespace WorkSmart.API.Controllers
             _jobRepository = jobRepository;
             _jobService = jobService;
             _notificationJobTagService = notificationJobTagService;
+            _reportService = reportService;
         }
 
         [HttpGet("test-auth")]
@@ -943,6 +939,28 @@ namespace WorkSmart.API.Controllers
                    "/employer/manage-jobs"
                    );
             return Ok(new { success = true, message = "Job rejected successfully" });
+        }
+
+        [HttpGet("report-list")]
+        public async Task<IActionResult> GetReportsForAdmin([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var (reports, total) = await _reportService.GetReportsForAdmin(pageNumber, pageSize);
+                var totalPages = (int)Math.Ceiling((double)total / pageSize);
+
+                return Ok(new
+                {
+                    TotalPages = totalPages,
+                    CurrentPage = pageNumber,
+                    TotalReports = total,
+                    Reports = reports
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = "An error occurred while fetching reports" });
+            }
         }
     }
 

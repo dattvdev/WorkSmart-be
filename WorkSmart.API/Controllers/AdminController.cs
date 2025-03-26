@@ -24,11 +24,12 @@ namespace WorkSmart.API.Controllers
         private readonly SendMailService _sendMailService;
         private readonly SignalRNotificationService _signalRService;
         private readonly IJobRepository _jobRepository;
+        private readonly IReportRepository _reportRepository;
         private readonly JobService _jobService;
         private readonly NotificationJobTagService _notificationJobTagService;
         private readonly ReportService _reportService;
 
-        public AdminController(IAccountRepository accountRepository, AdminService adminService, IMapper mapper, SendMailService sendMailService, SignalRNotificationService signalRService, IJobRepository jobRepository, JobService jobService, NotificationJobTagService notificationJobTagService, ReportService reportService)
+        public AdminController(IAccountRepository accountRepository, AdminService adminService, IMapper mapper, SendMailService sendMailService, SignalRNotificationService signalRService, IJobRepository jobRepository, IReportRepository reportRepository, JobService jobService, NotificationJobTagService notificationJobTagService, ReportService reportService)
         {
             _accountRepository = accountRepository;
             _adminService = adminService;
@@ -36,6 +37,7 @@ namespace WorkSmart.API.Controllers
             _sendMailService = sendMailService;
             _signalRService = signalRService;
             _jobRepository = jobRepository;
+            _reportRepository = reportRepository;
             _jobService = jobService;
             _notificationJobTagService = notificationJobTagService;
             _reportService = reportService;
@@ -941,21 +943,71 @@ namespace WorkSmart.API.Controllers
             return Ok(new { success = true, message = "Job rejected successfully" });
         }
 
+        [HttpPost("approve-report/{reportId}")]
+        public async Task<IActionResult> ApproveReport(int reportId, [FromBody] ApproveReportRequest request)
+        {
+            var report = await _reportRepository.GetById(reportId);
+            if (report == null)
+            {
+                return NotFound("Report not found.");
+            }
+
+            if (report.Status != "Pending")
+            {
+                return BadRequest("Report is not in pending status and cannot be processed.");
+            }
+
+            var sender = await _accountRepository.GetById(report.SenderID);
+            if (sender == null)
+            {
+                return NotFound("Sender not found.");
+            }
+
+            if (request.IsApproved)
+            {
+                report.Status = "Completed";
+
+                //await _signalRService.SendNotificationToUser(
+                //    report.SenderID,
+                //    "Your Report Has Been Approved",
+                //    $"Your report for job '{report.Job.Title}' has been approved."
+                //);
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(request.Reason))
+                {
+                    return BadRequest("Rejection reason is required.");
+                }
+
+                report.Status = "Rejected";
+
+                //await _signalRService.SendNotificationToUser(
+                //    report.SenderID,
+                //    "Your Report Has Been Rejected",
+                //    $"Your report for job '{report.Job.Title}' has been rejected. Reason: {request.Reason}"
+                //);
+            }
+
+            report.CreatedAt = DateTime.UtcNow;
+            _reportRepository.Update(report);
+            await _reportRepository.Save();
+
+            return Ok(new
+            {
+                message = request.IsApproved
+                    ? "Report has been approved successfully."
+                    : "Report has been rejected."
+            });
+        }
+
         [HttpGet("report-list")]
-        public async Task<IActionResult> GetReportsForAdmin([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetReportsForAdmin()
         {
             try
             {
-                var (reports, total) = await _reportService.GetReportsForAdmin(pageNumber, pageSize);
-                var totalPages = (int)Math.Ceiling((double)total / pageSize);
-
-                return Ok(new
-                {
-                    TotalPages = totalPages,
-                    CurrentPage = pageNumber,
-                    TotalReports = total,
-                    Reports = reports
-                });
+                var reports = await _reportService.GetReportsForAdmin();
+                return Ok(reports);
             }
             catch (Exception ex)
             {
@@ -963,6 +1015,4 @@ namespace WorkSmart.API.Controllers
             }
         }
     }
-
-
 }

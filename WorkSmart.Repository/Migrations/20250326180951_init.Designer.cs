@@ -12,7 +12,7 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-    [Migration("20250325204720_init")]
+    [Migration("20250326180951_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -610,7 +610,7 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<int>("SenderID")
                         .HasColumnType("int");
 
-                    b.Property<string>("Title")
+                    b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

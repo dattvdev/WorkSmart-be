@@ -12,6 +12,7 @@ namespace WorkSmart.Core.Dto.CVDtos
         public int UserId { get; set; }
         public string FileName { get; set; }
         public string FilePath { get; set; }
+        public bool? IsHidden { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }

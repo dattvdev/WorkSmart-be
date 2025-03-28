@@ -37,7 +37,7 @@ namespace WorkSmart.Application.Services
                 JobID = reportDto.JobId,
                 Content = reportDto.Content,
                 Status = "Pending",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             await _reportRepository.CreateReport(reportPost);
@@ -48,6 +48,27 @@ namespace WorkSmart.Application.Services
         {
             var reports = await _reportRepository.GetReportsByAdmin();
             return _mapper.Map<IEnumerable<ReportListDto>>(reports);
+        }
+
+        public async Task<string> CheckReportStatus(int userId, int jobId)
+        {
+            var report = await _reportRepository.CheckReportStatus(userId, jobId);
+            return report?.Status ?? "None";
+        }
+
+        public async Task<bool> UpdateReportStatus(int reportId, string status)
+        {
+            var report = await _reportRepository.GetById(reportId);
+            if (report == null)
+                return false;
+
+            report.Status = status;
+            report.CreatedAt = DateTime.Now;
+
+            _reportRepository.Update(report);
+            await _reportRepository.Save();
+
+            return true;
         }
     }
 }

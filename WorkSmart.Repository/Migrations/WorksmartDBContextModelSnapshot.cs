@@ -134,6 +134,9 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<bool?>("IsFeatured")
                         .HasColumnType("bit");
 
+                    b.Property<bool?>("IsHidden")
+                        .HasColumnType("bit");
+
                     b.Property<string>("JobPosition")
                         .HasColumnType("nvarchar(max)");
 
@@ -508,7 +511,7 @@ namespace WorkSmart.Repository.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("NotificationJobTag");
+                    b.ToTable("NotificationJobTags");
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.Package", b =>
@@ -526,6 +529,9 @@ namespace WorkSmart.Repository.Migrations
                         .HasColumnType("bit");
 
                     b.Property<int?>("CVLimit")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DurationInDays")
                         .HasColumnType("int");
 
                     b.Property<int?>("FeaturedJobPostLimit")
@@ -601,7 +607,7 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<int>("SenderID")
                         .HasColumnType("int");
 
-                    b.Property<string>("Title")
+                    b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -711,12 +717,18 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<long>("OrderCode")
+                        .HasColumnType("bigint");
+
                     b.Property<double>("Price")
                         .HasColumnType("float");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("UserID")
                         .HasColumnType("int");

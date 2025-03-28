@@ -1,4 +1,5 @@
-﻿using WorkSmart.Core.Entity;
+﻿using Microsoft.EntityFrameworkCore;
+using WorkSmart.Core.Entity;
 using WorkSmart.Core.Interface;
 
 namespace WorkSmart.Repository.Repository
@@ -8,6 +9,16 @@ namespace WorkSmart.Repository.Repository
         public UserRepository(WorksmartDBContext context) : base(context)
         {
 
+        }
+
+        public async Task<User> GetEmployerByCompanyName(string companyName)
+        {
+            var user = await _dbSet.Include(l => l.PostedJobs).FirstOrDefaultAsync(x => x.CompanyName == companyName);
+            if (user != null)
+            {
+                return user;
+            }
+            return new User();
         }
     }
 }

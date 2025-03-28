@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using WorkSmart.API.SignalRService;
 using WorkSmart.Application.Mapper;
 using WorkSmart.Application.Services;
@@ -35,6 +36,9 @@ namespace WorkSmart.API.Extension
             services.AddScoped<NotificationService>();
             services.AddAutoMapper(typeof(NotificationProfile));
             services.AddScoped<SignalRNotificationService>();
+            //notificationJobTag
+            services.AddScoped<INotificationJobTagRepository, NotificationJobTagRepository>();
+            services.AddScoped<NotificationJobTagService>();
             //candidate
             services.AddScoped<ICandidateRepository, CandidateRepository>();
             services.AddAutoMapper(typeof(CandidateProfile));
@@ -67,6 +71,11 @@ namespace WorkSmart.API.Extension
             services.AddScoped<ICvParserService, CvParserService>();
             //mail
             services.AddScoped<SendMailService>();
+            //report
+            services.AddScoped<IReportRepository, ReportRepository>();
+            services.AddScoped<ReportService>();
+            services.AddAutoMapper(typeof(ReportProfile));
+            //payOS
 
             services.AddMemoryCache();
             services.AddSignalR();

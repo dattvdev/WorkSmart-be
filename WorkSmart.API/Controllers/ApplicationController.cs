@@ -263,5 +263,13 @@ namespace WorkSmart.Api.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+        //CheckApplyStatus
+        [HttpGet("CheckApplyStatus/{userId}/{jobId}")]
+        public async Task<IActionResult> CheckApplyStatus(int userId, int jobId)
+        {
+            var result = await _applicationService.CheckApplyStatus(userId, jobId);
+            return Ok(result);
+        }
     }
 }

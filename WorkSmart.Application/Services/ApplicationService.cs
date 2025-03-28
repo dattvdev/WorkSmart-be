@@ -122,5 +122,14 @@ namespace WorkSmart.Application.Services
         {
             return await _applicationRepository.GetJobDetailForApplicationAsync(applicationId);
         }
+
+        public async Task<string> CheckApplyStatus(int userId, int jobId = 0)
+        {
+            if (jobId == 0)
+            {
+                return "Job ID is required.";
+            }
+            return  _applicationRepository.CheckApplyJob(userId, jobId);
+        }
     }
 }

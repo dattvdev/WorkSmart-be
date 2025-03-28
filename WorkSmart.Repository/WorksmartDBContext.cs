@@ -31,6 +31,7 @@ namespace WorkSmart.Repository
         public DbSet<Package> Packages { get; set; }
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<Tag> Tags { get; set; }
+        public DbSet<NotificationJobTag> NotificationJobTags { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

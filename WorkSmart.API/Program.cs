@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Net.payOS;
 using System.Text;
 using WorkSmart.API.Extension;
 using WorkSmart.API.Hubs;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.MailDtos;
+using WorkSmart.Core.Dto.PaymentDtos;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository.Repository;
 
@@ -51,7 +54,21 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.Configure<PayOSSettings>(builder.Configuration.GetSection("PayOS"));
 
+builder.Services.AddSingleton<PayOS>(provider =>
+{
+    var config = provider.GetRequiredService<IOptions<PayOSSettings>>().Value;
+
+    if (string.IsNullOrEmpty(config.ClientId) ||
+        string.IsNullOrEmpty(config.ApiKey) ||
+        string.IsNullOrEmpty(config.ChecksumKey))
+    {
+        throw new InvalidOperationException("PayOS configuration is missing or invalid.");
+    }
+
+    return new PayOS(config.ClientId, config.ApiKey, config.ChecksumKey);
+});
 
 var app = builder.Build();
 

@@ -12,5 +12,7 @@ namespace WorkSmart.Core.Interface
     {
         Task<ReportPost> CreateReport(ReportPost report);
         Task<IEnumerable<ReportPost>> GetReportsByAdmin();
+        Task<ReportPost> CheckReportStatus(int userId, int jobId);
+
     }
 }

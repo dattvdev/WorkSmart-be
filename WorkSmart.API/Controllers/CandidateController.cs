@@ -192,5 +192,20 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new { Error = "An error occurred while reporting job" });
             }
         }
+
+        [HttpGet("check-report-status")]
+        public async Task<IActionResult> CheckReportStatus([FromQuery] int jobId)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
+                var status = await _reportService.CheckReportStatus(userId, jobId);
+                return Ok(new { status });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = "An error occurred while checking report status" });
+            }
+        }
     }
 }

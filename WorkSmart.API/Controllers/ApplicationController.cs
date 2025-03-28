@@ -102,26 +102,26 @@ namespace WorkSmart.Api.Controllers
                     string subject = "Your Application Status - Not Selected";
                     string body = $@"Dear {candidate.User.FullName},
 
-We appreciate your interest in {jobTitle} at our company and the time you've taken to apply.
+                    We appreciate your interest in {jobTitle} at our company and the time you've taken to apply.
 
-After careful consideration, we regret to inform you that we have decided not to move forward with your application at this time.";
+                    After careful consideration, we regret to inform you that we have decided not to move forward with your application at this time.";
 
                     // Thêm lý do từ chối vào email nếu có
                     if (!string.IsNullOrEmpty(request.RejectionReason))
                     {
                         body += $@"
 
-Reason: {request.RejectionReason}";
+                        Reason: {request.RejectionReason}";
                     }
 
                     body += $@"
 
-Although we are unable to offer you this position, we encourage you to apply for future openings that match your skills and experience.
+                    Although we are unable to offer you this position, we encourage you to apply for future openings that match your skills and experience.
 
-Thank you again for your interest in our company. We wish you the best in your job search and professional endeavors.
+                    Thank you again for your interest in our company. We wish you the best in your job search and professional endeavors.
 
-Best regards,
-WorkSmart Team";
+                    Best regards,
+                    WorkSmart Team";
 
                     // Gửi email với lý do từ chối
                     await _sendMailService.SendEmailAsync(candidate.User.Email, subject, body);
@@ -133,7 +133,13 @@ WorkSmart Team";
                         $"We regret to inform you that your application \"{jobDetails.Title}\" has been rejected.",
                         "/candidate/applied-jobs"
                     );
-
+                    var employerId = jobDetails.UserID;
+                    await _signalRService.SendNotificationToUser(
+                        employerId,
+                        "Candidate Rejection Complete",
+                        $"You've successfully rejected a candidate for \"{jobTitle}\".",
+                        $"/employer/manage-jobs/applied-candidates/{jobDetails.JobID}"
+                    );
                     return Ok(new
                     {
                         success = true,
@@ -189,6 +195,15 @@ WorkSmart Team";
 
                     // Gửi email chấp nhận
                     await _sendMailService.SendEmailAsync(candidate.User.Email, subject, body);
+                    
+                    
+                    var employerId = jobDetails.UserID;
+                    await _signalRService.SendNotificationToUser(
+                        employerId,
+                        "Candidate Acceptance Complete",
+                        $"You've successfully accepted a candidate for \"{jobTitle}\".",
+                        $"/employer/manage-jobs/applied-candidates/{jobDetails.JobID}"
+                    );
 
                     // Gửi thông báo realtime
                     await _signalRService.SendNotificationToUser(

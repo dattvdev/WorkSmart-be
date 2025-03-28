@@ -20,5 +20,6 @@ namespace WorkSmart.Core.Dto.JobDtos
         public string? Category { get; set; }
         public List<int>? Tags { get; set; }
         public bool MostRecent { get; set; } = true;
+        public int? UserID { get; set;}
     }
 }

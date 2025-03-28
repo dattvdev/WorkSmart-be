@@ -22,7 +22,7 @@ namespace WorkSmart.Core.Dto.CVDtos
         public bool? IsFeatured { get; set; } = false;
         public string? FileName { get; set; }
         public string? FilePath { get; set; }
-        public bool? isHidden { get; set; }
+        public bool? IsHidden { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
         public ICollection<CVExperienceDto>? Experiences { get; set; }

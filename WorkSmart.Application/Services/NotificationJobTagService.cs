@@ -26,5 +26,27 @@ namespace WorkSmart.Application.Services
             var list = await _notificationJobTagRepository.GetListRegisterTag(UserID);
             return list;
         }
+
+        public async Task AddNotificationTag(int userId, List<int> tagId, string email)
+        {
+            await _notificationJobTagRepository.AddNotificationTag(userId, tagId, email);
+        }
+        public void DeleteByCategory(int userId, string categoryID)
+        {
+            _notificationJobTagRepository.DeleteByCategory(userId, categoryID);
+        }
+        public void DeleteByCategoryEmail(int userId, string categoryID, string email)
+        {
+            _notificationJobTagRepository.DeleteByCategoryEmail(userId, categoryID, email);
+        }
+        public void DeleteByCategoryEmailTag(int userId, string categoryID, string email, int tagIds)
+        {
+            _notificationJobTagRepository.DeleteByCategoryEmailTag(userId, categoryID, email, tagIds);
+        }
+        public async Task<List<int>> GetListTagIdByEmail(int userId, string email)
+        {
+            var list = await _notificationJobTagRepository.GetListTagIdByEmail(userId, email);
+            return list;
+        }
     }
 }

@@ -11,12 +11,10 @@ namespace WorkSmart.API.Controllers
     public class CandidateController : ControllerBase
     {
         private readonly CandidateService _candidateService;
-        private readonly NotificationJobTagService _notificationJobTagService;
         private readonly ReportService _reportService;
-        public CandidateController(CandidateService candidateService, ReportService reportService, NotificationJobTagService notificationJobTagService)
+        public CandidateController(CandidateService candidateService, ReportService reportService)
         {
             _candidateService = candidateService;
-            _notificationJobTagService = notificationJobTagService;
             _reportService = reportService;
         }
 
@@ -99,12 +97,7 @@ namespace WorkSmart.API.Controllers
             }
         }
 
-        [HttpGet("notification-tags/{userId}")]
-        public async Task<IActionResult> GetNotificationTags(int userId)
-        {
-            var tags = await _notificationJobTagService.GetListRegisterTag(userId);
-            return Ok(tags);
-        }
+       
 
     }
 }

@@ -78,5 +78,55 @@ namespace WorkSmart.Repository.Repository
             await _context.SaveChangesAsync();
         }
 
+        public void DeleteByCategory(int userId, string categoryID)
+        {
+            var notificationJobTags = _dbSet.Include(c => c.Tag)
+                                            .Where(njt => njt.UserID == userId && njt.Tag.CategoryID.Equals(categoryID))
+                                            .ToList();
+            _dbSet.RemoveRange(notificationJobTags);
+            _context.SaveChanges();
+        }
+
+        public void DeleteByCategoryEmail(int userId, string categoryID, string email)
+        {
+            var notificationJobTags = _dbSet.Include(c => c.Tag)
+                                             .Where(njt => njt.UserID == userId
+                                                        && njt.Tag.CategoryID == categoryID
+                                                        && njt.Email == email)
+                                             .ToList();
+
+            if (!notificationJobTags.Any())  // Kiểm tra danh sách có rỗng không
+            {
+                return;
+            }
+
+            _dbSet.RemoveRange(notificationJobTags);
+            _context.SaveChanges();
+        }
+
+        public void DeleteByCategoryEmailTag(int userId, string categoryID, string email, int tagIds)
+        {
+            var notificationJobTags = _dbSet.Include(c => c.Tag)
+                                             .FirstOrDefault(njt => njt.UserID == userId
+                                                                 && njt.Tag.CategoryID == categoryID
+                                                                 && njt.Email == email
+                                                                 && njt.TagID == tagIds);
+
+            if (notificationJobTags == null)
+            {
+                return;
+            }
+
+            _dbSet.Remove(notificationJobTags);
+            _context.SaveChanges();
+        }
+
+        public async Task<List<int>> GetListTagIdByEmail(int userId, string email)
+        {
+            return await _dbSet.Where(njt => njt.UserID == userId && njt.Email == email)
+                               .Select(njt => njt.TagID)
+                               .ToListAsync();
+        }
+
     }
 }

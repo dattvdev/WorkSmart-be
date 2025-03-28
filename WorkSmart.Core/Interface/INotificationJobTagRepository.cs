@@ -13,5 +13,10 @@ namespace WorkSmart.Core.Interface
         Task<List<UserNotificationTagDto>> GetNotiUserByListTagID(List<int> tagIDs);
         Task<List<UserNotificationTagManageDto>> GetListRegisterTag(int UserID);
         Task AddNotificationTag(int userId, List<int> tagId, string email);
+        void DeleteByCategory(int userId, string categoryID);
+        void DeleteByCategoryEmail(int userId, string categoryID, string email);
+        void DeleteByCategoryEmailTag(int userId, string categoryID, string email, int tagIds);
+        Task<List<int>> GetListTagIdByEmail(int userId, string email);
+
     }
 }

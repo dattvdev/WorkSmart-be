@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WorkSmart.Repository;
 
@@ -11,9 +12,11 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-    partial class WorksmartDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250325104447_initial_DB")]
+    partial class initial_DB
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -531,9 +534,6 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<int?>("CVLimit")
                         .HasColumnType("int");
 
-                    b.Property<int>("DurationInDays")
-                        .HasColumnType("int");
-
                     b.Property<int?>("FeaturedJobPostLimit")
                         .HasColumnType("int");
 
@@ -717,18 +717,12 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<long>("OrderCode")
-                        .HasColumnType("bigint");
-
                     b.Property<double>("Price")
                         .HasColumnType("float");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("UserID")
                         .HasColumnType("int");

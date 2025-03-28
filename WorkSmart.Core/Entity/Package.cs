@@ -11,7 +11,7 @@ namespace WorkSmart.Core.Entity
         public int PackageID { get; set; }
         public string Name { get; set; }
         public double Price { get; set; }
-        public int DurationInDays { get; set; } // Ngày hết hạn
+        public int DurationInDays { get; set; } // Số ngày hết hạn
         // Dành cho Employer
         public int? JobPostLimitPerDay { get; set; } // Giới hạn số bài đăng mỗi ngày
         public int? FeaturedJobPostLimit { get; set; } // Số bài đăng có thể hiển thị nổi bật

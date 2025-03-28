@@ -10,6 +10,8 @@ using WorkSmart.Core.Entity;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository;
 using Microsoft.EntityFrameworkCore;
+using WorkSmart.Application.Services;
+using WorkSmart.API.SignalRService;
 
 namespace WorkSmart.API.Controllers
 {
@@ -21,12 +23,16 @@ namespace WorkSmart.API.Controllers
         private readonly WorksmartDBContext _context;
         private readonly IAccountRepository _accountRepository;
         private readonly WorkSmart.Core.Entity.Transaction transaction;
+        private readonly SignalRNotificationService _signalRService;
+        private readonly SendMailService _sendMailService;
 
-        public PaymentController(PayOS payOS, WorksmartDBContext context, IAccountRepository accountRepository)
+        public PaymentController(PayOS payOS, WorksmartDBContext context, IAccountRepository accountRepository, SignalRNotificationService signalRService, SendMailService sendMailService)
         {
             _payOS = payOS;
             _context = context;
             _accountRepository = accountRepository;
+            _signalRService = signalRService;
+            _sendMailService = sendMailService;
         }
 
         [HttpPost("create-payment")]
@@ -156,6 +162,7 @@ namespace WorkSmart.API.Controllers
             try 
             {
                 var transaction = await _context.Transactions
+                    .Include(t=> t.User)
                     .FirstOrDefaultAsync(t => t.OrderCode == orderCode);
 
                 if (transaction == null)
@@ -165,20 +172,135 @@ namespace WorkSmart.API.Controllers
 
                 if (transaction.Status == "PAID")
                 {
+                    await _signalRService.SendNotificationToUser(
+                        transaction.User.UserID,
+                        "Payment Successful",
+                        $"Your payment has been confirmed."
+                    );
+
+                    var successEmailContent = new Core.Dto.MailDtos.MailContent
+                    {
+                        To = transaction.User.Email,
+                        Subject = "Payment Successful - Transaction Confirmed",
+                        Body = $@"
+    <!DOCTYPE html>
+    <html lang=""en"">
+    <head>
+        <meta charset=""UTF-8"">
+        <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+        <title>Payment Successful</title>
+        <style>
+            body {{
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0;
+                padding: 0;
+                background-color: #f9f9f9;
+            }}
+            .email-container {{
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            }}
+            .header {{
+                background-color: #4CAF50;
+                color: white;
+                padding: 20px;
+                text-align: center;
+            }}
+            .content {{
+                padding: 30px;
+            }}
+            .message {{
+                background-color: #e6f7e6;
+                border-left: 4px solid #4CAF50;
+                padding: 15px;
+                margin-bottom: 20px;
+                border-radius: 4px;
+            }}
+            .transaction-details {{
+                background-color: #f5f5f5;
+                padding: 15px;
+                border-radius: 4px;
+                margin-bottom: 20px;
+            }}
+            .footer {{
+                background-color: #f5f5f5;
+                padding: 20px;
+                text-align: center;
+                font-size: 12px;
+                color: #777;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class=""email-container"">
+            <div class=""header"">
+                <h2>Payment Successful</h2>
+            </div>
+            <div class=""content"">
+                <h1 style=""color: #4CAF50; text-align: center;"">Transaction Confirmed</h1>
+                <div class=""message"">
+                    <p>Dear {transaction.User.FullName},</p>
+                    <p>Your payment has been successfully processed. Thank you for your transaction!</p>
+                </div>
+                <div class=""transaction-details"">
+                    <h3>Transaction Details:</h3>
+                    <p><strong>Order Code:</strong> {transaction.OrderCode}</p>
+                    <p><strong>Amount:</strong> {transaction.Price:N0} VND</p>
+                    <p><strong>Date:</strong> {transaction.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")}</p>
+                    <p><strong>Status:</strong> Paid</p>
+                </div>
+                <p style=""text-align: center;"">
+                    <a href=""#"" style=""display: inline-block; background-color: #4CAF50; color: white; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; text-align: center;"">View Transaction</a>
+                </p>
+            </div>
+            <div class=""footer"">
+                <p>© 2025 WorkSmart. All rights reserved.</p>
+                <p>Questions? Contact our support team.</p>
+            </div>
+        </div>
+    </body>
+    </html>"
+                    };
+
+                    await _sendMailService.SendMail(successEmailContent);
+
+                    var transactionDto = new TransactionDto
+                    {
+                        OrderCode = transaction.OrderCode,
+                        Price = transaction.Price,
+                        Status = transaction.Status,
+                        CreatedAt = transaction.CreatedAt,
+                        UserFullName = transaction.User.FullName,
+                        UserEmail = transaction.User.Email
+                    };
+
                     return Ok(new
                     {
                         status = "SUCCESS",
-                        message = "Thanh toán thành công",
-                        details = transaction
+                        message = "Payment Success",
+                        details = transactionDto,
                     });
                 }
-
-                // Các trạng thái khác
-                return Ok(new
+                else
                 {
-                    status = transaction.Status,
-                    message = "Trạng thái thanh toán chưa hoàn tất"
-                });
+                    await _signalRService.SendNotificationToUser(
+                        transaction.User.UserID,
+                        "Payment Failed",
+                        $"Your payment could not be processed."
+                    );
+
+                    return Ok(new
+                    {
+                        status = transaction.Status,
+                        message = "Payment failed"
+                    });
+                }
             }
             catch (Exception ex)
             {
@@ -219,20 +341,21 @@ namespace WorkSmart.API.Controllers
                     return NotFound($"Package not found for name: {packageName}");
                 }
 
-                var existingSubscription = await _context.Subscriptions
-                    .FirstOrDefaultAsync(s =>
-                        s.UserID == existingTransaction.UserID &&
-                        s.PackageID == package.PackageID);
+                // Hàm kiểm tra xem người dùng đã có subscription cho gói này
+                //var existingSubscription = await _context.Subscriptions
+                //    .FirstOrDefaultAsync(s =>
+                //        s.UserID == existingTransaction.UserID &&
+                //        s.PackageID == package.PackageID);
 
-                if (existingSubscription != null)
-                {
-                    return Ok(new
-                    {
-                        status = "SUCCESS",
-                        message = "Subscription already exists",
-                        orderCode = orderCode
-                    });
-                }
+                //if (existingSubscription != null)
+                //{
+                //    return Ok(new
+                //    {
+                //        status = "SUCCESS",
+                //        message = "Subscription already exists",
+                //        orderCode = orderCode
+                //    });
+                //}
 
                 var newSubscription = new Subscription
                 {
@@ -256,7 +379,7 @@ namespace WorkSmart.API.Controllers
                 return Ok(new
                 {
                     status = "SUCCESS",
-                    message = "Thanh toán và tạo subscription thành công",
+                    message = "Payment and subscription created successfully",
                     orderCode = orderCode,
                     subscriptionId = newSubscription.SubscriptionID,
                     packageName = package.Name
@@ -288,7 +411,7 @@ namespace WorkSmart.API.Controllers
                     return NotFound(new
                     {
                         StatusCode = 404,
-                        Message = "Giao dịch không tồn tại"
+                        Message = "Transaction not exist"
                     });
                 }
 
@@ -298,7 +421,7 @@ namespace WorkSmart.API.Controllers
                     return BadRequest(new
                     {
                         StatusCode = 400,
-                        Message = "Giao dịch đã được hủy trước đó"
+                        Message = "Transaction was previously canceled"
                     });
                 }
 
@@ -317,7 +440,7 @@ namespace WorkSmart.API.Controllers
                     return Ok(new
                     {
                         StatusCode = 200,
-                        Message = "Hủy thanh toán thành công",
+                        Message = "Payment Cancellation Successful",
                         OrderCode = transaction.OrderCode
                     });
                 }
@@ -327,7 +450,7 @@ namespace WorkSmart.API.Controllers
                     return StatusCode(500, new
                     {
                         StatusCode = 500,
-                        Message = "Lỗi trong quá trình hủy thanh toán",
+                        Message = "Error during payment cancellation",
                         Details = payOsEx.Message
                     });
                 }
@@ -338,7 +461,7 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new
                 {
                     StatusCode = 500,
-                    Message = "Đã xảy ra lỗi trong quá trình xử lý",
+                    Message = "An error occurred during processing",
                     Details = ex.Message
                 });
             }

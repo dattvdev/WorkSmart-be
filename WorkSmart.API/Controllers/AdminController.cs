@@ -967,11 +967,91 @@ namespace WorkSmart.API.Controllers
             {
                 report.Status = "Completed";
 
-                //await _signalRService.SendNotificationToUser(
-                //    report.SenderID,
-                //    "Your Report Has Been Approved",
-                //    $"Your report for job '{report.Job.Title}' has been approved."
-                //);
+                await _signalRService.SendNotificationToUser(
+                    sender.UserID,
+                    "Your Report Has Been Approved",
+                    $"Your report has been approved."
+                );
+
+                var approvedEmailContent = new Core.Dto.MailDtos.MailContent
+                {
+                    To = sender.Email,
+                    Subject = "Your Report Has Been Approved",
+                    Body = $@"
+    <!DOCTYPE html>
+    <html lang=""en"">
+    <head>
+        <meta charset=""UTF-8"">
+        <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+        <title>Report Approved</title>
+        <style>
+            body {{
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0;
+                padding: 0;
+                background-color: #f9f9f9;
+            }}
+            .email-container {{
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            }}
+            .header {{
+                background-color: #4285f4;
+                color: white;
+                padding: 20px;
+                text-align: center;
+            }}
+            .content {{
+                padding: 30px;
+            }}
+            .message {{
+                background-color: #e6ffed;
+                border-left: 4px solid #4285f4;
+                padding: 15px;
+                margin-bottom: 20px;
+                border-radius: 4px;
+            }}
+            .footer {{
+                background-color: #f5f5f5;
+                padding: 20px;
+                text-align: center;
+                font-size: 12px;
+                color: #777;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class=""email-container"">
+            <div class=""header"">
+                <h2>Report Approved</h2>
+            </div>
+            <div class=""content"">
+                <h1 style=""color: #4285f4; text-align: center;"">Approved</h1>
+                <div class=""message"">
+                    <p>Dear {sender.FullName},</p>
+                    <p>We are pleased to inform you that your report for the job '{report.Content}' has been approved.</p>
+                    <p>Our team has reviewed your report and found it to be valid and actionable.</p>
+                </div>
+                <p style=""text-align: center;"">
+                    <a href=""#"" style=""display: inline-block; background-color: #4285f4; color: white; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; text-align: center;"">View Report Details</a>
+                </p>
+            </div>
+            <div class=""footer"">
+                <p>© 2025 WorkSmart. All rights reserved.</p>
+                <p>Questions? Contact our support team.</p>
+            </div>
+        </div>
+    </body>
+    </html>"
+                };
+
+                await _sendMailService.SendMail(approvedEmailContent);
             }
             else
             {
@@ -982,11 +1062,92 @@ namespace WorkSmart.API.Controllers
 
                 report.Status = "Rejected";
 
-                //await _signalRService.SendNotificationToUser(
-                //    report.SenderID,
-                //    "Your Report Has Been Rejected",
-                //    $"Your report for job '{report.Job.Title}' has been rejected. Reason: {request.Reason}"
-                //);
+                await _signalRService.SendNotificationToUser(
+                     sender.UserID,
+                    "Your Report Has Been Rejected",
+                    $"Your report has been rejected."
+                );
+
+                var rejectedEmailContent = new Core.Dto.MailDtos.MailContent
+                {
+                    To = sender.Email,
+                    Subject = "Your Report Has Been Rejected",
+                    Body = $@"
+    <!DOCTYPE html>
+    <html lang=""en"">
+    <head>
+        <meta charset=""UTF-8"">
+        <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+        <title>Report Rejected</title>
+        <style>
+            body {{
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0;
+                padding: 0;
+                background-color: #f9f9f9;
+            }}
+            .email-container {{
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            }}
+            .header {{
+                background-color: #dc3545;
+                color: white;
+                padding: 20px;
+                text-align: center;
+            }}
+            .content {{
+                padding: 30px;
+            }}
+            .message {{
+                background-color: #ffe6e6;
+                border-left: 4px solid #dc3545;
+                padding: 15px;
+                margin-bottom: 20px;
+                border-radius: 4px;
+            }}
+            .footer {{
+                background-color: #f5f5f5;
+                padding: 20px;
+                text-align: center;
+                font-size: 12px;
+                color: #777;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class=""email-container"">
+            <div class=""header"">
+                <h2>Report Rejected</h2>
+            </div>
+            <div class=""content"">
+                <h1 style=""color: #dc3545; text-align: center;"">Action Required</h1>
+                <div class=""message"">
+                    <p>Dear {sender.FullName},</p>
+                    <p>We regret to inform you that your report for the job '{report.Content}' has been rejected.</p>
+                    <p>Reason for Rejection: <strong>{request.Reason}</strong></p>
+                    <p>Please review the details and consider resubmitting with more information if applicable.</p>
+                </div>
+                <p style=""text-align: center;"">
+                    <a href=""#"" style=""display: inline-block; background-color: #dc3545; color: white; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; text-align: center;"">Resubmit Report</a>
+                </p>
+            </div>
+            <div class=""footer"">
+                <p>© 2025 WorkSmart. All rights reserved.</p>
+                <p>Need help? Contact our support team.</p>
+            </div>
+        </div>
+    </body>
+    </html>"
+                };
+
+                await _sendMailService.SendMail(rejectedEmailContent);
             }
 
             report.CreatedAt = DateTime.UtcNow;

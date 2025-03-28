@@ -314,7 +314,6 @@ namespace WorkSmart.Repository.Repository
 
             var similarJobs = _dbSet.Include(j => j.Tags)
                 .Where(j => j.JobID != jobId)
-                .Where(j => j.Status == JobStatus.Active)
                 .AsEnumerable() // Chuyển truy vấn về bộ nhớ
                 .Where(j => j.Tags.Any(t => jobTagIds.Contains(t.TagID))) // Lọc các job có Tag trùng
                 .OrderByDescending(j => j.Tags.Count)

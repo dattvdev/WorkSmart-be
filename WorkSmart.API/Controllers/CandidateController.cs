@@ -113,74 +113,74 @@ namespace WorkSmart.API.Controllers
                     To = user.Email,
                     Subject = "Job Report Submitted - Pending Admin Review",
                     Body = $@"<!DOCTYPE html>
-    <html lang=""en"">
-    <head>
-        <meta charset=""UTF-8"">
-        <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-        <title>Job Report Submitted</title>
-        <style>
-            body {{
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0;
-                padding: 0;
-                background-color: #f9f9f9;
-            }}
-            .email-container {{
-                max-width: 600px;
-                margin: 0 auto;
-                background-color: #ffffff;
-                border-radius: 8px;
-                overflow: hidden;
-                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            }}
-            .header {{
-                background-color: #4285f4;
-                color: white;
-                padding: 20px;
-                text-align: center;
-            }}
-            .content {{
-                padding: 30px;
-            }}
-            .message {{
-                background-color: #f0f8ff;
-                border-left: 4px solid #4285f4;
-                padding: 15px;
-                margin-bottom: 20px;
-                border-radius: 4px;
-            }}
-            .footer {{
-                background-color: #f5f5f5;
-                padding: 20px;
-                text-align: center;
-                font-size: 12px;
-                color: #777;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class=""email-container"">
-            <div class=""header"">
-                <h2>Job Report Submitted</h2>
-            </div>
-            <div class=""content"">
-                <h1 style=""color: #4285f4; text-align: center;"">Review in Progress</h1>
-                <div class=""message"">
-                    <p>Dear {user.FullName},</p>
-                    <p>We want to confirm that your job report has been successfully submitted and is currently under review by our admin team. We appreciate your patience as we investigate the details of your report.</p>
-                    <p>Our team will review the information carefully and take appropriate action. You will be notified of the outcome once the review is complete.</p>
-                </div>
-            </div>
-            <div class=""footer"">
-                <p>© 2025 WorkSmart. All rights reserved.</p>
-                <p>Need help? Contact our support team.</p>
-            </div>
-        </div>
-    </body>
-    </html>
-    "
+                                <html lang=""en"">
+                                <head>
+                                    <meta charset=""UTF-8"">
+                                    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+                                    <title>Job Report Submitted</title>
+                                    <style>
+                                        body {{
+                                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                            line-height: 1.6;
+                                            color: #333;
+                                            margin: 0;
+                                            padding: 0;
+                                            background-color: #f9f9f9;
+                                        }}
+                                        .email-container {{
+                                            max-width: 600px;
+                                            margin: 0 auto;
+                                            background-color: #ffffff;
+                                            border-radius: 8px;
+                                            overflow: hidden;
+                                            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+                                        }}
+                                        .header {{
+                                            background-color: #4285f4;
+                                            color: white;
+                                            padding: 20px;
+                                            text-align: center;
+                                        }}
+                                        .content {{
+                                            padding: 30px;
+                                        }}
+                                        .message {{
+                                            background-color: #f0f8ff;
+                                            border-left: 4px solid #4285f4;
+                                            padding: 15px;
+                                            margin-bottom: 20px;
+                                            border-radius: 4px;
+                                        }}
+                                        .footer {{
+                                            background-color: #f5f5f5;
+                                            padding: 20px;
+                                            text-align: center;
+                                            font-size: 12px;
+                                            color: #777;
+                                        }}
+                                    </style>
+                                </head>
+                                <body>
+                                    <div class=""email-container"">
+                                        <div class=""header"">
+                                            <h2>Job Report Submitted</h2>
+                                        </div>
+                                        <div class=""content"">
+                                            <h1 style=""color: #4285f4; text-align: center;"">Review in Progress</h1>
+                                            <div class=""message"">
+                                                <p>Dear {user.FullName},</p>
+                                                <p>We want to confirm that your job report has been successfully submitted and is currently under review by our admin team. We appreciate your patience as we investigate the details of your report.</p>
+                                                <p>Our team will review the information carefully and take appropriate action. You will be notified of the outcome once the review is complete.</p>
+                                            </div>
+                                        </div>
+                                        <div class=""footer"">
+                                            <p>© 2025 WorkSmart. All rights reserved.</p>
+                                            <p>Need help? Contact our support team.</p>
+                                        </div>
+                                    </div>
+                                </body>
+                                </html>
+                                "
                 };
 
                 await _sendMailService.SendMail(emailContent);

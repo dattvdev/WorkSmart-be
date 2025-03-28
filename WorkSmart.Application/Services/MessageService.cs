@@ -23,36 +23,9 @@ namespace WorkSmart.Application.Services
 
         public async Task<MessageDto> SendMessageAsync(SendMessageDto messageDto)
         {
-            /*var message = new PersonalMessage
-            {
-                SenderID = messageDto.SenderId,
-                ReceiverID = messageDto.ReceiverId,
-                Content = messageDto.Content,
-                CreatedAt = DateTime.UtcNow,
-                IsRead = false
-            };
-*/
             PersonalMessage personalMessage = _mapper.Map<PersonalMessage>(messageDto);
 
             await _messageRepository.Add(personalMessage);
-
-            // Get sender and receiver for full details
-            var sender = await _messageRepository.GetById(personalMessage.SenderID);
-            var receiver = await _messageRepository.GetById(personalMessage.ReceiverID);
-
-           /* return new MessageDto
-            {
-                MessageId = message.PersonalMessageID,
-                SenderId = message.SenderID,
-                SenderName = sender?.FullName,
-                SenderAvatar = sender?.Avatar,
-                ReceiverId = message.ReceiverID,
-                ReceiverName = receiver?.FullName,
-                ReceiverAvatar = receiver?.Avatar,
-                Content = message.Content,
-                CreatedAt = message.CreatedAt,
-                IsRead = message.IsRead
-            };*/
 
             return _mapper.Map<MessageDto>(personalMessage);
         }
@@ -61,19 +34,6 @@ namespace WorkSmart.Application.Services
         {
             var messages = await _messageRepository.GetMessagesBetweenUsersAsync(userId1, userId2, pageNumber, pageSize);
 
-            /*return messages.Select(m => new MessageDto
-            {
-                MessageId = m.PersonalMessageID,
-                SenderId = m.SenderID,
-                SenderName = m.Sender?.FullName,
-                SenderAvatar = m.Sender?.Avatar,
-                ReceiverId = m.ReceiverID,
-                ReceiverName = m.Receiver?.FullName,
-                ReceiverAvatar = m.Receiver?.Avatar,
-                Content = m.Content,
-                CreatedAt = m.CreatedAt,
-                IsRead = m.IsRead
-            });*/
             return _mapper.Map<IEnumerable<MessageDto>>(messages).OrderBy(pm => pm.CreatedAt);
         }
 

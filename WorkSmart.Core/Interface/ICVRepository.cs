@@ -10,5 +10,6 @@ namespace WorkSmart.Core.Interface
         void Update(CV cv); 
         Task Delete(int id);
         void SetFeature(int cvId, int userId);
+        void HideCV(int cvId);
     }
 }

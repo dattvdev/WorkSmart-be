@@ -13,5 +13,7 @@ namespace WorkSmart.Core.Interface
         Task<bool> UpdateRejectionReasonAsync(int applicationId, string rejectionReason);
         Task<Job> GetJobDetailForApplicationAsync(int applicationId);
         Task<Application> GetApplicationDetailAsync(int applicationId, int jobId);
+        string CheckApplyJob(int UserId, int JobId);
+        void ChangeCV(int applicationId, int cvId);
     }
 }

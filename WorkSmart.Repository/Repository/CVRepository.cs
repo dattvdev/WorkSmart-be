@@ -17,9 +17,9 @@ namespace WorkSmart.Repository.Repository
                 .Include(c => c.Educations)
                 .Include(c => c.Certifications)
                 .Include(c => c.Skills)
-.Where(cv => cv.UserID == userId)
-.OrderByDescending(cv => cv.CreatedAt)
-.ToListAsync();
+                .Where(cv => cv.UserID == userId && cv.IsHidden == false)
+                .OrderByDescending(cv => cv.CreatedAt)
+                .ToListAsync();
         }
 
         public async Task<CV> GetCVWithDetails(int id)
@@ -60,6 +60,17 @@ namespace WorkSmart.Repository.Repository
                 else cv.IsFeatured = false;
             }
             _context.SaveChanges();
+        }
+
+        public void HideCV(int cvId)
+        {
+            var cv = _dbSet.FirstOrDefault(cv => cv.CVID == cvId);
+            if (cv != null)
+            {
+                cv.IsHidden = true;
+                _dbSet.Update(cv);
+                _context.SaveChanges();
+            }
         }
     }
 }

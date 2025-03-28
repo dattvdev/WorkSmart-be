@@ -10,6 +10,7 @@ using WorkSmart.Core.Dto.CandidateDtos;
 using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
+using WorkSmart.Core.Interface;
 
 namespace WorkSmart.API.Controllers
 {
@@ -20,13 +21,21 @@ namespace WorkSmart.API.Controllers
         private readonly JobService _jobService;
         private readonly ILogger<JobController> _logger;
         private readonly SignalRNotificationService _signalRService;
-        public JobController(JobService jobService, ILogger<JobController> logger, SignalRNotificationService signalRService)
+        private readonly ISendMailService _sendMailService;
+        private readonly NotificationJobTagService _notificationJobTagService;
+        public JobController(JobService jobService
+            , ILogger<JobController> logger
+            , SignalRNotificationService signalRService
+            , ISendMailService sendMailService
+            , NotificationJobTagService notificationJobTagService)
         {
             _jobService = jobService;
             _logger = logger;
             _signalRService = signalRService;
+            _sendMailService = sendMailService;
+            _notificationJobTagService = notificationJobTagService;
         }
-        
+
         [HttpPost("create")]
         public async Task<IActionResult> CreateJob([FromBody] CreateJobDto createJobDto)
         {
@@ -175,7 +184,7 @@ namespace WorkSmart.API.Controllers
             var (jobs, total) = await _jobService.GetListSearch(request);
             var totalPage = (int)Math.Ceiling((double)total / request.PageSize);
             var totalJob = total;
-            return Ok(new {totalJob, totalPage, jobs });
+            return Ok(new { totalJob, totalPage, jobs });
         }
 
         ///// Get jobs by employer ID
@@ -243,7 +252,186 @@ namespace WorkSmart.API.Controllers
             {
                 return NotFound($"Job with ID {jobId} not found");
             }
+            var job = await _jobService.GetJobById(jobId);
+            List<int> listTagIds = job.Item1.Tags;
+            var listUserId = _notificationJobTagService.GetNotiUserByListTagID(listTagIds);
+            var subject = "There is a new job that you might be interested in";
 
+            foreach (var userId in listUserId.Result)
+            {
+                string tagsHtml = string.Join("", userId.TagNames.Select(tag => $"<span class='tag'>{tag}</span>"));
+                var body = $@"
+                         <html>
+                            <head>
+                                <style>
+                                    body {{
+                                        font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+                                        background-color: #f7f9fc;
+                                        margin: 0;
+                                        padding: 0;
+                                        color: #333;
+                                    }}
+                                    .email-container {{
+                                        max-width: 600px;
+                                        margin: 30px auto;
+                                        background: #ffffff;
+                                        padding: 0;
+                                        border-radius: 12px;
+                                        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
+                                        overflow: hidden;
+                                    }}
+                                    .header {{
+                                        background: linear-gradient(135deg, #0062cc, #1e90ff);
+                                        color: white;
+                                        padding: 25px 20px;
+                                        font-size: 22px;
+                                        font-weight: bold;
+                                        text-align: center;
+                                        letter-spacing: 0.5px;
+                                    }}
+                                    .logo {{
+                                        text-align: center;
+                                        margin-top: -10px;
+                                        margin-bottom: 15px;
+                                    }}
+                                    .logo img {{
+                                        height: 40px;
+                                    }}
+                                    .content {{
+                                        padding: 30px 25px;
+                                        font-size: 16px;
+                                        line-height: 1.6;
+                                        color: #444;
+                                    }}
+                                    .job-title {{
+                                        font-size: 20px;
+                                        font-weight: bold;
+                                        color: #0062cc;
+                                        margin: 15px 0;
+                                        padding-bottom: 10px;
+                                        border-bottom: 1px solid #eaeaea;
+                                    }}
+                                    .job-info {{
+                                        background-color: #f8f9fa;
+                                        border-left: 4px solid #0062cc;
+                                        padding: 15px;
+                                        margin: 20px 0;
+                                        border-radius: 0 6px 6px 0;
+                                    }}
+                                    .tags {{
+                                        font-size: 14px;
+                                        color: #555;
+                                        margin: 15px 0;
+                                        display: flex;
+                                        flex-wrap: wrap;
+                                    }}
+                                    .tag {{
+                                        background-color: #e6f2ff;
+                                        color: #0062cc;
+                                        padding: 5px 10px;
+                                        border-radius: 50px;
+                                        margin-right: 8px;
+                                        margin-bottom: 8px;
+                                        display: inline-block;
+                                    }}
+                                    .button-container {{
+                                        text-align: center;
+                                        margin: 30px 0 20px;
+                                    }}
+                                    .button {{
+                                        display: inline-block;
+                                        padding: 14px 30px;
+                                        font-size: 16px;
+                                        font-weight: bold;
+                                        color: #fff;
+                                        background-color: #28a745;
+                                        text-decoration: none;
+                                        border-radius: 50px;
+                                        transition: all 0.3s ease;
+                                        box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
+                                    }}
+                                    .button:hover {{
+                                        background-color: #218838;
+                                        transform: translateY(-2px);
+                                        box-shadow: 0 6px 12px rgba(40, 167, 69, 0.3);
+                                    }}
+                                    .footer {{
+                                        background-color: #f8f9fa;
+                                        padding: 20px;
+                                        font-size: 13px;
+                                        color: #777;
+                                        text-align: center;
+                                        border-top: 1px solid #eaeaea;
+                                    }}
+                                    .social-links {{
+                                        margin: 15px 0;
+                                    }}
+                                    .social-links a {{
+                                        display: inline-block;
+                                        margin: 0 10px;
+                                        color: #0062cc;
+                                        text-decoration: none;
+                                    }}
+                                    @media only screen and (max-width: 600px) {{
+                                        .email-container {{
+                                            width: 100%;
+                                            margin: 0;
+                                            border-radius: 0;
+                                        }}
+                                        .content {{
+                                            padding: 20px 15px;
+                                        }}
+                                    }}
+                                </style>
+                            </head>
+                            <body>
+                                <div class='email-container'>
+                                    <div class='header'>
+                                        New Job Opportunity
+                                    </div>
+                                    <div class='content'>
+                                        <p>Hello {userId.FullName},</p>
+                                        <p>We have found a new job opportunity that matches your skills and interests.</p>
+                
+                                        <div class='job-info'>
+                                            <p class='job-title'>{job.Item1.Title}</p>
+                                            <p><strong>Company:</strong> {job.Item1.CompanyName}</p>
+                                            <p><strong>Location:</strong> {job.Item1.Location}</p>
+                                            <p><strong>Salary:</strong> {job.Item1.Salary}</p>
+                                        </div>
+                
+                                        <p><strong>Related Tags:</strong></p>
+                                        <div class='tags'>
+                                            {tagsHtml}
+                                        </div>
+                
+                                        <p>Click the button below to view job details and apply now:</p>
+                
+                                        <div class='button-container'>
+                                            <a href='/job-list/{job.Item1.JobID}' class='button'>View Job Details</a>
+                                        </div>
+                
+                                        <p>If you have any questions, please don't hesitate to contact us.</p>
+                
+                                        <p>Best regards,<br>
+                                        Recruitment Team {job.Item1.CompanyName}</p>
+                                    </div>
+                                    <div class='footer'>
+                                        <p>This is an automated email. Please do not reply.</p>
+                                        <div class='social-links'>
+                                            <a href='#'>Website</a> |
+                                            <a href='#'>Facebook</a> |
+                                            <a href='#'>LinkedIn</a>
+                                        </div>
+                                        <p>© {DateTime.Now.Year} {job.Item1.CompanyName}. All rights reserved.</p>
+                                    </div>
+                                </div>
+                            </body>
+                        </html>
+                ";
+          
+                await _sendMailService.SendEmailAsync(userId.Email, subject, body);
+            }
             return Ok(new { success = true, message = "Job approved successfully" });
         }
     }

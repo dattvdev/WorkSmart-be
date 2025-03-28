@@ -23,18 +23,25 @@ namespace WorkSmart.API.Controllers
     public class EmployerController : ControllerBase
     {
         private readonly EmployerService _employerService;
+        private readonly UserService _userService;
         private readonly SignalRNotificationService _signalRService;
         private readonly SendMailService _sendMailService;
         private readonly IAccountRepository _accountRepository;
         private readonly IMapper _mapper;
 
-        public EmployerController(EmployerService employerService, SignalRNotificationService signalRService, SendMailService sendMailService, IAccountRepository accountRepository, IMapper mapper)
+        public EmployerController(EmployerService employerService
+            , SignalRNotificationService signalRService
+            , SendMailService sendMailService
+            , IAccountRepository accountRepository
+            , IMapper mapper
+            , UserService userService)
         {
             _employerService = employerService;
             _signalRService = signalRService;
             _sendMailService = sendMailService;
             _accountRepository = accountRepository;
             _mapper = mapper;
+            _userService = userService;
         }
 
         [HttpGet("profile")]
@@ -325,6 +332,18 @@ namespace WorkSmart.API.Controllers
             {
                 return StatusCode(500, new { Error = "An error occurred while verify business license.", Details = ex.Message });
             }
+        }
+        [HttpGet("company-list/{companyName}")]
+        public async Task<IActionResult> GetEmployerByCompanyName(string companyName)
+        {
+            var company = await _userService.GetEmployerByCompanyName(companyName);
+
+            if (company == null)
+            {
+                return NotFound(new { Message = "Company not found" });
+            }
+
+            return Ok(company);
         }
     }
 }

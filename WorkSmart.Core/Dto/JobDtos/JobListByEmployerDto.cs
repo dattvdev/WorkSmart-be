@@ -7,8 +7,9 @@ using WorkSmart.Core.Entity;
 
 namespace WorkSmart.Core.Dto.JobDtos
 {
-    public class JobSearchRequestDto
+    public class JobListByEmployerDto
     {
+
         public int PageIndex { get; set; } = 1;
         public int PageSize { get; set; }
         public string? Title { get; set; }
@@ -20,6 +21,6 @@ namespace WorkSmart.Core.Dto.JobDtos
         public string? Category { get; set; }
         public List<int>? Tags { get; set; }
         public bool MostRecent { get; set; } = true;
-        public int? UserID { get; set;}
+        public int? UserID { get; set; }
     }
 }

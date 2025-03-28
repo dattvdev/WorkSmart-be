@@ -20,5 +20,17 @@ namespace WorkSmart.Repository.Repository
             }
             return new User();
         }
+
+        public async Task<(IEnumerable<User>, int total)> GetListCompany(string? searchName, int page, int pageSize)
+        {
+            //return list and total record check searchName null
+            var list = await _dbSet
+                .Where(x => searchName == null || x.CompanyName.Contains(searchName))
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            var totalRecord = await _dbSet.CountAsync(x => searchName == null || x.CompanyName.Contains(searchName));
+            return (list, totalRecord);
+        }
     }
 }

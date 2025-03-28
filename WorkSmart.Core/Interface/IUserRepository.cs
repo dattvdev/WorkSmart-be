@@ -10,5 +10,6 @@ namespace WorkSmart.Core.Interface
     public interface IUserRepository : IBaseRepository<User>
     {
         Task<User> GetEmployerByCompanyName(string companyName);
+        Task<(IEnumerable<User>, int total)> GetListCompany(string? searchName, int page, int pageSize);
     }
 }

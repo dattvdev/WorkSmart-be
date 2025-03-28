@@ -11,8 +11,10 @@ namespace WorkSmart.Repository.Repository
 {
     public class JobRepository : BaseRepository<Job>, IJobRepository
     {
+        private readonly WorksmartDBContext _context;
         public JobRepository(WorksmartDBContext context) : base(context)
         {
+            _context = context;
         }
 
         public async Task<bool> ApproveJobAsync(int jobId)
@@ -65,7 +67,12 @@ namespace WorkSmart.Repository.Repository
 
         public async Task<IEnumerable<Job>> GetJobsByEmployerId(int employerId)
         {
-            return await _dbSet.Where(j => j.UserID == employerId).ToListAsync();
+            return await _context.Jobs
+                .Where(j => j.UserID == employerId)
+                .Include(j => j.User)
+                .Include(j => j.Tags)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task<bool> HideJobAsync(int jobId)
@@ -163,7 +170,10 @@ namespace WorkSmart.Repository.Repository
         {
             DbSet<Job> _JobdbSet = _context.Set<Job>();
             var query = _JobdbSet.Include(c => c.User).AsQueryable();
-
+            if (request.UserID.HasValue && request.UserID > 0)
+            {
+                query = query.Where(c => c.UserID == request.UserID);
+            }
             // Filter by title
             if (!string.IsNullOrWhiteSpace(request.Title))
             {
@@ -317,5 +327,54 @@ namespace WorkSmart.Repository.Repository
         {
             return await _dbSet.Include(t => t.Tags).FirstOrDefaultAsync(j => j.JobID == id);
         }
+
+        public async Task<bool> CheckLimitCreateJob(int userID)
+        {
+            var today = DateTime.UtcNow.Date;
+
+            var jobCount = await _dbSet.CountAsync(u =>
+                u.UserID == userID && EF.Functions.DateDiffDay(u.CreatedAt, today) == 0);
+
+            var subscription = await _context.Subscriptions
+                                             .Include(p => p.Package)
+                                             .FirstOrDefaultAsync(u => u.UserID == userID);
+
+            if (subscription == null)
+            {
+                return jobCount < 2;
+            }
+            var limit = subscription.Package.FeaturedJobPostLimit;
+            return jobCount < subscription.Package.JobPostLimitPerDay;
+        }
+        public async Task<bool> CheckLimitCreateFeaturedJob(int userID)
+        {
+            var featuredJobCount = await _dbSet.CountAsync(u =>
+                u.UserID == userID && u.Priority == true);
+
+            var subscription = await _context.Subscriptions
+                                             .Include(p => p.Package)
+                                             .FirstOrDefaultAsync(u => u.UserID == userID);
+
+            if (subscription == null)
+            {
+                return featuredJobCount < 1;
+            }
+
+            return featuredJobCount < subscription.Package.FeaturedJobPostLimit;
+        }
+        // Set lai độ ưu tiên
+        public async Task<bool> ToggleJobPriorityAsync(int jobId)
+        {
+            var job = await _dbSet.FindAsync(jobId);
+            if (job == null) return false;
+
+            job.Priority = !job.Priority;
+            // có nên update khi mà set độ ưu tiên k
+            //job.UpdatedAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
     }
 }

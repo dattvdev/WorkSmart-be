@@ -25,6 +25,7 @@ namespace WorkSmart.Application.Mapper
                 .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.User.Address))
                 .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.User.DateOfBirth))
                 .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.User.Gender))
+                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.User.Avatar))
                 //.ForMember(dest => dest.CV_Skills, opt => opt.MapFrom(src => src.CV.Skills))
                 //.ForMember(dest => dest.CV_Educations, opt => opt.MapFrom(src => src.CV.Educations))
                 //.ForMember(dest => dest.CV_Experiences, opt => opt.MapFrom(src => src.CV.Experiences))

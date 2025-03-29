@@ -490,5 +490,49 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new { message = "An error occurred while updating the job priority." });
             }
         }
+
+        [HttpGet("job-category-dashboard")]
+        public async Task<IActionResult> JobCategoryDashboard()
+        {
+            try
+            {
+                var result = await _jobService.JobCategoryDashboard();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error fetching job category dashboard: {Message}", ex.Message);
+                return StatusCode(500, new { message = "An error occurred while fetching job category dashboard." });
+            }
+        }
+
+        [HttpGet("job-status-dashboard")]
+        public async Task<IActionResult> JobStatusDashboard()
+        {
+            try
+            {
+                var result = await _jobService.JobStatusDashboard();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error fetching job status dashboard: {Message}", ex.Message);
+                return StatusCode(500, new { message = "An error occurred while fetching job status dashboard." });
+            }
+        }
+        [HttpGet("job-location-dashboard")]
+        public async Task<IActionResult> JobLocationDashboard()
+        {
+            try
+            {
+                var result = await _jobService.JobLocationDashboard();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error fetching job location dashboard: {Message}", ex.Message);
+                return StatusCode(500, new { message = "An error occurred while fetching job location dashboard." });
+            }
+        }
     }
 }

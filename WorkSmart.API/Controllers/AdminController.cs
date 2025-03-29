@@ -29,8 +29,17 @@ namespace WorkSmart.API.Controllers
         private readonly JobService _jobService;
         private readonly NotificationJobTagService _notificationJobTagService;
         private readonly ReportService _reportService;
-
-        public AdminController(IAccountRepository accountRepository, AdminService adminService, IMapper mapper, SendMailService sendMailService, SignalRNotificationService signalRService, IJobRepository jobRepository, IReportRepository reportRepository, JobService jobService, NotificationJobTagService notificationJobTagService, ReportService reportService)
+        private readonly UserService _userService;
+        public AdminController(IAccountRepository accountRepository
+            , AdminService adminService, IMapper mapper
+            , SendMailService sendMailService
+            , SignalRNotificationService signalRService
+            , IJobRepository jobRepository
+            , IReportRepository reportRepository
+            , JobService jobService
+            , NotificationJobTagService notificationJobTagService
+            , ReportService reportService
+            , UserService userService)
         {
             _accountRepository = accountRepository;
             _adminService = adminService;
@@ -42,6 +51,7 @@ namespace WorkSmart.API.Controllers
             _jobService = jobService;
             _notificationJobTagService = notificationJobTagService;
             _reportService = reportService;
+            _userService = userService;
         }
 
         [HttpGet("test-auth")]
@@ -1231,6 +1241,20 @@ namespace WorkSmart.API.Controllers
             }
 
             return StatusCode(500, new { Message = "Failed to update report status" });
+        }
+        [HttpGet("user-dashboard")]
+        public async Task<IActionResult> UserDashboard()
+        {
+            var result = await _userService.UserDashboard();
+
+            return Ok(result);
+        }
+        [HttpGet("count-dashboard")]
+        public async Task<IActionResult> CountDashboard()
+        {
+            var result = await _userService.CountDashboard();
+
+            return Ok(result);
         }
     }
 }

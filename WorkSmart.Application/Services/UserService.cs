@@ -37,5 +37,15 @@ namespace WorkSmart.Application.Services
             var (users,total) = await _userRepository.GetListCompany(searchName, page, pageSize);
             return (_mapper.Map<IEnumerable<CompanyDto>>(users), total);
         }
+        public async Task<IEnumerable<object>> UserDashboard()
+        {
+            var users = await _userRepository.UserDashboard();
+            return users;
+        }
+        public async Task<IEnumerable<object>> CountDashboard()
+        {
+            var users = await _userRepository.CountDashboard();
+            return users;
+        }
     }
 }

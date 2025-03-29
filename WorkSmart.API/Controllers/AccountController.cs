@@ -385,7 +385,7 @@ namespace WorkSmart.API.Controllers
                         Role = googleLoginRequest.Role,
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword(googleLoginRequest.Email),
                         IsEmailConfirmed = true,
-                        CreatedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.Now,
                     };
 
                     if(googleLoginRequest.Role == "Employer")

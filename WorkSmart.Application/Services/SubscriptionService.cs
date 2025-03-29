@@ -47,5 +47,10 @@ namespace WorkSmart.Application.Services
         {
             _subscriptionRepository.Delete(id);
         }
+
+        public async Task<IEnumerable<object>> SubscriptionRevenueDashboard()
+        {
+            return await _subscriptionRepository.SubscriptionRevenueDashboard();
+        }
     }
 }

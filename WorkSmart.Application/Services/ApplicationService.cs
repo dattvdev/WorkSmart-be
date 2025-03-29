@@ -131,5 +131,11 @@ namespace WorkSmart.Application.Services
             }
             return  _applicationRepository.CheckApplyJob(userId, jobId);
         }
+
+        public async Task<IEnumerable<object>> ApplicationCountDashboard()
+        {
+            var applicationCounts = await _applicationRepository.ApplicationCountDashboard();
+            return applicationCounts;
+        }
     }
 }

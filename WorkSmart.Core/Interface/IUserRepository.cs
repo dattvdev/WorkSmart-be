@@ -11,5 +11,7 @@ namespace WorkSmart.Core.Interface
     {
         Task<User> GetEmployerByCompanyName(string companyName);
         Task<(IEnumerable<User>, int total)> GetListCompany(string? searchName, int page, int pageSize);
+        Task<IEnumerable<object>> UserDashboard();
+        Task<IEnumerable<object>> CountDashboard();
     }
 }

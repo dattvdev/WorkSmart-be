@@ -134,5 +134,34 @@ namespace WorkSmart.Repository.Repository
                 _context.SaveChanges();
             }
         }
+        public async Task<IEnumerable<object>> ApplicationCountDashboard()
+        {
+            var currentWeekStart = DateTime.UtcNow.Date.AddDays(-(int)DateTime.UtcNow.DayOfWeek + 1);
+            var currentWeekEnd = currentWeekStart.AddDays(6);
+
+            var applications =  _context.Applications
+                .Where(a => a.CreatedAt >= currentWeekStart && a.CreatedAt <= currentWeekEnd)
+                .AsEnumerable() // Chuyển sang xử lý trên bộ nhớ
+                .GroupBy(a => a.CreatedAt.DayOfWeek)
+                .Select(g => new
+                {
+                    Day = g.Key.ToString(), // Chuyển thành tên ngày (Monday, Tuesday,...)
+                    Applications = g.Count()
+                })
+                .ToList();
+
+            var orderedData = new[]
+            {
+                "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+            }.Select(day => new
+            {
+                Day = day,
+                Applications = applications.FirstOrDefault(a => a.Day == day)?.Applications ?? 0
+            });
+
+            return orderedData;
+        }
+
+
     }
 }

@@ -32,7 +32,6 @@ namespace WorkSmart.Core.Entity
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
         public string? ReasonRejectedJob { get; set; }
         public string? CategoryID { get; set; }
-
         public User User { get; set; }
         public ICollection<Application>? Applications { get; set; }
         public ICollection<FavoriteJob>? FavoriteJobs { get; set; }

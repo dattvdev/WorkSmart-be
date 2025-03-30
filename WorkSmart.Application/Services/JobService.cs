@@ -59,7 +59,7 @@ namespace WorkSmart.Application.Services
             var allTags = await _tagRepository.GetAll();
             if (jobDto.JobTagID != null && jobDto.JobTagID.Any())
             {
-               
+
                 job.Tags = allTags.Where(t => jobDto.JobTagID.Contains(t.TagID)).ToList();
             }
             await _jobRepository.Add(job);
@@ -69,7 +69,7 @@ namespace WorkSmart.Application.Services
             var job = await _jobRepository.GetByJobId(jobId);
             if (job == null) return null;
             var tags = await _tagRepository.GetTagByListID(jobDto.Tags);
-            if(job.Tags != null)
+            if (job.Tags != null)
             {
                 job.Tags.Clear();
             }
@@ -92,7 +92,7 @@ namespace WorkSmart.Application.Services
             return await _jobRepository.UnhideJobAsync(jobId);
         }
         public async Task<(IEnumerable<GetListSearchJobDto> Jobs, int Total)> GetListSearch(JobSearchRequestDto request)
-            {
+        {
             var (jobs, total) = await _jobRepository.GetListSearch(request);
 
             var mappedJobs = _mapper.Map<IEnumerable<GetListSearchJobDto>>(jobs);
@@ -120,5 +120,48 @@ namespace WorkSmart.Application.Services
         //{
         //    return await _jobRepository.ApproveJobAsync(jobId);
         //}
+
+        public async Task<IEnumerable<JobDto>> GetJobsByUserIdAsync(int userId)
+        {
+            var jobs = await _jobRepository.GetJobsByEmployerId(userId);
+            return _mapper.Map<IEnumerable<JobDto>>(jobs);
+        }
+        public async Task<bool> CheckLimitCreateJob(int userID)
+        {
+            return await _jobRepository.CheckLimitCreateJob(userID);
+        }
+        public async Task<bool> CheckLimitCreateFeaturedJob(int userID)
+        {
+            return await _jobRepository.CheckLimitCreateFeaturedJob(userID);
+        }
+        public async Task<bool> ToggleJobPriorityAsync(int jobId)
+        {
+            var job = await _jobRepository.GetByJobId(jobId);
+            if (job == null) return false;
+
+            if (!job.Priority)
+            {
+                var hasAvailableFeaturedSlot = await _jobRepository.CheckLimitCreateFeaturedJob(job.UserID);
+                if (!hasAvailableFeaturedSlot)
+                {
+                    return false;
+                }
+            }
+
+            return await _jobRepository.ToggleJobPriorityAsync(jobId);
+        }
+
+        public async Task<IEnumerable<object>> JobCategoryDashboard()
+        {
+            return await _jobRepository.JobCategoryDashboard();
+        }
+        public async Task<IEnumerable<object>> JobStatusDashboard()
+        {
+            return await _jobRepository.JobStatusDashboard();
+        }
+        public async Task<IEnumerable<object>> JobLocationDashboard()
+        {
+            return await _jobRepository.JobLocationDashboard();
+        }
     }
 }

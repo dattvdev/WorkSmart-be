@@ -6,5 +6,8 @@ namespace WorkSmart.Core.Interface
     {
         //Task<Subscription> GetByUserId(int id);
         Task<List<Subscription>> GetByUserId(int id);
+
+        Task<IEnumerable<object>> SubscriptionRevenueDashboard();
+
     }
 }

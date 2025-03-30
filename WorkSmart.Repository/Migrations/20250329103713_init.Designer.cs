@@ -12,8 +12,8 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-    [Migration("20250325104447_initial_DB")]
-    partial class initial_DB
+    [Migration("20250329103713_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -534,6 +534,9 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<int?>("CVLimit")
                         .HasColumnType("int");
 
+                    b.Property<int>("DurationInDays")
+                        .HasColumnType("int");
+
                     b.Property<int?>("FeaturedJobPostLimit")
                         .HasColumnType("int");
 
@@ -607,7 +610,7 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<int>("SenderID")
                         .HasColumnType("int");
 
-                    b.Property<string>("Title")
+                    b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -717,12 +720,18 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<long>("OrderCode")
+                        .HasColumnType("bigint");
+
                     b.Property<double>("Price")
                         .HasColumnType("float");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("UserID")
                         .HasColumnType("int");

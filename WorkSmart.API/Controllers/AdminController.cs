@@ -11,6 +11,7 @@ using WorkSmart.Core.Entity;
 using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository.Repository;
+using WorkSmart.Core.Dto.ReportDtos;
 
 namespace WorkSmart.API.Controllers
 {
@@ -28,8 +29,17 @@ namespace WorkSmart.API.Controllers
         private readonly JobService _jobService;
         private readonly NotificationJobTagService _notificationJobTagService;
         private readonly ReportService _reportService;
-
-        public AdminController(IAccountRepository accountRepository, AdminService adminService, IMapper mapper, SendMailService sendMailService, SignalRNotificationService signalRService, IJobRepository jobRepository, IReportRepository reportRepository, JobService jobService, NotificationJobTagService notificationJobTagService, ReportService reportService)
+        private readonly UserService _userService;
+        public AdminController(IAccountRepository accountRepository
+            , AdminService adminService, IMapper mapper
+            , SendMailService sendMailService
+            , SignalRNotificationService signalRService
+            , IJobRepository jobRepository
+            , IReportRepository reportRepository
+            , JobService jobService
+            , NotificationJobTagService notificationJobTagService
+            , ReportService reportService
+            , UserService userService)
         {
             _accountRepository = accountRepository;
             _adminService = adminService;
@@ -41,6 +51,7 @@ namespace WorkSmart.API.Controllers
             _jobService = jobService;
             _notificationJobTagService = notificationJobTagService;
             _reportService = reportService;
+            _userService = userService;
         }
 
         [HttpGet("test-auth")]
@@ -495,7 +506,7 @@ namespace WorkSmart.API.Controllers
                 await _sendMailService.SendMail(emailContent);
             }
 
-            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedAt = DateTime.Now;
             _accountRepository.Update(user);
             await _accountRepository.Save();
 
@@ -708,7 +719,7 @@ namespace WorkSmart.API.Controllers
             }
 
             //Gửi mail cho employer sau khi đã approve/reject license
-            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedAt = DateTime.Now;
             _accountRepository.Update(user);
             await _accountRepository.Save();
 
@@ -1150,7 +1161,7 @@ namespace WorkSmart.API.Controllers
                 await _sendMailService.SendMail(rejectedEmailContent);
             }
 
-            report.CreatedAt = DateTime.UtcNow;
+            report.CreatedAt = DateTime.Now;
             _reportRepository.Update(report);
             await _reportRepository.Save();
 
@@ -1174,6 +1185,76 @@ namespace WorkSmart.API.Controllers
             {
                 return StatusCode(500, new { Error = "An error occurred while fetching reports" });
             }
+        }
+
+        [HttpPut("reports/{reportId}/update-status")]
+        public async Task<IActionResult> UpdateReportStatus(int reportId, [FromBody] UpdateReportStatusDto request)
+        {
+            // Validate the status value
+            if (request.Status != "Completed" && request.Status != "Rejected")
+            {
+                return BadRequest(new { Message = "Status must be either 'Completed' or 'Rejected'" });
+            }
+
+            var report = await _reportRepository.GetById(reportId);
+            if (report == null)
+            {
+                return NotFound(new { Message = "Report not found" });
+            }
+
+            // If report is already in the requested status
+            if (report.Status == request.Status)
+            {
+                return BadRequest(new { Message = $"Report is already in {request.Status} status" });
+            }
+
+            // If report is not in Pending status
+            if (report.Status != "Pending")
+            {
+                return BadRequest(new { Message = "Only reports in Pending status can be updated" });
+            }
+
+            // Update the report status
+            bool result = await _reportService.UpdateReportStatus(reportId, request.Status);
+
+            if (result)
+            {
+                // If the update is successful, send a notification to the report sender
+                if (report.SenderID > 0)
+                {
+                    string notificationTitle = request.Status == "Completed"
+                        ? "Your Report Has Been Approved"
+                        : "Your Report Has Been Rejected";
+
+                    string notificationMessage = request.Status == "Completed"
+                        ? "Thank you for your report. We have reviewed it and taken appropriate action."
+                        : $"Your report has been rejected. {(string.IsNullOrEmpty(request.Reason) ? "" : $"Reason: {request.Reason}")}";
+
+                    await _signalRService.SendNotificationToUser(
+                        report.SenderID,
+                        notificationTitle,
+                        notificationMessage
+                    );
+                }
+
+                return Ok(new { Message = $"Report status updated to {request.Status} successfully" });
+            }
+
+            return StatusCode(500, new { Message = "Failed to update report status" });
+        }
+        [HttpGet("user-dashboard")]
+        public async Task<IActionResult> UserDashboard()
+        {
+            var result = await _userService.UserDashboard();
+
+            return Ok(result);
+        }
+        [HttpGet("count-dashboard")]
+        public async Task<IActionResult> CountDashboard()
+        {
+            var result = await _userService.CountDashboard();
+
+            return Ok(result);
         }
     }
 }

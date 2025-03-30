@@ -98,5 +98,19 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        [HttpGet("SubscriptionRevenueDashboard")]
+        public async Task<IActionResult> SubscriptionRevenueDashboard()
+        {
+            try
+            {
+                var data = await _subscriptionService.SubscriptionRevenueDashboard();
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 }

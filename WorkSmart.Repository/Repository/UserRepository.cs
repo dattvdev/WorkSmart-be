@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WorkSmart.Core.Entity;
+using WorkSmart.Core.Enums;
 using WorkSmart.Core.Interface;
 
 namespace WorkSmart.Repository.Repository
@@ -13,24 +14,42 @@ namespace WorkSmart.Repository.Repository
 
         public async Task<User> GetEmployerByCompanyName(string companyName)
         {
-            var user = await _dbSet.Include(l => l.PostedJobs).FirstOrDefaultAsync(x => x.CompanyName == companyName);
+            var user = await _dbSet
+                .Include(l => l.PostedJobs)
+                .FirstOrDefaultAsync(x => x.CompanyName == companyName);
+
             if (user != null)
             {
+                // Lọc PostedJobs chỉ giữ lại các công việc có status là Active
+                user.PostedJobs = user.PostedJobs.Where(job => job.Status == JobStatus.Active).ToList();
                 return user;
             }
+
             return new User();
         }
 
         public async Task<(IEnumerable<User>, int total)> GetListCompany(string? searchName, int page, int pageSize)
         {
-            //return list and total record check searchName null
-            var list = await _dbSet
+            // Lấy danh sách người dùng với vai trò Employer và đã được xác minh cấp độ 3
+            var users = await _dbSet
                 .Where(x => searchName == null || x.CompanyName.Contains(searchName))
+                .Where(x => x.Role == "Employer" && x.VerificationLevel == 3)
+                .Include(x => x.PostedJobs)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
-            var totalRecord = await _dbSet.CountAsync(x => searchName == null || x.CompanyName.Contains(searchName));
-            return (list, totalRecord);
+
+            // Lọc PostedJobs chỉ giữ lại các công việc có status = JobStatus.Active (3)
+            foreach (var user in users)
+            {
+                user.PostedJobs = user.PostedJobs.Where(job => job.Status == JobStatus.Active).ToList();
+            }
+
+            var totalRecord = await _dbSet
+                .CountAsync(x => (searchName == null || x.CompanyName.Contains(searchName))
+                                 && x.Role == "Employer" && x.VerificationLevel == 3);
+
+            return (users, totalRecord);
         }
 
         public async Task<IEnumerable<object>> UserDashboard()

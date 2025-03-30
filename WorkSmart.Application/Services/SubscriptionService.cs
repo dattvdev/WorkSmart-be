@@ -11,6 +11,7 @@ namespace WorkSmart.Application.Services
         private readonly ISubscriptionRepository _subscriptionRepository;
         private readonly IPackageRepository _packageRepository;
         private readonly IMapper _mapper;
+
         public SubscriptionService(ISubscriptionRepository subscriptionRepository, IPackageRepository packageRepository, IMapper mapper)
         {
             _subscriptionRepository = subscriptionRepository;
@@ -24,11 +25,21 @@ namespace WorkSmart.Application.Services
             return _mapper.Map<IEnumerable<SubscriptionDto>>(subscriptions);
         }
 
-        public async Task<(SubscriptionDto, GetPackageDto)> GetByUserId(int id)
+        public async Task<List<(SubscriptionDto subscription, GetPackageDto package)>> GetByUserId(int id)
         {
-            var subscription = await _subscriptionRepository.GetByUserId(id);
-            var package = await _packageRepository.GetById(subscription.PackageID);
-            return  (_mapper.Map<SubscriptionDto>(subscription), _mapper.Map<GetPackageDto>(package));
+            var subscriptions = await _subscriptionRepository.GetByUserId(id);
+            var result = new List<(SubscriptionDto, GetPackageDto)>();
+
+            foreach (var subscription in subscriptions)
+            {
+                var package = await _packageRepository.GetById(subscription.PackageID);
+                if (package != null)
+                {
+                    result.Add((_mapper.Map<SubscriptionDto>(subscription), _mapper.Map<GetPackageDto>(package)));
+                }
+            }
+
+            return result;
         }
 
         public async Task Add(SubscriptionDto subscriptionDto)

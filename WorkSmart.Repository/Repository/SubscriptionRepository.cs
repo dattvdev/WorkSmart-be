@@ -15,9 +15,11 @@ namespace WorkSmart.Repository.Repository
         {
         }
 
-        public async Task<Subscription> GetByUserId(int id)
+        public async Task<List<Subscription>> GetByUserId(int id)
         {
-           return await _dbSet.Where(x => x.UserID == id).FirstOrDefaultAsync();
+            return await _context.Subscriptions
+                .Where(s => s.UserID == id)
+                .ToListAsync();
         }
     }
 }

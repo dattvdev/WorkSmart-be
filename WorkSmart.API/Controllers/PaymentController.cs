@@ -77,7 +77,7 @@ namespace WorkSmart.API.Controllers
                     (int)package.Price,
                     $"Pay {package.Name}",
                     items,
-                    "http://localhost:5173/employer/payment-cancel",
+                    $"http://localhost:5173/employer/payment-cancel?orderCode={orderCode}",
                     "http://localhost:5173/employer/payment-return",
                     expiredAt: DateTimeOffset.Now.AddMinutes(15).ToUnixTimeSeconds()
                 );
@@ -98,64 +98,6 @@ namespace WorkSmart.API.Controllers
             }
         }
 
-        [HttpPost("webhook")]
-        public async Task<IActionResult> HandlePaymentWebhook([FromBody] WebhookType body)
-        {
-            try
-            {
-                WebhookData data = _payOS.verifyPaymentWebhookData(body);
-
-                var transaction = await _context.Transactions
-                    .FirstOrDefaultAsync(t => t.OrderCode == data.orderCode);
-
-                if (transaction == null)
-                {
-                    return NotFound("Payment not found");
-                }
-
-                var package = await _context.Packages
-                    .FirstOrDefaultAsync(p => p.Name == transaction.Content.Replace("Pay ", ""));
-
-                bool paymentSuccess = body.success &&
-                               data.amount > 0 &&
-                               (data.code == "00" || data.desc.ToLower() == "success");
-
-                if (paymentSuccess)
-                {
-                    transaction.Status = "SUCCESS";
-
-                    var existingSubscription = await _context.Subscriptions
-                        .FirstOrDefaultAsync(s => s.UserID == transaction.UserID && s.PackageID == package.PackageID);
-
-                    if (existingSubscription == null)
-                    {
-                        var subscription = new Subscription
-                        {
-                            UserID = transaction.UserID,
-                            PackageID = package.PackageID,
-                            ExpDate = DateTime.Now.AddDays(30), // Mặc định 30 ngày
-                            CreatedAt = DateTime.Now
-                        };
-
-                        _context.Subscriptions.Add(subscription);
-                    }
-                }
-                else
-                {
-                    transaction.Status = "FAILED";
-                }
-
-                await _context.SaveChangesAsync();
-
-                return Ok("Webhook processed successfully");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Error = "An error occurred while handle webhook", Details = ex.Message });
-
-            }
-        }
-
         [HttpGet("payment-status/{orderCode}")]
         public async Task<IActionResult> CheckPaymentStatus(long orderCode)
         {
@@ -170,106 +112,6 @@ namespace WorkSmart.API.Controllers
                     return NotFound("Payment not found");
                 }
 
-                if (transaction.Status == "PAID")
-                {
-                    await _signalRService.SendNotificationToUser(
-                        transaction.User.UserID,
-                        "Payment Successful",
-                        $"Your payment has been confirmed."
-                    );
-
-                    var successEmailContent = new Core.Dto.MailDtos.MailContent
-                    {
-                        To = transaction.User.Email,
-                        Subject = "Payment Successful - Transaction Confirmed",
-                        Body = $@"
-    <!DOCTYPE html>
-    <html lang=""en"">
-    <head>
-        <meta charset=""UTF-8"">
-        <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-        <title>Payment Successful</title>
-        <style>
-            body {{
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                margin: 0;
-                padding: 0;
-                background-color: #f9f9f9;
-            }}
-            .email-container {{
-                max-width: 600px;
-                margin: 0 auto;
-                background-color: #ffffff;
-                border-radius: 8px;
-                overflow: hidden;
-                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            }}
-            .header {{
-                background-color: #4CAF50;
-                color: white;
-                padding: 20px;
-                text-align: center;
-            }}
-            .content {{
-                padding: 30px;
-            }}
-            .message {{
-                background-color: #e6f7e6;
-                border-left: 4px solid #4CAF50;
-                padding: 15px;
-                margin-bottom: 20px;
-                border-radius: 4px;
-            }}
-            .transaction-details {{
-                background-color: #f5f5f5;
-                padding: 15px;
-                border-radius: 4px;
-                margin-bottom: 20px;
-            }}
-            .footer {{
-                background-color: #f5f5f5;
-                padding: 20px;
-                text-align: center;
-                font-size: 12px;
-                color: #777;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class=""email-container"">
-            <div class=""header"">
-                <h2>Payment Successful</h2>
-            </div>
-            <div class=""content"">
-                <h1 style=""color: #4CAF50; text-align: center;"">Transaction Confirmed</h1>
-                <div class=""message"">
-                    <p>Dear {transaction.User.FullName},</p>
-                    <p>Your payment has been successfully processed. Thank you for your transaction!</p>
-                </div>
-                <div class=""transaction-details"">
-                    <h3>Transaction Details:</h3>
-                    <p><strong>Order Code:</strong> {transaction.OrderCode}</p>
-                    <p><strong>Amount:</strong> {transaction.Price:N0} VND</p>
-                    <p><strong>Date:</strong> {transaction.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")}</p>
-                    <p><strong>Status:</strong> Paid</p>
-                </div>
-                <p style=""text-align: center;"">
-                    <a href=""#"" style=""display: inline-block; background-color: #4CAF50; color: white; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; text-align: center;"">View Transaction</a>
-                </p>
-            </div>
-            <div class=""footer"">
-                <p>© 2025 WorkSmart. All rights reserved.</p>
-                <p>Questions? Contact our support team.</p>
-            </div>
-        </div>
-    </body>
-    </html>"
-                    };
-
-                    await _sendMailService.SendMail(successEmailContent);
-
                     var transactionDto = new TransactionDto
                     {
                         OrderCode = transaction.OrderCode,
@@ -282,47 +124,26 @@ namespace WorkSmart.API.Controllers
 
                     return Ok(new
                     {
-                        status = "SUCCESS",
-                        message = "Payment Success",
-                        details = transactionDto,
+                        status = transaction.Status == "PAID" ? "SUCCESS" : transaction.Status,
+                        message = transaction.Status == "PAID" ? "Payment Success" : "Payment pending or failed",
+                        details = transactionDto
                     });
-                }
-                else
-                {
-                    await _signalRService.SendNotificationToUser(
-                        transaction.User.UserID,
-                        "Payment Failed",
-                        $"Your payment could not be processed."
-                    );
 
-                    return Ok(new
-                    {
-                        status = transaction.Status,
-                        message = "Payment failed"
-                    });
-                }
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { Error = "An error occurred while payment", Details = ex.Message });
-
             }
         }
 
         [HttpGet("payment-return")]
         public async Task<IActionResult> ProcessPaymentReturn([FromQuery] string code, [FromQuery] string id, [FromQuery] bool cancel, [FromQuery] string status, [FromQuery] long orderCode)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-
             try
             {
-                if (code != "00" || status != "PAID")
-                {
-                    return BadRequest("Invalid payment status");
-                }
-
                 // Tìm transaction dựa trên orderCode
                 var existingTransaction = await _context.Transactions
+                    .Include(t => t.User)
                     .FirstOrDefaultAsync(t => t.OrderCode == orderCode);
 
                 if (existingTransaction == null)
@@ -330,65 +151,214 @@ namespace WorkSmart.API.Controllers
                     return NotFound("Transaction not found");
                 }
 
-                // Trích xuất thông tin Package từ nội dung giao dịch
-                var packageName = existingTransaction.Content.Replace("Pay ", "").Trim();
-
-                var package = await _context.Packages
-                    .FirstOrDefaultAsync(p => p.Name == packageName);
-
-                if (package == null)
+                if (existingTransaction.Status == "PAID")
                 {
-                    return NotFound($"Package not found for name: {packageName}");
+                    return Ok(new
+                    {
+                        status = "SUCCESS",
+                        message = "Payment was already processed successfully",
+                        orderCode = orderCode
+                    });
                 }
 
-                // Hàm kiểm tra xem người dùng đã có subscription cho gói này
-                //var existingSubscription = await _context.Subscriptions
-                //    .FirstOrDefaultAsync(s =>
-                //        s.UserID == existingTransaction.UserID &&
-                //        s.PackageID == package.PackageID);
-
-                //if (existingSubscription != null)
-                //{
-                //    return Ok(new
-                //    {
-                //        status = "SUCCESS",
-                //        message = "Subscription already exists",
-                //        orderCode = orderCode
-                //    });
-                //}
-
-                var newSubscription = new Subscription
+                // Kiểm tra nếu thanh toán bị hủy
+                if (cancel || status == "CANCELLED" || status == "FAILED")
                 {
-                    PackageID = package.PackageID,
-                    UserID = existingTransaction.UserID,
-                    ExpDate = DateTime.Now.AddDays(package.DurationInDays),
-                    CreatedAt = DateTime.Now
-                };
+                    // Cập nhật trạng thái thanh toán
+                    existingTransaction.Status = "CANCELLED";
+                    existingTransaction.UpdatedAt = DateTime.Now;
+                    await _context.SaveChangesAsync();
 
-                // Cập nhật trạng thái thanh toán
-                existingTransaction.Status = "PAID";
-                existingTransaction.UpdatedAt = DateTime.Now;
+                    await _signalRService.SendNotificationToUser(
+                        existingTransaction.UserID,
+                        "Payment Cancelled",
+                        $"Your payment for order {existingTransaction.Content} has been cancelled."
+                    );
+                    return Ok(new
+                    {
+                        status = "CANCElLED",
+                        message = "Payment has been canceled",
+                        orderCode = orderCode
+                    });
+                }
 
-                _context.Subscriptions.Add(newSubscription);
-                await _context.SaveChangesAsync();
+                // Xử lý thanh toán thành công
+                using var transaction = await _context.Database.BeginTransactionAsync();
 
-                await transaction.CommitAsync();
-                // Thực hiện các bước tiếp theo sau khi thanh toán thành công 
-                // (ví dụ: kích hoạt gói, cập nhật quyền hạn, v.v.)
-
-                return Ok(new
+                try
                 {
-                    status = "SUCCESS",
-                    message = "Payment and subscription created successfully",
-                    orderCode = orderCode,
-                    subscriptionId = newSubscription.SubscriptionID,
-                    packageName = package.Name
-                }); ;
+                    if (code != "00" || status != "PAID")
+                    {
+                        return BadRequest("Invalid payment status");
+                    }
+
+                    // Trích xuất thông tin Package từ nội dung giao dịch
+                    var packageName = existingTransaction.Content.Replace("Pay ", "").Trim();
+
+                    var package = await _context.Packages
+                        .FirstOrDefaultAsync(p => p.Name == packageName);
+
+                    if (package == null)
+                    {
+                        return NotFound($"Package not found for name: {packageName}");
+                    }
+
+                    var existingSubscription = await _context.Subscriptions
+                        .FirstOrDefaultAsync(s => s.UserID == existingTransaction.UserID &&
+                                         s.PackageID == package.PackageID);
+
+                    DateTime newExpDate;
+
+                    if (existingSubscription != null)
+                    {
+                        // Cập nhật subscription hiện có - cộng dồn thời hạn
+                        if (existingSubscription.ExpDate > DateTime.Now)
+                        {
+                            // Nếu subscription vẫn còn hạn, cộng thêm vào thời hạn hiện tại
+                            newExpDate = existingSubscription.ExpDate.AddDays(package.DurationInDays);
+                        }
+                        else
+                        {
+                            // Nếu subscription đã hết hạn, tính từ hiện tại
+                            newExpDate = DateTime.Now.AddDays(package.DurationInDays);
+                        }
+
+                        existingSubscription.ExpDate = newExpDate;
+                        _context.Subscriptions.Update(existingSubscription);
+                    }
+                    else
+                    {
+                        // Tạo subscription mới
+                        var newSubscription = new Subscription
+                        {
+                            PackageID = package.PackageID,
+                            UserID = existingTransaction.UserID,
+                            ExpDate = DateTime.Now.AddDays(package.DurationInDays),
+                            CreatedAt = DateTime.Now
+                        };
+
+                        _context.Subscriptions.Add(newSubscription);
+                    }
+
+                    existingTransaction.Status = "PAID";
+                    existingTransaction.UpdatedAt = DateTime.Now;
+
+                    await _context.SaveChangesAsync();
+
+                    await _signalRService.SendNotificationToUser(
+                        existingTransaction.UserID,
+                        "Payment Successful",
+                        $"Your payment for order {existingTransaction.Content} has been confirmed."
+                    );
+
+                    var successEmailContent = new Core.Dto.MailDtos.MailContent
+                    {
+                        To = existingTransaction.User.Email,
+                        Subject = "Payment Successful - Transaction Confirmed",
+                        Body = $@"
+<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>Payment Successful</title>
+    <style>
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }}
+        .email-container {{
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }}
+        .header {{
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }}
+        .content {{
+            padding: 30px;
+        }}
+        .message {{
+            background-color: #e6f7e6;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }}
+        .transaction-details {{
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }}
+        .footer {{
+            background-color: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+        }}
+    </style>
+</head>
+<body>
+    <div class=""email-container"">
+        <div class=""header"">
+            <h2>Payment Successful</h2>
+        </div>
+        <div class=""content"">
+            <h1 style=""color: #4CAF50; text-align: center;"">Transaction Confirmed</h1>
+            <div class=""message"">
+                <p>Dear {existingTransaction.User.FullName},</p>
+                <p>Your payment has been successfully processed. Thank you for your transaction!</p>
+            </div>
+            <div class=""transaction-details"">
+                <h3>Transaction Details:</h3>
+                <p><strong>Order Code:</strong> {existingTransaction.OrderCode}</p>
+                <p><strong>Amount:</strong> {existingTransaction.Price:N0} VND</p>
+                <p><strong>Date:</strong> {existingTransaction.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")}</p>
+                <p><strong>Status:</strong> Paid</p>
+            </div>
+            <p style=""text-align: center;"">
+                <a href=""#"" style=""display: inline-block; background-color: #4CAF50; color: white; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; text-align: center;"">View Transaction</a>
+            </p>
+        </div>
+        <div class=""footer"">
+            <p>© 2025 WorkSmart. All rights reserved.</p>
+            <p>Questions? Contact our support team.</p>
+        </div>
+    </div>
+</body>
+</html>"
+                    };
+
+                    await transaction.CommitAsync();
+
+                    return Ok(new
+                    {
+                        status = "SUCCESS",
+                        message = "Payment and subscription created successfully",
+                        orderCode = orderCode,
+                        packageName = package.Name
+                    });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    throw; // Re-throw để xử lý ở catch bên ngoài
+                }
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-
                 return StatusCode(500, new
                 {
                     Error = "An error occurred while processing payment",
@@ -397,74 +367,115 @@ namespace WorkSmart.API.Controllers
             }
         }
 
-        [HttpPost("cancel")]
-        public async Task<IActionResult> CancelPayment([FromBody] CancelPaymentDto cancelRequest)
+        [HttpGet("payment-cancel")]
+        public async Task<IActionResult> CancelPayment([FromQuery] long orderCode, [FromQuery] string code, [FromQuery] string id, [FromQuery] bool cancel, [FromQuery] string status)
         {
             try
             {
-                // Tìm giao dịch trong database
-                var transaction = await _context.Transactions
-                    .FirstOrDefaultAsync(t => t.OrderCode == cancelRequest.OrderCode);
-
-                if (transaction == null)
+                if (code == "00" && status == "PAID" && !cancel)
                 {
-                    return NotFound(new
+                    return RedirectToAction("ProcessPaymentReturn", new
                     {
-                        StatusCode = 404,
-                        Message = "Transaction not exist"
+                        code,
+                        id,
+                        cancel,
+                        status,
+                        orderCode
                     });
                 }
 
-                // Kiểm tra trạng thái hiện tại của giao dịch
-                if (transaction.Status == "CANCELLED")
+                var existingTransaction = await _context.Transactions
+                    .Include(t => t.User)
+                    .FirstOrDefaultAsync(t => t.OrderCode == orderCode);
+
+                if (existingTransaction == null)
                 {
-                    return BadRequest(new
-                    {
-                        StatusCode = 400,
-                        Message = "Transaction was previously canceled"
-                    });
+                    return NotFound("Transaction not found");
                 }
 
-                // Hủy giao dịch trên PayOS
-                try
+                existingTransaction.Status = "CANCELED";
+                existingTransaction.UpdatedAt = DateTime.Now;
+                await _context.SaveChangesAsync();
+
+                await _signalRService.SendNotificationToUser(
+                    existingTransaction.User.UserID,
+                    "Payment Canceled",
+                    $"Your payment for order {existingTransaction.Content} has been canceled."
+                );
+
+                return Ok(new
                 {
-                    var cancelResult = await _payOS.cancelPaymentLink(transaction.OrderCode);
-
-                    // Cập nhật trạng thái giao dịch trong database
-                    transaction.Status = "CANCELLED";
-                    transaction.CreatedAt = DateTime.Now;
-                    transaction.Status = cancelRequest.Reason ?? "User cancelled";
-
-                    await _context.SaveChangesAsync();
-
-                    return Ok(new
-                    {
-                        StatusCode = 200,
-                        Message = "Payment Cancellation Successful",
-                        OrderCode = transaction.OrderCode
-                    });
-                }
-                catch (Exception payOsEx)
-                {
-
-                    return StatusCode(500, new
-                    {
-                        StatusCode = 500,
-                        Message = "Error during payment cancellation",
-                        Details = payOsEx.Message
-                    });
-                }
+                    status = "CANCELED",
+                    message = "Payment has been canceled",
+                    orderCode = orderCode
+                });
             }
             catch (Exception ex)
             {
-
                 return StatusCode(500, new
                 {
-                    StatusCode = 500,
-                    Message = "An error occurred during processing",
+                    Error = "An error occurred while canceling payment",
                     Details = ex.Message
                 });
             }
         }
+
+        //[HttpPost("webhook")]
+        //public async Task<IActionResult> HandlePaymentWebhook([FromBody] WebhookType body)
+        //{
+        //    try
+        //    {
+        //        WebhookData data = _payOS.verifyPaymentWebhookData(body);
+
+        //        var transaction = await _context.Transactions
+        //            .FirstOrDefaultAsync(t => t.OrderCode == data.orderCode);
+
+        //        if (transaction == null)
+        //        {
+        //            return NotFound("Payment not found");
+        //        }
+
+        //        var package = await _context.Packages
+        //            .FirstOrDefaultAsync(p => p.Name == transaction.Content.Replace("Pay ", ""));
+
+        //        bool paymentSuccess = body.success &&
+        //                       data.amount > 0 &&
+        //                       (data.code == "00" || data.desc.ToLower() == "success");
+
+        //        if (paymentSuccess)
+        //        {
+        //            transaction.Status = "SUCCESS";
+
+        //            var existingSubscription = await _context.Subscriptions
+        //                .FirstOrDefaultAsync(s => s.UserID == transaction.UserID && s.PackageID == package.PackageID);
+
+        //            if (existingSubscription == null)
+        //            {
+        //                var subscription = new Subscription
+        //                {
+        //                    UserID = transaction.UserID,
+        //                    PackageID = package.PackageID,
+        //                    ExpDate = DateTime.Now.AddDays(30), // Mặc định 30 ngày
+        //                    CreatedAt = DateTime.Now
+        //                };
+
+        //                _context.Subscriptions.Add(subscription);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            transaction.Status = "FAILED";
+        //        }
+
+        //        await _context.SaveChangesAsync();
+
+        //        return Ok("Webhook processed successfully");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { Error = "An error occurred while handle webhook", Details = ex.Message });
+
+        //    }
+        //}
     }
 }

@@ -151,12 +151,14 @@ namespace WorkSmart.API.Controllers
                     return NotFound("Transaction not found");
                 }
 
-                if (existingTransaction.Status == "PAID")
+                if (existingTransaction.Status == "PAID" ||
+                    existingTransaction.Status == "FAILED" ||
+                    existingTransaction.Status == "CANCELLED")
                 {
                     return Ok(new
                     {
-                        status = "SUCCESS",
-                        message = "Payment was already processed successfully",
+                        status = existingTransaction.Status,
+                        message = $"Payment was already processed with status: {existingTransaction.Status}",
                         orderCode = orderCode
                     });
                 }
@@ -165,19 +167,123 @@ namespace WorkSmart.API.Controllers
                 if (cancel || status == "CANCELLED" || status == "FAILED")
                 {
                     // Cập nhật trạng thái thanh toán
-                    existingTransaction.Status = "CANCELLED";
+                    existingTransaction.Status = status == "FAILED" ? "FAILED" : "CANCELLED";
                     existingTransaction.UpdatedAt = DateTime.Now;
                     await _context.SaveChangesAsync();
 
+                    string notificationTitle = status == "FAILED" ? "Payment Failed" : "Payment Cancelled";
+                    string notificationMessage = status == "FAILED"
+                        ? $"Your payment for order {existingTransaction.Content} has failed."
+                        : $"Your payment for order {existingTransaction.Content} has been cancelled.";
+
                     await _signalRService.SendNotificationToUser(
                         existingTransaction.UserID,
-                        "Payment Cancelled",
-                        $"Your payment for order {existingTransaction.Content} has been cancelled."
+                        notificationTitle,
+                        notificationMessage,
+                         $"employer/transaction-history"
                     );
+
+                    var failureEmailContent = new Core.Dto.MailDtos.MailContent
+                    {
+                        To = existingTransaction.User.Email,
+                        Subject = status == "FAILED" ? "Payment Failed - Transaction Unsuccessful" : "Payment Cancelled - Transaction Terminated",
+                        Body = $@"
+<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>{(status == "FAILED" ? "Payment Failed" : "Payment Cancelled")}</title>
+    <style>
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }}
+        .email-container {{
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }}
+        .header {{
+            background-color: {(status == "FAILED" ? "#e74c3c" : "#f39c12")};
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }}
+        .content {{
+            padding: 30px;
+        }}
+        .message {{
+            background-color: {(status == "FAILED" ? "#fae9e8" : "#fef4e6")};
+            border-left: 4px solid {(status == "FAILED" ? "#e74c3c" : "#f39c12")};
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }}
+        .transaction-details {{
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }}
+        .footer {{
+            background-color: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+        }}
+    </style>
+</head>
+<body>
+    <div class=""email-container"">
+        <div class=""header"">
+            <h2>{(status == "FAILED" ? "Payment Failed" : "Payment Cancelled")}</h2>
+        </div>
+        <div class=""content"">
+            <h1 style=""color: {(status == "FAILED" ? "#e74c3c" : "#f39c12")}; text-align: center;"">{(status == "FAILED" ? "Transaction Unsuccessful" : "Transaction Terminated")}</h1>
+            <div class=""message"">
+                <p>Dear {existingTransaction.User.FullName},</p>
+                <p>{(status == "FAILED"
+                    ? "We regret to inform you that your payment could not be processed successfully. This might be due to insufficient funds, expired card, or other payment issues."
+                    : "Your payment has been cancelled as requested or due to session timeout.")}
+                </p>
+            </div>
+            <div class=""transaction-details"">
+                <h3>Transaction Details:</h3>
+                <p><strong>Order Code:</strong> {existingTransaction.OrderCode}</p>
+                <p><strong>Amount:</strong> {existingTransaction.Price:N0} VND</p>
+                <p><strong>Date:</strong> {existingTransaction.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")}</p>
+                <p><strong>Status:</strong> {(status == "FAILED" ? "Failed" : "Cancelled")}</p>
+            </div>
+            <p>
+                {(status == "FAILED"
+                ? "You can try the payment again or contact your bank for more information about the failed transaction."
+                : "You can restart the payment process anytime from your account.")}
+            </p>
+        </div>
+        <div class=""footer"">
+            <p>© 2025 WorkSmart. All rights reserved.</p>
+            <p>Questions? Contact our support team.</p>
+        </div>
+    </div>
+</body>
+</html>"
+                    };
+
+                    await _sendMailService.SendMail(failureEmailContent);
+
                     return Ok(new
                     {
-                        status = "CANCElLED",
-                        message = "Payment has been canceled",
+                        status = status == "FAILED" ? "FAILED" : "CANCELLED",
+                        message = status == "FAILED" ? "Payment has failed" : "Payment has been canceled",
                         orderCode = orderCode
                     });
                 }
@@ -248,7 +354,8 @@ namespace WorkSmart.API.Controllers
                     await _signalRService.SendNotificationToUser(
                         existingTransaction.UserID,
                         "Payment Successful",
-                        $"Your payment for order {existingTransaction.Content} has been confirmed."
+                        $"Your payment for order {"existingTransaction.Content"} has been confirmed.",
+                        $"employer/transaction-history"
                     );
 
                     var successEmailContent = new Core.Dto.MailDtos.MailContent
@@ -327,19 +434,21 @@ namespace WorkSmart.API.Controllers
                 <p><strong>Amount:</strong> {existingTransaction.Price:N0} VND</p>
                 <p><strong>Date:</strong> {existingTransaction.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")}</p>
                 <p><strong>Status:</strong> Paid</p>
+                <p><strong>Package:</strong> {packageName}</p>
+                <p><strong>Subscription Period:</strong> {(existingSubscription != null && existingSubscription.ExpDate > DateTime.Now ? "Extended until" : "Valid until")}</p>
             </div>
-            <p style=""text-align: center;"">
-                <a href=""#"" style=""display: inline-block; background-color: #4CAF50; color: white; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; text-align: center;"">View Transaction</a>
-            </p>
+            <p>You now have full access to all the features included in your package. Visit your dashboard to start using the service.</p>
         </div>
         <div class=""footer"">
             <p>© 2025 WorkSmart. All rights reserved.</p>
-            <p>Questions? Contact our support team.</p>
+            <p>Questions? Contact our support team at support@worksmart.com</p>
         </div>
     </div>
 </body>
 </html>"
                     };
+
+                    await _sendMailService.SendMail(successEmailContent);
 
                     await transaction.CommitAsync();
 
@@ -365,6 +474,18 @@ namespace WorkSmart.API.Controllers
                     Details = ex.Message
                 });
             }
+        }
+
+        [HttpGet("test-payment-fail/{orderCode}")]
+        public async Task<IActionResult> TestPaymentFail(long orderCode)
+        {
+            return await ProcessPaymentReturn(
+                code: "01",  // Code không phải "00"
+                id: "123123123123",
+                cancel: false,
+                status: "FAILED",
+                orderCode: orderCode
+            );
         }
 
         [HttpGet("payment-cancel")]
@@ -400,7 +521,7 @@ namespace WorkSmart.API.Controllers
                 await _signalRService.SendNotificationToUser(
                     existingTransaction.User.UserID,
                     "Payment Canceled",
-                    $"Your payment for order {existingTransaction.Content} has been canceled."
+                    $"Your payment for order {"existingTransaction.Content"} has been canceled."
                 );
 
                 return Ok(new

@@ -75,7 +75,10 @@ namespace WorkSmart.API.Extension
             services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<ReportService>();
             services.AddAutoMapper(typeof(ReportProfile));
-            //payOS
+            //transaction
+            services.AddScoped<ITransactionRepository, TransactionRepository>();
+            services.AddScoped<TransactionService>();
+            services.AddAutoMapper(typeof (TransactionProfile));
 
             services.AddMemoryCache();
             services.AddSignalR();

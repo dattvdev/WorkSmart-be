@@ -12,6 +12,8 @@ using WorkSmart.Core.Interface;
 using WorkSmart.Repository.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSingleton<JobNotificationBackgroundService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<JobNotificationBackgroundService>());
 
 // Add services to the container.
 builder.Services.AddCors(options =>

@@ -23,12 +23,14 @@ namespace WorkSmart.Core.Interface
         Task<Job> GetByJobId(int jobId);
         Task<bool> ApproveJobAsync(int jobId);
         Task<bool> RejectJobAsync(int jobId, string reason);
-        Task<bool> CheckLimitCreateJob(int userID);
+        Task<bool> CheckLimitCreateJob(int userID, int? maxJobsPerDayFromClient);
         Task<bool> CheckLimitCreateFeaturedJob(int userID);
         Task<bool> ToggleJobPriorityAsync(int jobId);
         Task<IEnumerable<object>> JobCategoryDashboard();
         Task<IEnumerable<object>> JobStatusDashboard();
         Task<IEnumerable<object>> JobLocationDashboard();
 
+        Task<List<Job>> GetExpiringJobsAsync();
+        Task<List<Job>> GetExpiredJobs();
     }
 }

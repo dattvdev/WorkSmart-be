@@ -23,6 +23,7 @@ namespace WorkSmart.Core.Dto.JobDtos
         public JobStatus? Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public int? MaxJobsPerDay { get; set; }
 
     }
 }

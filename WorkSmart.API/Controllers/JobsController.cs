@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using WorkSmart.API.SignalRService;
@@ -25,17 +26,21 @@ namespace WorkSmart.API.Controllers
         private readonly SignalRNotificationService _signalRService;
         private readonly ISendMailService _sendMailService;
         private readonly NotificationJobTagService _notificationJobTagService;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+
         public JobController(JobService jobService
             , ILogger<JobController> logger
             , SignalRNotificationService signalRService
             , ISendMailService sendMailService
-            , NotificationJobTagService notificationJobTagService)
+            , NotificationJobTagService notificationJobTagService
+            , IServiceScopeFactory serviceScopeFactory) // Thêm parameter này
         {
             _jobService = jobService;
             _logger = logger;
             _signalRService = signalRService;
             _sendMailService = sendMailService;
             _notificationJobTagService = notificationJobTagService;
+            _serviceScopeFactory = serviceScopeFactory; // Gán giá trị
         }
 
         [HttpPost("create")]
@@ -46,7 +51,12 @@ namespace WorkSmart.API.Controllers
             try
             {
                 await _jobService.CreateJobAsync(createJobDto);
+                bool canCreate = await _jobService.CheckLimitCreateJob(createJobDto.UserID, createJobDto.MaxJobsPerDay);
 
+                if (!canCreate)
+                {
+                    return BadRequest(new { message = "Daily job creation limit reached" });
+                }
                 await _signalRService.SendNotificationToUser(
                        createJobDto.UserID,
                        "Job Notification",
@@ -120,9 +130,10 @@ namespace WorkSmart.API.Controllers
             try
             {
                 var updatedJob = await _jobService.UpdateJobAsync(id, updateJobDto);
+
                 if (updatedJob == null)
                     return NotFound(new { message = "Job not found." });
-
+                
                 return Ok(updatedJob);
             }
             catch (Exception ex)
@@ -453,11 +464,10 @@ namespace WorkSmart.API.Controllers
 
             return Ok(jobs);
         }
-        [HttpGet("checkLimitCreateJobPerDay/{userId}")]
-        public async Task<bool> CheckLimitCreateJob(int userId)
+        [HttpGet("checkLimitCreateJobPerDay/{userID}")]
+        public async Task<bool> CheckLimitCreateJob(int userID, [FromQuery] int? maxJobsPerDay = null)
         {
-            var check = await _jobService.CheckLimitCreateJob(userId);
-
+            var check = await _jobService.CheckLimitCreateJob(userID, maxJobsPerDay);
             return check;
         }
         [HttpGet("CheckLimitCreateFeaturedJob/{userId}")]
@@ -609,6 +619,99 @@ namespace WorkSmart.API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"Error updating settings: {ex.Message}");
+            }
+        }
+        [HttpGet("test-notifications")]
+        public async Task<IActionResult> TestJobNotifications()
+        {
+            try
+            {
+                using var scope = _serviceScopeFactory.CreateScope();
+                var jobRepository = scope.ServiceProvider.GetRequiredService<IJobRepository>();
+                var notificationService = scope.ServiceProvider.GetRequiredService<NotificationService>();
+                var sendMailService = scope.ServiceProvider.GetRequiredService<ISendMailService>();
+                var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+
+                // Xử lý job sắp hết hạn (1-3 ngày)
+                var expiringJobs = await jobRepository.GetExpiringJobsAsync();
+                _logger.LogInformation("Found {Count} expiring jobs", expiringJobs.Count);
+
+                foreach (var job in expiringJobs)
+                {
+                    var today = DateTime.UtcNow.Date;
+                    int daysRemaining = 0;
+
+                    if (job.Deadline.HasValue)
+                    {
+                        daysRemaining = (job.Deadline.Value.Date - today).Days;
+                    }
+
+                    // Gửi thông báo trong ứng dụng
+                    await notificationService.CreateJobExpiringNotification(job, job.UserID, daysRemaining);
+
+                    // Gửi email
+                    var user = await userRepository.GetById(job.UserID);
+                    if (user != null && !string.IsNullOrEmpty(user.Email))
+                    {
+                        string subject = $"Job #{job.Title} sắp hết hạn";
+                        string body = $@"
+                    <html>
+                        <body>
+                            <h2>Thông báo job sắp hết hạn</h2>
+                            <p>Job <strong>{job.Title}</strong> của bạn sẽ hết hạn trong <strong>{daysRemaining} ngày</strong>.</p>
+                            <p>Vui lòng xem xét và cập nhật thông tin nếu cần thiết.</p>
+                        </body>
+                    </html>";
+
+                        await sendMailService.SendEmailAsync(user.Email, subject, body);
+                        _logger.LogInformation("Sent test email to {Email} for expiring Job {JobID}", user.Email, job.JobID);
+                    }
+
+                    _logger.LogInformation("Created expiring notification for Job {JobID}", job.JobID);
+                }
+
+                // Xử lý job đã hết hạn 1 ngày
+                var expiredJobs = await jobRepository.GetExpiredJobs();
+                _logger.LogInformation("Found {Count} expired jobs", expiredJobs.Count);
+
+                foreach (var job in expiredJobs)
+                {
+                    // Gửi thông báo trong ứng dụng
+                    await notificationService.CreateJobExpiredNotification(job, job.UserID);
+
+                    // Gửi email
+                    var user = await userRepository.GetById(job.UserID);
+                    if (user != null && !string.IsNullOrEmpty(user.Email))
+                    {
+                        string subject = $"Job #{job.Title} đã hết hạn";
+                        string body = $@"
+                    <html>
+                        <body>
+                            <h2>Thông báo job đã hết hạn</h2>
+                            <p>Job <strong>{job.Title}</strong> của bạn đã hết hạn 1 ngày.</p>
+                            <p>Nếu bạn muốn tiếp tục tuyển dụng, vui lòng cập nhật thông tin và gia hạn job.</p>
+                        </body>
+                    </html>";
+
+                        await sendMailService.SendEmailAsync(user.Email, subject, body);
+                        _logger.LogInformation("Sent test email to {Email} for expired Job {JobID}", user.Email, job.JobID);
+                    }
+
+                    _logger.LogInformation("Created expired notification for Job {JobID}", job.JobID);
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Test completed successfully",
+                    expiringJobsCount = expiringJobs.Count,
+                    expiredJobsCount = expiredJobs.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error testing job notifications");
+                return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
     }

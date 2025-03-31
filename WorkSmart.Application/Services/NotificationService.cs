@@ -50,6 +50,35 @@ namespace WorkSmart.Application.Services
         {
             return await _notificationRepository.MarkNotificationAsRead(notificationId);
         }
+        public async Task CreateJobExpiringNotification(Job job, int userId, int daysRemaining)
+        {
+            var notification = new CreateNotificationDto
+            {
+                UserID = userId,
+                Title = "Job sắp hết hạn",
+                Message = $"Job sẽ hết hạn trong {daysRemaining} ngày.",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow,
+                Link = $"/jobs/detail/{job.JobID}" // Giả sử Job có thuộc tính JobID
+            };
+
+            await CreateNotification(notification);
+        }
+
+        public async Task CreateJobExpiredNotification(Job job, int userId)
+        {
+            var notification = new CreateNotificationDto
+            {
+                UserID = userId,
+                Title = "Job đã hết hạn",
+                Message = $"Job đã hết hạn 1 ngày trước.",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow,
+                Link = $"/jobs/detail/{job.JobID}" // Giả sử Job có thuộc tính JobID
+            };
+
+            await CreateNotification(notification);
+        }
 
 
     } 

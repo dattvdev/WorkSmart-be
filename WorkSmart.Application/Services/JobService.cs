@@ -74,6 +74,9 @@ namespace WorkSmart.Application.Services
                 job.Tags.Clear();
             }
             _mapper.Map(jobDto, job, opts => opts.Items["Tags"] = tags);
+
+            job.Status = JobStatus.Pending;
+            
             await _jobRepository.Save();
             return _mapper.Map<JobDto>(job);
         }
@@ -126,26 +129,41 @@ namespace WorkSmart.Application.Services
             var jobs = await _jobRepository.GetJobsByEmployerId(userId);
             return _mapper.Map<IEnumerable<JobDto>>(jobs);
         }
-        public async Task<bool> CheckLimitCreateJob(int userID)
+        public async Task<bool> CheckLimitCreateJob(int userID, int? maxJobsPerDay = null)
         {
-            return await _jobRepository.CheckLimitCreateJob(userID);
+            return await _jobRepository.CheckLimitCreateJob(userID, maxJobsPerDay);
         }
         public async Task<bool> CheckLimitCreateFeaturedJob(int userID)
         {
             return await _jobRepository.CheckLimitCreateFeaturedJob(userID);
         }
+        //public async Task<bool> ToggleJobPriorityAsync(int jobId)
+        //{
+        //    var job = await _jobRepository.GetByJobId(jobId);
+        //    if (job == null) return false;
+
+        //    if (!job.Priority)
+        //    {
+        //        var hasAvailableFeaturedSlot = await _jobRepository.CheckLimitCreateFeaturedJob(job.UserID);
+        //        if (!hasAvailableFeaturedSlot)
+        //        {
+        //            return false; 
+        //        }
+        //    }
+
+        //    return await _jobRepository.ToggleJobPriorityAsync(jobId);
+        //}
         public async Task<bool> ToggleJobPriorityAsync(int jobId)
         {
             var job = await _jobRepository.GetByJobId(jobId);
-            if (job == null) return false;
+            if (job == null)
+                return false;
 
-            if (!job.Priority)
+            if (job.Status == JobStatus.Pending ||
+                job.Status == JobStatus.Rejected ||
+                (job.Deadline.HasValue && job.Deadline.Value < System.DateTime.Now))
             {
-                var hasAvailableFeaturedSlot = await _jobRepository.CheckLimitCreateFeaturedJob(job.UserID);
-                if (!hasAvailableFeaturedSlot)
-                {
-                    return false;
-                }
+                return false;
             }
 
             return await _jobRepository.ToggleJobPriorityAsync(jobId);

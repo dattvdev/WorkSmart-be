@@ -26,6 +26,7 @@ namespace WorkSmart.Core.Dto.JobDtos
         public int? Exp { get; set; }
         public bool Priority { get; set; } = false;
         public string? Avatar { get; set; }
+        public string? CompanyName { get; set; }
 
         public DateTime? Deadline { get; set; }
         public JobStatus? Status { get; set; }

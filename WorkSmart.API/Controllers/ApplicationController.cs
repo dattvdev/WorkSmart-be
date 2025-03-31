@@ -264,11 +264,16 @@ namespace WorkSmart.Api.Controllers
             }
         }
 
-        //CheckApplyStatus
         [HttpGet("CheckApplyStatus/{userId}/{jobId}")]
         public async Task<IActionResult> CheckApplyStatus(int userId, int jobId)
         {
             var result = await _applicationService.CheckApplyStatus(userId, jobId);
+            return Ok(result);
+        }
+        [HttpGet("ApplicationCountDashboard")]
+        public async Task<IActionResult> ApplicationCountDashboard()
+        {
+            var result = await _applicationService.ApplicationCountDashboard();
             return Ok(result);
         }
     }

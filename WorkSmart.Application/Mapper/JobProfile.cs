@@ -37,7 +37,8 @@ namespace WorkSmart.Application.Mapper
         context.Items.ContainsKey("Tags") ? context.Items["Tags"] as ICollection<Tag> : new List<Tag>()
     ));
             CreateMap<Job, GetListSearchJobDto>()
-                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.User.Avatar));
+                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.User.Avatar))
+                .ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src => src.User.CompanyName));
             CreateMap<Job, ExpiredJobDto>()
                 .ForMember(dest => dest.HiddenAt, opt => opt.MapFrom(src => DateTime.Now));
 

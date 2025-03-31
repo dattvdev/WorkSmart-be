@@ -29,25 +29,35 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
         [HttpGet("getByUserId/{id}")]
         public async Task<IActionResult> GetByUserId(int id)
         {
             try
             {
-                var (subscription, package) = await _subscriptionService.GetByUserId(id);
-                if (subscription == null)
-                    return NotFound(new { message = "Subscription not found" });
-                if (package == null)
-                    return NotFound(new { message = "Package not found" });
-                if (subscription.ExpDate < DateTime.Now)
-                    return BadRequest(new { message = "Subscription expired" });
-                return Ok(new { subscription, package });
+                var subscriptionsWithPackages = await _subscriptionService.GetByUserId(id);
+                if (subscriptionsWithPackages == null || !subscriptionsWithPackages.Any())
+                    return NotFound(new { message = "No subscriptions found" });
+
+                var validSubscriptions = subscriptionsWithPackages
+                    .Select(item => new SubscriptionWithPackage
+                    {
+                        Subscription = item.subscription,
+                        Package = item.package
+                    })
+                    .ToList();
+
+                if (!validSubscriptions.Any())
+                    return BadRequest(new { message = "All subscriptions expired" });
+
+                return Ok(validSubscriptions);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -61,6 +71,7 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
         [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] SubscriptionDto subscriptionDto)
         {
@@ -81,6 +92,20 @@ namespace WorkSmart.API.Controllers
             {
                 _subscriptionService.Update(subscriptionDto);
                 return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("SubscriptionRevenueDashboard")]
+        public async Task<IActionResult> SubscriptionRevenueDashboard()
+        {
+            try
+            {
+                var data = await _subscriptionService.SubscriptionRevenueDashboard();
+                return Ok(data);
             }
             catch (Exception ex)
             {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -498,6 +499,126 @@ namespace WorkSmart.API.Controllers
             {
                 _logger.LogError("Error updating job priority for ID {JobID}: {Message}", id, ex.Message);
                 return StatusCode(500, new { message = "An error occurred while updating the job priority." });
+            }
+        }
+
+        [HttpGet("job-category-dashboard")]
+        public async Task<IActionResult> JobCategoryDashboard()
+        {
+            try
+            {
+                var result = await _jobService.JobCategoryDashboard();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error fetching job category dashboard: {Message}", ex.Message);
+                return StatusCode(500, new { message = "An error occurred while fetching job category dashboard." });
+            }
+        }
+
+        [HttpGet("job-status-dashboard")]
+        public async Task<IActionResult> JobStatusDashboard()
+        {
+            try
+            {
+                var result = await _jobService.JobStatusDashboard();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error fetching job status dashboard: {Message}", ex.Message);
+                return StatusCode(500, new { message = "An error occurred while fetching job status dashboard." });
+            }
+        }
+        [HttpGet("job-location-dashboard")]
+        public async Task<IActionResult> JobLocationDashboard()
+        {
+            try
+            {
+                var result = await _jobService.JobLocationDashboard();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error fetching job location dashboard: {Message}", ex.Message);
+                return StatusCode(500, new { message = "An error occurred while fetching job location dashboard." });
+            }
+        }
+
+        // Đường dẫn đến file JSON lưu trữ cấu hình
+        private readonly string filePath = "./jobLimitSettings.json";
+
+        // Add this to the GET endpoint
+        [HttpGet("joblimit")]
+        public IActionResult GetJobLimitSettings()
+        {
+            try
+            {
+                if (System.IO.File.Exists(filePath))
+                {
+                    // Read the JSON file
+                    var jsonData = System.IO.File.ReadAllText(filePath);
+
+                    // If empty or invalid, create default
+                    if (string.IsNullOrWhiteSpace(jsonData))
+                    {
+                        var defaultSettings = new JobLimitSettings
+                        {
+                            MaxJobsPerDay = 1,
+                            UpdatedAt = DateTime.Now.ToString()
+                        };
+                        jsonData = JsonConvert.SerializeObject(defaultSettings, Formatting.Indented);
+                        System.IO.File.WriteAllText(filePath, jsonData);
+                        return Ok(defaultSettings);
+                    }
+
+                    var settings = JsonConvert.DeserializeObject<JobLimitSettings>(jsonData);
+                    return Ok(settings);
+                }
+                else
+                {
+                    // Create the file with default settings if it doesn't exist
+                    var defaultSettings = new JobLimitSettings
+                    {
+                        MaxJobsPerDay = 1,
+                        UpdatedAt = DateTime.Now.ToString()
+                    };
+                    var jsonData = JsonConvert.SerializeObject(defaultSettings, Formatting.Indented);
+                    System.IO.File.WriteAllText(filePath, jsonData);
+                    return Ok(defaultSettings);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error reading settings: {ex.Message}");
+            }
+        }
+
+        // POST api/joblimit
+        [HttpPost("joblimit")]
+        public IActionResult UpdateJobLimitSettings([FromBody] JobLimitSettings newSettings)
+        {
+            try
+            {
+                // Validate input
+                if (newSettings == null)
+                {
+                    return BadRequest("Invalid input");
+                }
+
+                // Add timestamp
+                newSettings.UpdatedAt = DateTime.Now.ToString();
+
+                // Serialize to JSON and save to file
+                var jsonData = JsonConvert.SerializeObject(newSettings, Formatting.Indented);
+                System.IO.File.WriteAllText(filePath, jsonData);
+
+                return Ok(newSettings); // Return the updated settings
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error updating settings: {ex.Message}");
             }
         }
         [HttpGet("test-notifications")]

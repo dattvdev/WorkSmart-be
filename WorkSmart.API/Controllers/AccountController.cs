@@ -385,7 +385,7 @@ namespace WorkSmart.API.Controllers
                         Role = googleLoginRequest.Role,
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword(googleLoginRequest.Email),
                         IsEmailConfirmed = true,
-                        CreatedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.Now,
                     };
 
                     if(googleLoginRequest.Role == "Employer")
@@ -974,7 +974,7 @@ namespace WorkSmart.API.Controllers
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddHours(2),
+                expires: DateTime.Now.AddHours(99),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

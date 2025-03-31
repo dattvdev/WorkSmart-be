@@ -74,12 +74,16 @@ namespace WorkSmart.API.Extension
             //report
             services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<ReportService>();
-            services.AddAutoMapper(typeof(ReportProfile));
-            //payOS
+            services.AddAutoMapper(typeof(ReportProfile));           
             //favorite-job
             services.AddScoped<IFavoriteJobRepository,FavoriteJobRepository>();
             services.AddScoped<FavoriteJobService>();
             services.AddAutoMapper(typeof(FavoriteJobProfile));
+            //payOS
+            services.AddScoped<ITransactionRepository, TransactionRepository>();
+            services.AddScoped<TransactionService>();
+            services.AddAutoMapper(typeof (TransactionProfile));
+
 
             services.AddMemoryCache();
             services.AddSignalR();

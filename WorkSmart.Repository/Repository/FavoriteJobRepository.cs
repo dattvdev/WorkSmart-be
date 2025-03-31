@@ -1,4 +1,5 @@
-﻿using WorkSmart.Core.Entity;
+﻿using Microsoft.EntityFrameworkCore;
+using WorkSmart.Core.Entity;
 using WorkSmart.Core.Interface;
 
 namespace WorkSmart.Repository.Repository
@@ -8,6 +9,11 @@ namespace WorkSmart.Repository.Repository
         public FavoriteJobRepository(WorksmartDBContext context) : base(context)
         {
 
+        }
+
+        public async Task<IEnumerable<FavoriteJob>> GetByUserIdAsync(int userId)
+        {
+            return await _context.FavoriteJobs.Where(fj => fj.UserID == userId).ToListAsync();
         }
     }
 }

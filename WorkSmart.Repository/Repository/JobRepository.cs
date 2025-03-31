@@ -15,7 +15,7 @@ namespace WorkSmart.Repository.Repository
         public JobRepository(WorksmartDBContext context) : base(context)
         {
             _context = context;
-        }
+         }
 
         public async Task<bool> ApproveJobAsync(int jobId)
         {
@@ -328,23 +328,27 @@ namespace WorkSmart.Repository.Repository
             return await _dbSet.Include(t => t.Tags).FirstOrDefaultAsync(j => j.JobID == id);
         }
 
-        public async Task<bool> CheckLimitCreateJob(int userID)
+        public async Task<bool> CheckLimitCreateJob(int userID, int? maxJobsPerDayFromClient = null)
         {
             var today = DateTime.UtcNow.Date;
-
             var jobCount = await _dbSet.CountAsync(u =>
                 u.UserID == userID && EF.Functions.DateDiffDay(u.CreatedAt, today) == 0);
 
+            // Kiểm tra gói đăng ký
             var subscription = await _context.Subscriptions
-                                             .Include(p => p.Package)
-                                             .FirstOrDefaultAsync(u => u.UserID == userID);
+                                           .Include(p => p.Package)
+                                           .FirstOrDefaultAsync(u => u.UserID == userID);
 
-            if (subscription == null)
+            
+            if (subscription != null)
             {
-                return jobCount < 2;
+                return jobCount < subscription.Package.JobPostLimitPerDay;
             }
-            var limit = subscription.Package.FeaturedJobPostLimit;
-            return jobCount < subscription.Package.JobPostLimitPerDay;
+
+            
+            int defaultLimit = maxJobsPerDayFromClient ?? 1; // Fallback là 1 nếu không có giá trị từ client
+
+            return jobCount < defaultLimit;
         }
         public async Task<bool> CheckLimitCreateFeaturedJob(int userID)
         {
@@ -354,7 +358,7 @@ namespace WorkSmart.Repository.Repository
             var subscription = await _context.Subscriptions
                                              .Include(p => p.Package)
                                              .FirstOrDefaultAsync(u => u.UserID == userID);
-
+            
             if (subscription == null)
             {
                 return featuredJobCount < 1;
@@ -367,10 +371,76 @@ namespace WorkSmart.Repository.Repository
         {
             var job = await _dbSet.FindAsync(jobId);
             if (job == null) return false;
+            //Kiểm tra có đang ưu tiên không
+            if (job.Priority)
+            {
+                
+                //var subscription = await _context.Subscriptions
+                //    .Include(s => s.Package)
+                //    .FirstOrDefaultAsync(s => s.UserID == job.UserID);
+                ////kiểm tra gói
+                //if (subscription != null)
+                //{
+                //    // kiểm tra với gói có duration tới today đã 
+                //    var subscriptionStartDate = subscription.CreatedAt;
+                //    var durationInDays = subscription.Package.DurationInDays;
+                //    var expirationDate = subscriptionStartDate.AddDays(durationInDays);
+                //    // nếu current day đến ngày hết hạn thì không cho set lại
+                //    if (DateTime.Now < expirationDate)
+                //    {
+                //        return false;
+                //    }
+                //}
+            }
+            else
+            {
+                bool canCreateFeatured = await CheckLimitCreateFeaturedJob(job.UserID);
+                if (!canCreateFeatured)
+                {
+                    return false;
+                }
+            }
 
+            // Toggle the priority
             job.Priority = !job.Priority;
-            // có nên update khi mà set độ ưu tiên k
+
+            // Update the job's UpdatedAt timestamp
             //job.UpdatedAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        public async Task<List<Job>> GetExpiringJobsAsync()
+        {
+            var today = DateTime.UtcNow.Date;
+            var threeDaysLater = today.AddDays(3);
+
+            return await _dbSet
+                .Where(j => j.Status == JobStatus.Active &&
+                           j.Deadline.HasValue &&
+                           j.Deadline.Value.Date > today &&
+                           j.Deadline.Value.Date <= threeDaysLater)
+                .ToListAsync();
+        }
+
+        public async Task<List<Job>> GetExpiredJobs()
+        {
+            var today = DateTime.UtcNow.Date;
+
+            return await _dbSet
+                .Where(j => j.Status == JobStatus.Active &&
+                           j.Deadline.HasValue &&
+                           today.AddDays(-1).Date == j.Deadline.Value.Date)
+                .ToListAsync();
+        }
+
+        public async Task<bool> UpdateJobStatusAsync(int jobId, JobStatus newStatus)
+        {
+            var job = await _dbSet.FindAsync(jobId);
+            if (job == null) return false;
+
+            job.Status = newStatus;
+            job.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
             return true;

@@ -11,6 +11,7 @@ using WorkSmart.Core.Entity;
 using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository.Repository;
+using WorkSmart.Core.Dto.ReportDtos;
 
 namespace WorkSmart.API.Controllers
 {
@@ -24,11 +25,21 @@ namespace WorkSmart.API.Controllers
         private readonly SendMailService _sendMailService;
         private readonly SignalRNotificationService _signalRService;
         private readonly IJobRepository _jobRepository;
+        private readonly IReportRepository _reportRepository;
         private readonly JobService _jobService;
         private readonly NotificationJobTagService _notificationJobTagService;
         private readonly ReportService _reportService;
-
-        public AdminController(IAccountRepository accountRepository, AdminService adminService, IMapper mapper, SendMailService sendMailService, SignalRNotificationService signalRService, IJobRepository jobRepository, JobService jobService, NotificationJobTagService notificationJobTagService, ReportService reportService)
+        private readonly UserService _userService;
+        public AdminController(IAccountRepository accountRepository
+            , AdminService adminService, IMapper mapper
+            , SendMailService sendMailService
+            , SignalRNotificationService signalRService
+            , IJobRepository jobRepository
+            , IReportRepository reportRepository
+            , JobService jobService
+            , NotificationJobTagService notificationJobTagService
+            , ReportService reportService
+            , UserService userService)
         {
             _accountRepository = accountRepository;
             _adminService = adminService;
@@ -36,9 +47,11 @@ namespace WorkSmart.API.Controllers
             _sendMailService = sendMailService;
             _signalRService = signalRService;
             _jobRepository = jobRepository;
+            _reportRepository = reportRepository;
             _jobService = jobService;
             _notificationJobTagService = notificationJobTagService;
             _reportService = reportService;
+            _userService = userService;
         }
 
         [HttpGet("test-auth")]
@@ -493,7 +506,7 @@ namespace WorkSmart.API.Controllers
                 await _sendMailService.SendMail(emailContent);
             }
 
-            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedAt = DateTime.Now;
             _accountRepository.Update(user);
             await _accountRepository.Save();
 
@@ -706,7 +719,7 @@ namespace WorkSmart.API.Controllers
             }
 
             //Gửi mail cho employer sau khi đã approve/reject license
-            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedAt = DateTime.Now;
             _accountRepository.Update(user);
             await _accountRepository.Save();
 
@@ -941,28 +954,307 @@ namespace WorkSmart.API.Controllers
             return Ok(new { success = true, message = "Job rejected successfully" });
         }
 
+        [HttpPost("approve-report/{reportId}")]
+        public async Task<IActionResult> ApproveReport(int reportId, [FromBody] ApproveReportRequest request)
+        {
+            var report = await _reportRepository.GetById(reportId);
+            if (report == null)
+            {
+                return NotFound("Report not found.");
+            }
+
+            if (report.Status != "Pending")
+            {
+                return BadRequest("Report is not in pending status and cannot be processed.");
+            }
+
+            var sender = await _accountRepository.GetById(report.SenderID);
+            if (sender == null)
+            {
+                return NotFound("Sender not found.");
+            }
+
+            if (request.IsApproved)
+            {
+                report.Status = "Completed";
+
+                await _signalRService.SendNotificationToUser(
+                    sender.UserID,
+                    "Your Report Has Been Approved",
+                    $"Your report has been approved."
+                );
+
+                var approvedEmailContent = new Core.Dto.MailDtos.MailContent
+                {
+                    To = sender.Email,
+                    Subject = "Your Report Has Been Approved",
+                    Body = $@"
+    <!DOCTYPE html>
+    <html lang=""en"">
+    <head>
+        <meta charset=""UTF-8"">
+        <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+        <title>Report Approved</title>
+        <style>
+            body {{
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0;
+                padding: 0;
+                background-color: #f9f9f9;
+            }}
+            .email-container {{
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            }}
+            .header {{
+                background-color: #4285f4;
+                color: white;
+                padding: 20px;
+                text-align: center;
+            }}
+            .content {{
+                padding: 30px;
+            }}
+            .message {{
+                background-color: #e6ffed;
+                border-left: 4px solid #4285f4;
+                padding: 15px;
+                margin-bottom: 20px;
+                border-radius: 4px;
+            }}
+            .footer {{
+                background-color: #f5f5f5;
+                padding: 20px;
+                text-align: center;
+                font-size: 12px;
+                color: #777;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class=""email-container"">
+            <div class=""header"">
+                <h2>Report Approved</h2>
+            </div>
+            <div class=""content"">
+                <h1 style=""color: #4285f4; text-align: center;"">Approved</h1>
+                <div class=""message"">
+                    <p>Dear {sender.FullName},</p>
+                    <p>We are pleased to inform you that your report for the job '{report.Content}' has been approved.</p>
+                    <p>Our team has reviewed your report and found it to be valid and actionable.</p>
+                </div>
+                <p style=""text-align: center;"">
+                    <a href=""#"" style=""display: inline-block; background-color: #4285f4; color: white; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; text-align: center;"">View Report Details</a>
+                </p>
+            </div>
+            <div class=""footer"">
+                <p>© 2025 WorkSmart. All rights reserved.</p>
+                <p>Questions? Contact our support team.</p>
+            </div>
+        </div>
+    </body>
+    </html>"
+                };
+
+                await _sendMailService.SendMail(approvedEmailContent);
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(request.Reason))
+                {
+                    return BadRequest("Rejection reason is required.");
+                }
+
+                report.Status = "Rejected";
+
+                await _signalRService.SendNotificationToUser(
+                     sender.UserID,
+                    "Your Report Has Been Rejected",
+                    $"Your report has been rejected."
+                );
+
+                var rejectedEmailContent = new Core.Dto.MailDtos.MailContent
+                {
+                    To = sender.Email,
+                    Subject = "Your Report Has Been Rejected",
+                    Body = $@"
+    <!DOCTYPE html>
+    <html lang=""en"">
+    <head>
+        <meta charset=""UTF-8"">
+        <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+        <title>Report Rejected</title>
+        <style>
+            body {{
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0;
+                padding: 0;
+                background-color: #f9f9f9;
+            }}
+            .email-container {{
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            }}
+            .header {{
+                background-color: #dc3545;
+                color: white;
+                padding: 20px;
+                text-align: center;
+            }}
+            .content {{
+                padding: 30px;
+            }}
+            .message {{
+                background-color: #ffe6e6;
+                border-left: 4px solid #dc3545;
+                padding: 15px;
+                margin-bottom: 20px;
+                border-radius: 4px;
+            }}
+            .footer {{
+                background-color: #f5f5f5;
+                padding: 20px;
+                text-align: center;
+                font-size: 12px;
+                color: #777;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class=""email-container"">
+            <div class=""header"">
+                <h2>Report Rejected</h2>
+            </div>
+            <div class=""content"">
+                <h1 style=""color: #dc3545; text-align: center;"">Action Required</h1>
+                <div class=""message"">
+                    <p>Dear {sender.FullName},</p>
+                    <p>We regret to inform you that your report for the job '{report.Content}' has been rejected.</p>
+                    <p>Reason for Rejection: <strong>{request.Reason}</strong></p>
+                    <p>Please review the details and consider resubmitting with more information if applicable.</p>
+                </div>
+                <p style=""text-align: center;"">
+                    <a href=""#"" style=""display: inline-block; background-color: #dc3545; color: white; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; text-align: center;"">Resubmit Report</a>
+                </p>
+            </div>
+            <div class=""footer"">
+                <p>© 2025 WorkSmart. All rights reserved.</p>
+                <p>Need help? Contact our support team.</p>
+            </div>
+        </div>
+    </body>
+    </html>"
+                };
+
+                await _sendMailService.SendMail(rejectedEmailContent);
+            }
+
+            report.CreatedAt = DateTime.Now;
+            _reportRepository.Update(report);
+            await _reportRepository.Save();
+
+            return Ok(new
+            {
+                message = request.IsApproved
+                    ? "Report has been approved successfully."
+                    : "Report has been rejected."
+            });
+        }
+
         [HttpGet("report-list")]
-        public async Task<IActionResult> GetReportsForAdmin([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetReportsForAdmin()
         {
             try
             {
-                var (reports, total) = await _reportService.GetReportsForAdmin(pageNumber, pageSize);
-                var totalPages = (int)Math.Ceiling((double)total / pageSize);
-
-                return Ok(new
-                {
-                    TotalPages = totalPages,
-                    CurrentPage = pageNumber,
-                    TotalReports = total,
-                    Reports = reports
-                });
+                var reports = await _reportService.GetReportsForAdmin();
+                return Ok(reports);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { Error = "An error occurred while fetching reports" });
             }
         }
+
+        [HttpPut("reports/{reportId}/update-status")]
+        public async Task<IActionResult> UpdateReportStatus(int reportId, [FromBody] UpdateReportStatusDto request)
+        {
+            // Validate the status value
+            if (request.Status != "Completed" && request.Status != "Rejected")
+            {
+                return BadRequest(new { Message = "Status must be either 'Completed' or 'Rejected'" });
+            }
+
+            var report = await _reportRepository.GetById(reportId);
+            if (report == null)
+            {
+                return NotFound(new { Message = "Report not found" });
+            }
+
+            // If report is already in the requested status
+            if (report.Status == request.Status)
+            {
+                return BadRequest(new { Message = $"Report is already in {request.Status} status" });
+            }
+
+            // If report is not in Pending status
+            if (report.Status != "Pending")
+            {
+                return BadRequest(new { Message = "Only reports in Pending status can be updated" });
+            }
+
+            // Update the report status
+            bool result = await _reportService.UpdateReportStatus(reportId, request.Status);
+
+            if (result)
+            {
+                // If the update is successful, send a notification to the report sender
+                if (report.SenderID > 0)
+                {
+                    string notificationTitle = request.Status == "Completed"
+                        ? "Your Report Has Been Approved"
+                        : "Your Report Has Been Rejected";
+
+                    string notificationMessage = request.Status == "Completed"
+                        ? "Thank you for your report. We have reviewed it and taken appropriate action."
+                        : $"Your report has been rejected. {(string.IsNullOrEmpty(request.Reason) ? "" : $"Reason: {request.Reason}")}";
+
+                    await _signalRService.SendNotificationToUser(
+                        report.SenderID,
+                        notificationTitle,
+                        notificationMessage
+                    );
+                }
+
+                return Ok(new { Message = $"Report status updated to {request.Status} successfully" });
+            }
+
+            return StatusCode(500, new { Message = "Failed to update report status" });
+        }
+        [HttpGet("user-dashboard")]
+        public async Task<IActionResult> UserDashboard()
+        {
+            var result = await _userService.UserDashboard();
+
+            return Ok(result);
+        }
+        [HttpGet("count-dashboard")]
+        public async Task<IActionResult> CountDashboard()
+        {
+            var result = await _userService.CountDashboard();
+
+            return Ok(result);
+        }
     }
-
-
 }

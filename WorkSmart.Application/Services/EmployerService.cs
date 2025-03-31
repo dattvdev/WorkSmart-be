@@ -40,7 +40,7 @@ namespace WorkSmart.Application.Services
             if (request.Address != null) user.Address = request.Address;
             if (request.Avatar != null) user.Avatar = request.Avatar;
 
-            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedAt = DateTime.Now;
             _accountRepository.Update(user);
             await _accountRepository.Save();
 
@@ -76,7 +76,7 @@ namespace WorkSmart.Application.Services
             user.CompanyWebsite = request.CompanyWebsite;
             user.TaxVerificationStatus = "Pending";
             user.TaxVerificationReason = null;
-            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedAt = DateTime.Now;
 
             _accountRepository.Update(user);
             await _accountRepository.Save();

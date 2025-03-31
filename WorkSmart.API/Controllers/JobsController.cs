@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using WorkSmart.API.SignalRService;
 using WorkSmart.Application.Services;
@@ -78,6 +79,16 @@ namespace WorkSmart.API.Controllers
         [HttpGet("getAllJobManage")]
         public async Task<IActionResult> GetJobsForManagement([FromQuery] JobSearchRequestDto request)
         {
+            //var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            //if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out int userIdValue))
+            //{
+            //    return Unauthorized();
+            //}
+
+            //if (!User.IsInRole("Employer"))
+            //{
+            //    return Forbid();
+            //}
             var (jobs, total) = await _jobService.GetJobsForManagement(request);
             var totalPage = (int)Math.Ceiling((double)total / request.PageSize);
             var totalJob = total;
@@ -433,6 +444,95 @@ namespace WorkSmart.API.Controllers
                 await _sendMailService.SendEmailAsync(userId.Email, subject, body);
             }
             return Ok(new { success = true, message = "Job approved successfully" });
+        }
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<IEnumerable<JobDto>>> GetJobsByUserId(int userId)
+        {
+            var jobs = await _jobService.GetJobsByUserIdAsync(userId);
+
+            return Ok(jobs);
+        }
+        [HttpGet("checkLimitCreateJobPerDay/{userId}")]
+        public async Task<bool> CheckLimitCreateJob(int userId)
+        {
+            var check = await _jobService.CheckLimitCreateJob(userId);
+
+            return check;
+        }
+        [HttpGet("CheckLimitCreateFeaturedJob/{userId}")]
+        public async Task<bool> CheckLimitCreateFeaturedJob(int userId)
+        {
+            var check = await _jobService.CheckLimitCreateFeaturedJob(userId);
+
+            return check;
+        }
+        
+        [HttpPut("toggle-priority/{id}")]
+        public async Task<IActionResult> ToggleJobPriority(int id)
+        {
+            try
+            {
+                var success = await _jobService.ToggleJobPriorityAsync(id);
+                if (!success)
+                {
+                    var job = await _jobService.GetJobById(id);
+                    if (job.Item1 == null)
+                        return NotFound(new { message = "Job not found." });
+                    else
+                        return BadRequest(new { message = "You have reached your featured job limit. Upgrade your subscription to create more featured jobs." });
+                }
+
+                return Ok(new { message = "Job priority updated successfully.", jobId = id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error updating job priority for ID {JobID}: {Message}", id, ex.Message);
+                return StatusCode(500, new { message = "An error occurred while updating the job priority." });
+            }
+        }
+
+        [HttpGet("job-category-dashboard")]
+        public async Task<IActionResult> JobCategoryDashboard()
+        {
+            try
+            {
+                var result = await _jobService.JobCategoryDashboard();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error fetching job category dashboard: {Message}", ex.Message);
+                return StatusCode(500, new { message = "An error occurred while fetching job category dashboard." });
+            }
+        }
+
+        [HttpGet("job-status-dashboard")]
+        public async Task<IActionResult> JobStatusDashboard()
+        {
+            try
+            {
+                var result = await _jobService.JobStatusDashboard();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error fetching job status dashboard: {Message}", ex.Message);
+                return StatusCode(500, new { message = "An error occurred while fetching job status dashboard." });
+            }
+        }
+        [HttpGet("job-location-dashboard")]
+        public async Task<IActionResult> JobLocationDashboard()
+        {
+            try
+            {
+                var result = await _jobService.JobLocationDashboard();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error fetching job location dashboard: {Message}", ex.Message);
+                return StatusCode(500, new { message = "An error occurred while fetching job location dashboard." });
+            }
         }
     }
 }

@@ -11,8 +11,10 @@ namespace WorkSmart.Repository.Repository
 {
     public class JobRepository : BaseRepository<Job>, IJobRepository
     {
+        private readonly WorksmartDBContext _context;
         public JobRepository(WorksmartDBContext context) : base(context)
         {
+            _context = context;
         }
 
         public async Task<bool> ApproveJobAsync(int jobId)
@@ -65,7 +67,12 @@ namespace WorkSmart.Repository.Repository
 
         public async Task<IEnumerable<Job>> GetJobsByEmployerId(int employerId)
         {
-            return await _dbSet.Where(j => j.UserID == employerId).ToListAsync();
+            return await _context.Jobs
+                .Where(j => j.UserID == employerId)
+                .Include(j => j.User)
+                .Include(j => j.Tags)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task<bool> HideJobAsync(int jobId)
@@ -163,7 +170,10 @@ namespace WorkSmart.Repository.Repository
         {
             DbSet<Job> _JobdbSet = _context.Set<Job>();
             var query = _JobdbSet.Include(c => c.User).AsQueryable();
-
+            if (request.UserID.HasValue && request.UserID > 0)
+            {
+                query = query.Where(c => c.UserID == request.UserID);
+            }
             // Filter by title
             if (!string.IsNullOrWhiteSpace(request.Title))
             {
@@ -304,7 +314,6 @@ namespace WorkSmart.Repository.Repository
 
             var similarJobs = _dbSet.Include(j => j.Tags)
                 .Where(j => j.JobID != jobId)
-                .Where(j => j.Status == JobStatus.Active)
                 .AsEnumerable() // Chuyển truy vấn về bộ nhớ
                 .Where(j => j.Tags.Any(t => jobTagIds.Contains(t.TagID))) // Lọc các job có Tag trùng
                 .OrderByDescending(j => j.Tags.Count)
@@ -317,5 +326,217 @@ namespace WorkSmart.Repository.Repository
         {
             return await _dbSet.Include(t => t.Tags).FirstOrDefaultAsync(j => j.JobID == id);
         }
+
+        public async Task<bool> CheckLimitCreateJob(int userID)
+        {
+            var today = DateTime.UtcNow.Date;
+
+            var jobCount = await _dbSet.CountAsync(u =>
+                u.UserID == userID && EF.Functions.DateDiffDay(u.CreatedAt, today) == 0);
+
+            var subscription = await _context.Subscriptions
+                                             .Include(p => p.Package)
+                                             .FirstOrDefaultAsync(u => u.UserID == userID);
+
+            if (subscription == null)
+            {
+                return jobCount < 2;
+            }
+            var limit = subscription.Package.FeaturedJobPostLimit;
+            return jobCount < subscription.Package.JobPostLimitPerDay;
+        }
+        public async Task<bool> CheckLimitCreateFeaturedJob(int userID)
+        {
+            var featuredJobCount = await _dbSet.CountAsync(u =>
+                u.UserID == userID && u.Priority == true);
+
+            var subscription = await _context.Subscriptions
+                                             .Include(p => p.Package)
+                                             .FirstOrDefaultAsync(u => u.UserID == userID);
+
+            if (subscription == null)
+            {
+                return featuredJobCount < 1;
+            }
+
+            return featuredJobCount < subscription.Package.FeaturedJobPostLimit;
+        }
+        // Set lai độ ưu tiên
+        public async Task<bool> ToggleJobPriorityAsync(int jobId)
+        {
+            var job = await _dbSet.FindAsync(jobId);
+            if (job == null) return false;
+
+            job.Priority = !job.Priority;
+            // có nên update khi mà set độ ưu tiên k
+            //job.UpdatedAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<IEnumerable<object>> JobCategoryDashboard()
+        {
+            var totalJobs = await _context.Jobs.CountAsync(); // Tổng số job
+
+            var result = await _context.Jobs
+                .GroupBy(j => j.CategoryID)
+                .Select(g => new
+                {
+                    Category = g.Key ?? "Unknown", // Tránh lỗi nếu CategoryID null
+                    Percentage = Math.Round((double)g.Count() / totalJobs * 100, 2) // Tính % và làm tròn 2 chữ số
+                })
+                .ToListAsync();
+
+            return result;
+        }
+
+        public async Task<IEnumerable<object>> JobStatusDashboard()
+        {
+            var currentYear = DateTime.Now.Year;
+
+            // Lấy danh sách số lượng job được đăng trong tháng
+            var jobCountsByMonth = await _context.Jobs
+                .Where(j => j.CreatedAt.Year == currentYear)
+                .GroupBy(j => j.CreatedAt.Month)
+                .Select(g => new
+                {
+                    Month = g.Key,
+                    Posted = g.Count()
+                })
+                .ToListAsync();
+
+            // Lấy danh sách số lượng job hết hạn theo tổng tất cả job trong năm
+            var totalExpiredCountsByMonth = await _context.Jobs
+                .Where(j => j.Deadline.HasValue && j.Deadline.Value.Year == currentYear)
+                .GroupBy(j => j.Deadline.Value.Month)
+                .Select(g => new
+                {
+                    Month = g.Key,
+                    Expired = g.Count()
+                })
+                .ToListAsync();
+
+            // Lấy số lượng ứng tuyển được duyệt theo tháng
+            var filledCountsByMonth = await _context.Applications
+                .Where(a => a.CreatedAt.Year == currentYear && a.Status == "Approved")
+                .GroupBy(a => a.CreatedAt.Month)
+                .Select(g => new
+                {
+                    Month = g.Key,
+                    Filled = g.Count()
+                })
+                .ToListAsync();
+
+            // Danh sách mặc định 12 tháng
+            var months = Enumerable.Range(1, 12).Select(m => new
+            {
+                Month = m,
+                Posted = 0,
+                Filled = 0,
+                Expired = 0
+            }).ToList();
+
+            // Ghép dữ liệu Posted
+            foreach (var item in jobCountsByMonth)
+            {
+                var index = item.Month - 1;
+                months[index] = new
+                {
+                    Month = item.Month,
+                    Posted = item.Posted,
+                    Filled = months[index].Filled,
+                    Expired = months[index].Expired
+                };
+            }
+
+            // Ghép dữ liệu Expired
+            foreach (var item in totalExpiredCountsByMonth)
+            {
+                var index = item.Month - 1;
+                months[index] = new
+                {
+                    Month = months[index].Month,
+                    Posted = months[index].Posted,
+                    Filled = months[index].Filled,
+                    Expired = item.Expired
+                };
+            }
+
+            // Ghép dữ liệu Filled
+            foreach (var item in filledCountsByMonth)
+            {
+                var index = item.Month - 1;
+                months[index] = new
+                {
+                    Month = months[index].Month,
+                    Posted = months[index].Posted,
+                    Filled = item.Filled,
+                    Expired = months[index].Expired
+                };
+            }
+
+            // Chuyển đổi số tháng thành tên tháng
+            var monthNames = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+            var result = months.Select(m => new
+            {
+                Month = monthNames[m.Month - 1],
+                Posted = m.Posted,
+                Filled = m.Filled,
+                Expired = m.Expired
+            }).ToList();
+
+            return result;
+        }
+        public async Task<IEnumerable<object>> JobLocationDashboard()
+        {
+            var jobs = await _context.Jobs
+                .Where(j => !string.IsNullOrEmpty(j.Location))
+                .Select(j => j.Location)
+                .ToListAsync();
+
+            // Tách các thành phố từ Location
+            var locationCounts = jobs
+                .SelectMany(loc => loc.Split(',').Select(city => city.Trim()))
+                .GroupBy(city => city)
+                .Select(g => new
+                {
+                    Name = g.Key,
+                    Value = g.Count()
+                })
+                .OrderByDescending(l => l.Value) // Sắp xếp giảm dần
+                .ToList();
+
+            // Lấy tổng số công việc
+            int totalJobs = locationCounts.Sum(l => l.Value);
+
+            // Chỉ lấy 4 thành phố có nhiều job nhất
+            var topLocations = locationCounts.Take(4).ToList();
+
+            // Tính tổng số lượng các thành phố còn lại
+            var otherCount = locationCounts.Skip(4).Sum(l => l.Value);
+
+            // Chuyển đổi sang phần trăm
+            var locationPercentages = topLocations
+                .Select(l => new
+                {
+                    Name = l.Name,
+                    Value = Math.Round((double)l.Value / totalJobs * 100, 2) // Tính % & làm tròn 2 chữ số
+                })
+                .ToList();
+
+            // Nếu có thành phố khác ngoài top 4, thêm vào "Others"
+            if (otherCount > 0)
+            {
+                locationPercentages.Add(new
+                {
+                    Name = "Others",
+                    Value = Math.Round((double)otherCount / totalJobs * 100, 2)
+                });
+            }
+
+            return locationPercentages;
+        }
+
     }
 }

@@ -8,10 +8,11 @@ using WorkSmart.Core.Entity;
 
 namespace WorkSmart.Core.Interface
 {
-    public interface IReportRepository
+    public interface IReportRepository : IBaseRepository<ReportPost>
     {
         Task<ReportPost> CreateReport(ReportPost report);
-        Task<(IEnumerable<ReportPost> Reports, int Total)> GetReportsByAdmin(int pageNumber, int pageSize);
-        Task<int> GetTotalReportCount();
+        Task<IEnumerable<ReportPost>> GetReportsByAdmin();
+        Task<ReportPost> CheckReportStatus(int userId, int jobId);
+
     }
 }

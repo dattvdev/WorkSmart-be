@@ -24,7 +24,7 @@ namespace WorkSmart.Application.Services
         public async Task<bool> CreateJobReport(int senderId, CreateReportJobDto reportDto)
         {
             var sender = await _candidateRepository.GetById(senderId);
-            if (sender == null || sender.Role != "Candidate")
+            if (sender == null)
                 return false;
 
             var job = await _jobRepository.GetById(reportDto.JobId);
@@ -35,33 +35,40 @@ namespace WorkSmart.Application.Services
             {
                 SenderID = senderId,
                 JobID = reportDto.JobId,
-                Title = reportDto.Title,
                 Content = reportDto.Content,
-                CreatedAt = DateTime.UtcNow
+                Status = "Pending",
+                CreatedAt = DateTime.Now
             };
 
             await _reportRepository.CreateReport(reportPost);
             return true;
         }
 
-        public async Task<(IEnumerable<ReportListDto> Reports, int Total)> GetReportsForAdmin(int pageNumber, int pageSize)
+        public async Task<IEnumerable<ReportListDto>> GetReportsForAdmin()
         {
-            var (reports, total) = await _reportRepository.GetReportsByAdmin(pageNumber, pageSize);
+            var reports = await _reportRepository.GetReportsByAdmin();
+            return _mapper.Map<IEnumerable<ReportListDto>>(reports);
+        }
 
-            var reportListDtos = reports.Select(r => new ReportListDto
-            {
-                ReportPostID = r.ReportPostID,
-                SenderID = r.SenderID,
-                SenderName = r.Sender.FullName,
-                SenderAvatar = r.Sender.Avatar,
-                JobID = r.JobID,
-                JobTitle = r.Job.Title,
-                ReportTitle = r.Title,
-                ReportContent = r.Content,
-                CreatedAt = r.CreatedAt
-            }).ToList();
+        public async Task<string> CheckReportStatus(int userId, int jobId)
+        {
+            var report = await _reportRepository.CheckReportStatus(userId, jobId);
+            return report?.Status ?? "None";
+        }
 
-            return (reportListDtos, total);
+        public async Task<bool> UpdateReportStatus(int reportId, string status)
+        {
+            var report = await _reportRepository.GetById(reportId);
+            if (report == null)
+                return false;
+
+            report.Status = status;
+            report.CreatedAt = DateTime.Now;
+
+            _reportRepository.Update(report);
+            await _reportRepository.Save();
+
+            return true;
         }
     }
 }

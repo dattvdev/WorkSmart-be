@@ -14,11 +14,12 @@ namespace WorkSmart.Application.Mapper
         public ReportProfile()
         {
             CreateMap<ReportPost, ReportListDto>()
-            .ForMember(dest => dest.SenderName, opt => opt.MapFrom(src => src.Sender.FullName))
-            .ForMember(dest => dest.SenderAvatar, opt => opt.MapFrom(src => src.Sender.Avatar))
-            .ForMember(dest => dest.JobTitle, opt => opt.MapFrom(src => src.Job.Title))
-            .ForMember(dest => dest.ReportTitle, opt => opt.MapFrom(src => src.Title))
-            .ForMember(dest => dest.ReportContent, opt => opt.MapFrom(src => src.Content));
+                .ForMember(dest => dest.ReportStatus, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.ReportContent, opt => opt.MapFrom(src => src.Content));
+
+            CreateMap<User, AccountDto>();
+            CreateMap<Job, JobDto>();
+
         }
     }
 }

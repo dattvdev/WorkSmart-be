@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.FavoriteJobDtos;
+using WorkSmart.Core.Entity;
 
 namespace WorkSmart.API.Controllers
 {
@@ -9,17 +11,20 @@ namespace WorkSmart.API.Controllers
     public class FavoriteJobController : ControllerBase
     {
         private readonly FavoriteJobService _favoriteJobService;
+        private readonly IMapper _mapper;
 
-        public FavoriteJobController(FavoriteJobService favoriteJobService)
+        public FavoriteJobController(FavoriteJobService favoriteJobService,IMapper mapper)
         {
             _favoriteJobService = favoriteJobService;
+            _mapper = mapper;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FavoriteJobDto>>> GetAll()
         {
             var favoriteJobs = await _favoriteJobService.GetAllAsync();
-            return Ok(favoriteJobs);
+            var favoriteJobDtos = _mapper.Map<IEnumerable<FavoriteJobDto>>(favoriteJobs);
+            return Ok(favoriteJobDtos);
         }
 
         [HttpGet("{id}")]
@@ -28,14 +33,17 @@ namespace WorkSmart.API.Controllers
             var favoriteJob = await _favoriteJobService.GetByIdAsync(id);
             if (favoriteJob == null)
                 return NotFound();
-            return Ok(favoriteJob);
+
+            var favoriteJobDto = _mapper.Map<FavoriteJobDto>(favoriteJob);
+            return Ok(favoriteJobDto);
         }
 
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<IEnumerable<FavoriteJobDto>>> GetByUserId(int userId)
         {
             var favoriteJobs = await _favoriteJobService.GetByUserIdAsync(userId);
-            return Ok(favoriteJobs);
+            var favoriteJobDtos = _mapper.Map<IEnumerable<FavoriteJobDto>>(favoriteJobs);
+            return Ok(favoriteJobDtos);
         }
 
         [HttpPost]

@@ -6,16 +6,18 @@ using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
 using WorkSmart.Core.Interface;
-
+using Newtonsoft.Json;
 namespace WorkSmart.Repository.Repository
 {
     public class JobRepository : BaseRepository<Job>, IJobRepository
     {
         private readonly WorksmartDBContext _context;
+   
+
         public JobRepository(WorksmartDBContext context) : base(context)
         {
             _context = context;
-         }
+        }
 
         public async Task<bool> ApproveJobAsync(int jobId)
         {
@@ -326,29 +328,63 @@ namespace WorkSmart.Repository.Repository
         {
             return await _dbSet.Include(t => t.Tags).FirstOrDefaultAsync(j => j.JobID == id);
         }
+        // lấy đường dãn tới file cấu hình 
+        private async Task<int> GetMaxJobsPerDayFromSettings()
+        {
+            int defaultLimit = 1;
 
+            try
+            {
+                string currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string solutionDirectory = Path.GetFullPath(Path.Combine(currentDirectory, "..\\..\\..\\.."));
+                string settingsFilePath = Path.Combine(solutionDirectory, "WorkSmart.API", "jobLimitSettings.json");
+
+                if (File.Exists(settingsFilePath))
+                {
+                    string jsonData = await File.ReadAllTextAsync(settingsFilePath);
+                    if (!string.IsNullOrWhiteSpace(jsonData))
+                    {
+                        var settings = JsonConvert.DeserializeObject<JobLimitSettings>(jsonData);
+                        if (settings != null && settings.MaxJobsPerDay > 0)
+                        {
+                            defaultLimit = settings.MaxJobsPerDay;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                
+                Console.WriteLine($"Error reading job limit settings: {ex.Message}");
+            }
+
+            return defaultLimit;
+        }
         public async Task<bool> CheckLimitCreateJob(int userID, int? maxJobsPerDayFromClient = null)
         {
             var today = DateTime.UtcNow.Date;
             var jobCount = await _dbSet.CountAsync(u =>
                 u.UserID == userID && EF.Functions.DateDiffDay(u.CreatedAt, today) == 0);
 
-            // Kiểm tra gói đăng ký
+            
             var subscription = await _context.Subscriptions
                                            .Include(p => p.Package)
                                            .FirstOrDefaultAsync(u => u.UserID == userID);
 
-            
             if (subscription != null)
             {
                 return jobCount < subscription.Package.JobPostLimitPerDay;
             }
 
-            
-            int defaultLimit = maxJobsPerDayFromClient ?? 1; // Fallback là 1 nếu không có giá trị từ client
 
-            return jobCount < defaultLimit;
+            int defaultLimit = await GetMaxJobsPerDayFromSettings();
+
+
+            int limitToUse = maxJobsPerDayFromClient ?? defaultLimit;
+
+            return jobCount < limitToUse;
         }
+
         public async Task<bool> CheckLimitCreateFeaturedJob(int userID)
         {
             var featuredJobCount = await _dbSet.CountAsync(u =>
@@ -357,13 +393,47 @@ namespace WorkSmart.Repository.Repository
             var subscription = await _context.Subscriptions
                                              .Include(p => p.Package)
                                              .FirstOrDefaultAsync(u => u.UserID == userID);
-            
-            if (subscription == null)
+
+            if (subscription != null)
             {
-                return featuredJobCount < 1;
+                return featuredJobCount < subscription.Package.FeaturedJobPostLimit;
             }
 
-            return featuredJobCount < subscription.Package.FeaturedJobPostLimit;
+            int defaultFeaturedLimit = await GetDefaultFeaturedJobLimit();
+
+            return featuredJobCount < defaultFeaturedLimit;
+        }
+
+        private async Task<int> GetDefaultFeaturedJobLimit()
+        {
+            int defaultLimit = 1;
+
+            try
+            {
+                string currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string solutionDirectory = Path.GetFullPath(Path.Combine(currentDirectory, "..\\..\\..\\.."));
+                string settingsFilePath = Path.Combine(solutionDirectory, "WorkSmart.API", "jobLimitSettings.json");
+
+                if (File.Exists(settingsFilePath))
+                {
+                    string jsonData = await File.ReadAllTextAsync(settingsFilePath);
+                    if (!string.IsNullOrWhiteSpace(jsonData))
+                    {
+                        var settings = JsonConvert.DeserializeObject<JobLimitSettings>(jsonData);
+                        if (settings != null && settings.DefaultFeaturedJob > 0)
+                        {
+                            defaultLimit = settings.DefaultFeaturedJob;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi nếu cần thiết
+                Console.WriteLine($"Error reading job limit settings: {ex.Message}");
+            }
+
+            return defaultLimit;
         }
         // Set lai độ ưu tiên
         public async Task<bool> ToggleJobPriorityAsync(int jobId)

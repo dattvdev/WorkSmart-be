@@ -27,7 +27,7 @@ namespace WorkSmart.API.Controllers
         private readonly ISendMailService _sendMailService;
         private readonly NotificationJobTagService _notificationJobTagService;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-
+        private readonly string filePath = "./jobLimitSettings.json";
         public JobController(JobService jobService
             , ILogger<JobController> logger
             , SignalRNotificationService signalRService
@@ -133,7 +133,7 @@ namespace WorkSmart.API.Controllers
 
                 if (updatedJob == null)
                     return NotFound(new { message = "Job not found." });
-                
+
                 return Ok(updatedJob);
             }
             catch (Exception ex)
@@ -452,7 +452,7 @@ namespace WorkSmart.API.Controllers
                             </body>
                         </html>
                 ";
-          
+
                 await _sendMailService.SendEmailAsync(userId.Email, subject, body);
             }
             return Ok(new { success = true, message = "Job approved successfully" });
@@ -467,6 +467,7 @@ namespace WorkSmart.API.Controllers
         [HttpGet("checkLimitCreateJobPerDay/{userID}")]
         public async Task<bool> CheckLimitCreateJob(int userID, [FromQuery] int? maxJobsPerDay = null)
         {
+
             var check = await _jobService.CheckLimitCreateJob(userID, maxJobsPerDay);
             return check;
         }
@@ -477,7 +478,7 @@ namespace WorkSmart.API.Controllers
 
             return check;
         }
-        
+
         [HttpPut("toggle-priority/{id}")]
         public async Task<IActionResult> ToggleJobPriority(int id)
         {
@@ -546,8 +547,7 @@ namespace WorkSmart.API.Controllers
             }
         }
 
-        // Đường dẫn đến file JSON lưu trữ cấu hình
-        private readonly string filePath = "./jobLimitSettings.json";
+
 
         // Add this to the GET endpoint
         [HttpGet("joblimit")]

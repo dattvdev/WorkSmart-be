@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using WorkSmart.Application.Services;
+using WorkSmart.Core.Dto.PackageDtos;
 using WorkSmart.Core.Dto.SubscriptionDtos;
 using WorkSmart.Core.Entity;
 
@@ -10,10 +12,14 @@ namespace WorkSmart.API.Controllers
     public class SubscriptionController : Controller
     {
         private readonly SubscriptionService _subscriptionService;
+        private readonly PackageService _packageService;
+        private readonly IMapper _mapper;
 
-        public SubscriptionController(SubscriptionService subscriptionService)
+        public SubscriptionController(SubscriptionService subscriptionService, PackageService packageService, IMapper mapper)
         {
             _subscriptionService = subscriptionService;
+            _packageService = packageService;
+            _mapper = mapper;
         }
 
         [HttpGet("getAll")]
@@ -110,6 +116,45 @@ namespace WorkSmart.API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("has-active-subscription/{userId}")]
+        public async Task<IActionResult> HasActiveSubscription(int userId)
+        {
+            try
+            {
+                var subscriptionsWithPackages = await _subscriptionService.GetByUserId(userId);
+
+                // Lọc ra các subscription vẫn còn hiệu lực
+                var activeSubscriptions = subscriptionsWithPackages
+                    .Where(item => item.subscription.ExpDate > DateTime.Now)
+                    .OrderByDescending(item => item.subscription.ExpDate)
+                    .ToList();
+
+                if (activeSubscriptions.Any())
+                {
+                    // Lấy subscription có thời hạn dài nhất
+                    var latestSubscription = activeSubscriptions.First();
+
+                    return Ok(new
+                    {
+                        HasActiveSubscription = true,
+                        ActiveSubscription = latestSubscription.subscription,
+                        Package = latestSubscription.package,
+                        ExpireDate = latestSubscription.subscription.ExpDate.ToString("yyyy-MM-dd HH:mm:ss")
+                    });
+                }
+
+                return Ok(new
+                {
+                    HasActiveSubscription = false,
+                    Message = "No active subscription found. User can purchase a new package."
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = "An error occurred while checking subscription status", Details = ex.Message });
             }
         }
     }

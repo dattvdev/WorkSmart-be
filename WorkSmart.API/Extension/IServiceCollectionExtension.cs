@@ -84,7 +84,9 @@ namespace WorkSmart.API.Extension
             services.AddScoped<TransactionService>();
             services.AddAutoMapper(typeof (TransactionProfile));
 
-
+            services.AddSingleton<JobNotificationBackgroundService>();
+            services.AddHostedService(sp => sp.GetRequiredService<JobNotificationBackgroundService>());
+            //services.AddScoped<JobNotificationBackgroundService>();
             services.AddMemoryCache();
             services.AddSignalR();
 

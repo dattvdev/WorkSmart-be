@@ -354,7 +354,7 @@ namespace WorkSmart.API.Controllers
                     await _signalRService.SendNotificationToUser(
                         existingTransaction.UserID,
                         "Payment Successful",
-                        $"Your payment for order {"existingTransaction.Content"} has been confirmed.",
+                        $"Your payment for order {existingTransaction.Content} has been confirmed.",
                         $"employer/transaction-history"
                     );
 

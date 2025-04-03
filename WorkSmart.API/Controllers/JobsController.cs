@@ -27,7 +27,7 @@ namespace WorkSmart.API.Controllers
         private readonly ISendMailService _sendMailService;
         private readonly NotificationJobTagService _notificationJobTagService;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-
+        private readonly string filePath = "./freePlanSettings.json";
         public JobController(JobService jobService
             , ILogger<JobController> logger
             , SignalRNotificationService signalRService
@@ -133,7 +133,7 @@ namespace WorkSmart.API.Controllers
 
                 if (updatedJob == null)
                     return NotFound(new { message = "Job not found." });
-                
+
                 return Ok(updatedJob);
             }
             catch (Exception ex)
@@ -452,7 +452,7 @@ namespace WorkSmart.API.Controllers
                             </body>
                         </html>
                 ";
-          
+
                 await _sendMailService.SendEmailAsync(userId.Email, subject, body);
             }
             return Ok(new { success = true, message = "Job approved successfully" });
@@ -467,6 +467,7 @@ namespace WorkSmart.API.Controllers
         [HttpGet("checkLimitCreateJobPerDay/{userID}")]
         public async Task<bool> CheckLimitCreateJob(int userID, [FromQuery] int? maxJobsPerDay = null)
         {
+
             var check = await _jobService.CheckLimitCreateJob(userID, maxJobsPerDay);
             return check;
         }
@@ -477,7 +478,7 @@ namespace WorkSmart.API.Controllers
 
             return check;
         }
-        
+
         [HttpPut("toggle-priority/{id}")]
         public async Task<IActionResult> ToggleJobPriority(int id)
         {
@@ -546,12 +547,27 @@ namespace WorkSmart.API.Controllers
             }
         }
 
-        // Đường dẫn đến file JSON lưu trữ cấu hình
-        private readonly string filePath = "./jobLimitSettings.json";
+        private FreePlanSettings CreateDefaultSettings()
+        {
+            return new FreePlanSettings
+            {
+                employerFreePlan = new EmployerFreePlan
+                {
+                    MaxJobsPerDay = 1,
+                    UpdatedAt = DateTime.Now.ToString(),
+                    DefaultFeaturedJob = 0
+                },
+                candidateFreePlan = new CandidateFreePlan
+                {
+                    MaxCVsPerDay = 1,
+                    UpdatedAt = DateTime.Now.ToString()
+                }
+            };
+        }
 
-        // Add this to the GET endpoint
-        [HttpGet("joblimit")]
-        public IActionResult GetJobLimitSettings()
+
+        [HttpGet("FreePLanSettings")]
+        public IActionResult GetFreePLanSettings()
         {
             try
             {
@@ -563,27 +579,19 @@ namespace WorkSmart.API.Controllers
                     // If empty or invalid, create default
                     if (string.IsNullOrWhiteSpace(jsonData))
                     {
-                        var defaultSettings = new JobLimitSettings
-                        {
-                            MaxJobsPerDay = 1,
-                            UpdatedAt = DateTime.Now.ToString()
-                        };
+                        var defaultSettings = CreateDefaultSettings();
                         jsonData = JsonConvert.SerializeObject(defaultSettings, Formatting.Indented);
                         System.IO.File.WriteAllText(filePath, jsonData);
                         return Ok(defaultSettings);
                     }
 
-                    var settings = JsonConvert.DeserializeObject<JobLimitSettings>(jsonData);
+                    var settings = JsonConvert.DeserializeObject<FreePlanSettings>(jsonData);
                     return Ok(settings);
                 }
                 else
                 {
-                    // Create the file with default settings if it doesn't exist
-                    var defaultSettings = new JobLimitSettings
-                    {
-                        MaxJobsPerDay = 1,
-                        UpdatedAt = DateTime.Now.ToString()
-                    };
+                    // Create file with default settings
+                    var defaultSettings = CreateDefaultSettings();
                     var jsonData = JsonConvert.SerializeObject(defaultSettings, Formatting.Indented);
                     System.IO.File.WriteAllText(filePath, jsonData);
                     return Ok(defaultSettings);
@@ -595,32 +603,93 @@ namespace WorkSmart.API.Controllers
             }
         }
 
-        // POST api/joblimit
-        [HttpPost("joblimit")]
-        public IActionResult UpdateJobLimitSettings([FromBody] JobLimitSettings newSettings)
+
+        [HttpPost("employerBasicPlan")]
+        public IActionResult UpdateEmployerBasicPlan([FromBody] EmployerFreePlan employerFreePlan)
         {
             try
             {
                 // Validate input
-                if (newSettings == null)
+                if (employerFreePlan == null)
                 {
                     return BadRequest("Invalid input");
                 }
 
                 // Add timestamp
-                newSettings.UpdatedAt = DateTime.Now.ToString();
+                employerFreePlan.UpdatedAt = DateTime.Now.ToString();
+
+                FreePlanSettings settings;
+                if (System.IO.File.Exists(filePath))
+                {
+                    var jsonData = System.IO.File.ReadAllText(filePath);
+                    settings = string.IsNullOrWhiteSpace(jsonData)
+                        ? CreateDefaultSettings()
+                        : JsonConvert.DeserializeObject<FreePlanSettings>(jsonData);
+                }
+                else
+                {
+                    settings = CreateDefaultSettings();
+                }
+
+                // Update employer settings
+                settings.employerFreePlan = employerFreePlan;
 
                 // Serialize to JSON and save to file
-                var jsonData = JsonConvert.SerializeObject(newSettings, Formatting.Indented);
-                System.IO.File.WriteAllText(filePath, jsonData);
+                var updatedJsonData = JsonConvert.SerializeObject(settings, Formatting.Indented);
+                System.IO.File.WriteAllText(filePath, updatedJsonData);
 
-                return Ok(newSettings); // Return the updated settings
+                return Ok(employerFreePlan);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Error updating settings: {ex.Message}");
             }
         }
+
+        [HttpPost("candidateBasicPlan")]
+        public IActionResult UpdateCandidateBasicPlan([FromBody] CandidateFreePlan candidateFreePlan)
+        {
+            try
+            {
+                // Validate input
+                if (candidateFreePlan == null)
+                {
+                    return BadRequest("Invalid input");
+                }
+
+                // Add timestamp
+                candidateFreePlan.UpdatedAt = DateTime.Now.ToString();
+
+                FreePlanSettings settings;
+                if (System.IO.File.Exists(filePath))
+                {
+                    var jsonData = System.IO.File.ReadAllText(filePath);
+                    settings = string.IsNullOrWhiteSpace(jsonData)
+                        ? CreateDefaultSettings()
+                        : JsonConvert.DeserializeObject<FreePlanSettings>(jsonData);
+                }
+                else
+                {
+                    settings = CreateDefaultSettings();
+                }
+
+                // Update candidate settings
+                settings.candidateFreePlan = candidateFreePlan;
+
+                // Serialize to JSON and save to file
+                var updatedJsonData = JsonConvert.SerializeObject(settings, Formatting.Indented);
+                System.IO.File.WriteAllText(filePath, updatedJsonData);
+
+                return Ok(candidateFreePlan);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error updating settings: {ex.Message}");
+            }
+        }
+
+
+
         [HttpGet("test-notifications")]
         public async Task<IActionResult> TestJobNotifications()
         {

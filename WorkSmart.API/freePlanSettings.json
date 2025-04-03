@@ -1,11 +1,11 @@
 {
   "employerFreePlan": {
-    "MaxJobsPerDay": 2,
-    "UpdatedAt": "03/04/2025 5:56:30 CH",
-    "DefaultFeaturedJob": 2
+    "MaxJobsPerDay": 1,
+    "UpdatedAt": "03/04/2025 6:17:51 CH",
+    "DefaultFeaturedJob": 0
   },
   "candidateFreePlan": {
-    "MaxCVsPerDay": 3,
-    "UpdatedAt": "03/04/2025 5:56:45 CH"
+    "MaxCVsPerDay": 2,
+    "UpdatedAt": "03/04/2025 6:17:59 CH"
   }
 }

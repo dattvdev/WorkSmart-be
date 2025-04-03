@@ -344,10 +344,10 @@ namespace WorkSmart.Repository.Repository
                     string jsonData = await File.ReadAllTextAsync(settingsFilePath);
                     if (!string.IsNullOrWhiteSpace(jsonData))
                     {
-                        var settings = JsonConvert.DeserializeObject<JobLimitSettings>(jsonData);
-                        if (settings != null && settings.MaxJobsPerDay > 0)
+                        var settings = JsonConvert.DeserializeObject<FreePlanSettings>(jsonData);
+                        if (settings != null && settings.employerFreePlan != null)
                         {
-                            defaultLimit = settings.MaxJobsPerDay;
+                            defaultLimit = settings.employerFreePlan.MaxJobsPerDay;
                         }
                     }
                 }
@@ -406,23 +406,23 @@ namespace WorkSmart.Repository.Repository
 
         private async Task<int> GetDefaultFeaturedJobLimit()
         {
-            int defaultLimit = 1;
+            int defaultLimit = 0; // Default to 0 instead of 1
 
             try
             {
                 string currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
                 string solutionDirectory = Path.GetFullPath(Path.Combine(currentDirectory, "..\\..\\..\\.."));
-                string settingsFilePath = Path.Combine(solutionDirectory, "WorkSmart.API", "jobLimitSettings.json");
+                string settingsFilePath = Path.Combine(solutionDirectory, "WorkSmart.API", "freePlanSettings.json");
 
                 if (File.Exists(settingsFilePath))
                 {
                     string jsonData = await File.ReadAllTextAsync(settingsFilePath);
                     if (!string.IsNullOrWhiteSpace(jsonData))
                     {
-                        var settings = JsonConvert.DeserializeObject<JobLimitSettings>(jsonData);
-                        if (settings != null && settings.DefaultFeaturedJob > 0)
+                        var settings = JsonConvert.DeserializeObject<FreePlanSettings>(jsonData);
+                        if (settings != null && settings.employerFreePlan != null)
                         {
-                            defaultLimit = settings.DefaultFeaturedJob;
+                            defaultLimit = settings.employerFreePlan.DefaultFeaturedJob;
                         }
                     }
                 }

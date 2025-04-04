@@ -99,6 +99,7 @@ namespace WorkSmart.Repository.Repository
 
             var query = _JobdbSet.Include(c => c.User).AsQueryable();
             query = query.Where(c => c.Status == JobStatus.Active);
+
             if (!string.IsNullOrWhiteSpace(request.Category) && !request.Category.Equals("All Categories"))
             {
                 query = query.Where(c => c.CategoryID.Contains(request.Category)); 
@@ -130,11 +131,20 @@ namespace WorkSmart.Repository.Repository
                 query = query.Where(c => c.Tags.Any(t => request.Tags.Contains(t.TagID)));
             }
 
+            // Đầu tiên sắp xếp theo Priority (true lên trước)
+            var orderedQuery = query.OrderByDescending(c => c.Priority);
+
+            // Sau đó sắp xếp theo UpdatedAt dựa vào MostRecent
             if (request.MostRecent)
             {
-                query = query.OrderByDescending(c => c.UpdatedAt);
+                // Nếu MostRecent = true, sắp xếp theo UpdatedAt giảm dần (mới nhất lên đầu)
+                query = orderedQuery.ThenByDescending(c => c.UpdatedAt);
             }
-
+            else
+            {
+                // Nếu MostRecent = false, sắp xếp theo UpdatedAt tăng dần (cũ nhất lên đầu)
+                query = orderedQuery.ThenBy(c => c.UpdatedAt);
+            }
             // Tải dữ liệu về bộ nhớ trước khi xử lý Salary
             var jobList = await query.ToListAsync();
 

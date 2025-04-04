@@ -10,5 +10,6 @@ namespace WorkSmart.Core.Dto.PaymentDtos
     {
         public int PackageId { get; set; }
         public int UserId { get; set; }
+        public string Role { get; set; }
     }
 }

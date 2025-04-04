@@ -19,7 +19,7 @@ namespace WorkSmart.Repository.Repository
         {
             return await _context.Transactions
                 .Include(t => t.User)
-                .Where(t => t.UserID == userId && (t.Status == "PAID" || t.Status == "FAILED"))
+                .Where(t => t.UserID == userId && (t.Status == "PAID" || t.Status == "FAILED" || t.Status == "CANCELLED"))
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
         }

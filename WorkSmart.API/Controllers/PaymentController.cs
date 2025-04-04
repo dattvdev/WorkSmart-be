@@ -48,6 +48,14 @@ namespace WorkSmart.API.Controllers
                     return NotFound("Package not exist");
                 }
 
+                string cancelUrl = request.Role.ToLower() == "candidate"
+                    ? "http://localhost:5173/candidate/payment-cancel"
+                    : "http://localhost:5173/employer/payment-cancel";
+
+                string returnUrl = request.Role.ToLower() == "candidate"
+                    ? "http://localhost:5173/candidate/payment-return"
+                    : "http://localhost:5173/employer/payment-return";
+
                 long orderCode = long.Parse(DateTimeOffset.Now.ToString("yyyyMMddHHmmss"));
 
                 var transaction = new WorkSmart.Core.Entity.Transaction
@@ -77,8 +85,8 @@ namespace WorkSmart.API.Controllers
                     (int)package.Price,
                     $"Pay {package.Name}",
                     items,
-                    $"http://localhost:5173/employer/payment-cancel?orderCode={orderCode}",
-                    "http://localhost:5173/employer/payment-return",
+                    cancelUrl,
+                    returnUrl,
                     expiredAt: DateTimeOffset.Now.AddMinutes(15).ToUnixTimeSeconds()
                 );
 
@@ -101,10 +109,10 @@ namespace WorkSmart.API.Controllers
         [HttpGet("payment-status/{orderCode}")]
         public async Task<IActionResult> CheckPaymentStatus(long orderCode)
         {
-            try 
+            try
             {
                 var transaction = await _context.Transactions
-                    .Include(t=> t.User)
+                    .Include(t => t.User)
                     .FirstOrDefaultAsync(t => t.OrderCode == orderCode);
 
                 if (transaction == null)
@@ -112,22 +120,22 @@ namespace WorkSmart.API.Controllers
                     return NotFound("Payment not found");
                 }
 
-                    var transactionDto = new TransactionDto
-                    {
-                        OrderCode = transaction.OrderCode,
-                        Price = transaction.Price,
-                        Status = transaction.Status,
-                        CreatedAt = transaction.CreatedAt,
-                        UserFullName = transaction.User.FullName,
-                        UserEmail = transaction.User.Email
-                    };
+                var transactionDto = new TransactionDto
+                {
+                    OrderCode = transaction.OrderCode,
+                    Price = transaction.Price,
+                    Status = transaction.Status,
+                    CreatedAt = transaction.CreatedAt,
+                    UserFullName = transaction.User.FullName,
+                    UserEmail = transaction.User.Email
+                };
 
-                    return Ok(new
-                    {
-                        status = transaction.Status == "PAID" ? "SUCCESS" : transaction.Status,
-                        message = transaction.Status == "PAID" ? "Payment Success" : "Payment pending or failed",
-                        details = transactionDto
-                    });
+                return Ok(new
+                {
+                    status = transaction.Status == "PAID" ? "SUCCESS" : transaction.Status,
+                    message = transaction.Status == "PAID" ? "Payment Success" : "Payment pending or failed",
+                    details = transactionDto
+                });
 
             }
             catch (Exception ex)
@@ -514,20 +522,20 @@ namespace WorkSmart.API.Controllers
                     return NotFound("Transaction not found");
                 }
 
-                existingTransaction.Status = "CANCELED";
+                existingTransaction.Status = "CANCELLED";
                 existingTransaction.UpdatedAt = DateTime.Now;
                 await _context.SaveChangesAsync();
 
                 await _signalRService.SendNotificationToUser(
                     existingTransaction.User.UserID,
-                    "Payment Canceled",
-                    $"Your payment for order {"existingTransaction.Content"} has been canceled."
+                    "Payment Cancelled",
+                    $"Your payment for order {existingTransaction.Content} has been cancelled."
                 );
 
                 return Ok(new
                 {
-                    status = "CANCELED",
-                    message = "Payment has been canceled",
+                    status = "CANCELLED",
+                    message = "Payment has been cancelled",
                     orderCode = orderCode
                 });
             }

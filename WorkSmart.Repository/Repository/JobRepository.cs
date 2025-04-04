@@ -337,7 +337,7 @@ namespace WorkSmart.Repository.Repository
             {
                 string currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
                 string solutionDirectory = Path.GetFullPath(Path.Combine(currentDirectory, "..\\..\\..\\.."));
-                string settingsFilePath = Path.Combine(solutionDirectory, "WorkSmart.API", "jobLimitSettings.json");
+                string settingsFilePath = Path.Combine(solutionDirectory, "WorkSmart.API", "freePlanSettings.json");
 
                 if (File.Exists(settingsFilePath))
                 {

@@ -514,7 +514,6 @@ namespace WorkSmart.API.Controllers
                 }
 
                 var existingTransaction = await _context.Transactions
-                    .Include(t => t.User)
                     .FirstOrDefaultAsync(t => t.OrderCode == orderCode);
 
                 if (existingTransaction == null)
@@ -522,12 +521,22 @@ namespace WorkSmart.API.Controllers
                     return NotFound("Transaction not found");
                 }
 
+                if (existingTransaction.Status == "CANCELLED" || existingTransaction.Status == "FAILED")
+                {
+                    return Ok(new
+                    {
+                        status = existingTransaction.Status,
+                        message = $"Payment was already processed with status: {existingTransaction.Status}",
+                        orderCode = orderCode
+                    });
+                }
+
                 existingTransaction.Status = "CANCELLED";
                 existingTransaction.UpdatedAt = DateTime.Now;
                 await _context.SaveChangesAsync();
 
                 await _signalRService.SendNotificationToUser(
-                    existingTransaction.User.UserID,
+                    existingTransaction.UserID,
                     "Payment Cancelled",
                     $"Your payment for order {existingTransaction.Content} has been cancelled."
                 );

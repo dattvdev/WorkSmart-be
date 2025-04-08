@@ -87,7 +87,7 @@ namespace WorkSmart.API.Controllers
                     items,
                     cancelUrl,
                     returnUrl,
-                    expiredAt: DateTimeOffset.Now.AddMinutes(15).ToUnixTimeSeconds()
+                    expiredAt: DateTimeOffset.Now.AddMinutes(5).ToUnixTimeSeconds()
                 );
 
                 var createPayment = await _payOS.createPaymentLink(paymentData);

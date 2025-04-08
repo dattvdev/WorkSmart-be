@@ -32,7 +32,7 @@ namespace WorkSmart.Repository
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<NotificationJobTag> NotificationJobTags { get; set; }
-
+        public DbSet<NotificationSetting> NotificationSettings { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var builder = new ConfigurationBuilder()
@@ -121,6 +121,11 @@ namespace WorkSmart.Repository
                 .WithMany(j => j.ReportPosts)  
                 .HasForeignKey(rp => rp.JobID)  
                 .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<User>()
+               .HasOne(u => u.NotificationSetting) // User có một NotificationSetting
+               .WithOne(ns => ns.User) // NotificationSetting có một User
+               .HasForeignKey<NotificationSetting>(ns => ns.UserID) // Khóa ngoại ở NotificationSetting
+               .OnDelete(DeleteBehavior.Cascade); // Có thể chọn hành vi xóa (Cascade khi User bị xóa)
         }
     }
 }

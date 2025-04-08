@@ -9,7 +9,6 @@ namespace WorkSmart.Repository.Repository
     {
         public UserRepository(WorksmartDBContext context) : base(context)
         {
-
         }
 
         public async Task<User> GetEmployerByCompanyName(string companyName)
@@ -114,5 +113,10 @@ namespace WorkSmart.Repository.Repository
             return result;
         }
 
+        public async Task<User> GetUserById(int id)
+        {
+            return await _dbSet.Include(u => u.NotificationSetting).Where(u => u.UserID == id)
+                .FirstOrDefaultAsync();
+        }
     }
 }

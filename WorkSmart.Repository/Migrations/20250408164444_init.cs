@@ -268,6 +268,61 @@ namespace WorkSmart.Repository.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "NotificationSettings",
+                columns: table => new
+                {
+                    NotificationSettingID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserID = table.Column<int>(type: "int", nullable: true),
+                    NewJobMatches = table.Column<bool>(type: "bit", nullable: true),
+                    SavedJobsUpdates = table.Column<bool>(type: "bit", nullable: true),
+                    RecommendedJobs = table.Column<bool>(type: "bit", nullable: true),
+                    ApplicationReviewed = table.Column<bool>(type: "bit", nullable: true),
+                    InterviewInvitation = table.Column<bool>(type: "bit", nullable: true),
+                    ApplicationRejected = table.Column<bool>(type: "bit", nullable: true),
+                    NewApplications = table.Column<bool>(type: "bit", nullable: true),
+                    ApplicationStatusUpdates = table.Column<bool>(type: "bit", nullable: true),
+                    JobSubmission = table.Column<bool>(type: "bit", nullable: true),
+                    JobApproved = table.Column<bool>(type: "bit", nullable: true),
+                    JobRejected = table.Column<bool>(type: "bit", nullable: true),
+                    MessagesReceived = table.Column<bool>(type: "bit", nullable: true),
+                    UpcomingInterviews = table.Column<bool>(type: "bit", nullable: true),
+                    ApplicationDeadlines = table.Column<bool>(type: "bit", nullable: true),
+                    CareerEvents = table.Column<bool>(type: "bit", nullable: true),
+                    ProfileViews = table.Column<bool>(type: "bit", nullable: true),
+                    WeeklyReports = table.Column<bool>(type: "bit", nullable: true),
+                    PerformanceAlerts = table.Column<bool>(type: "bit", nullable: true),
+                    EmailNewJobMatches = table.Column<bool>(type: "bit", nullable: true),
+                    EmailSavedJobsUpdates = table.Column<bool>(type: "bit", nullable: true),
+                    EmailRecommendedJobs = table.Column<bool>(type: "bit", nullable: true),
+                    EmailApplicationReviewed = table.Column<bool>(type: "bit", nullable: true),
+                    EmailInterviewInvitation = table.Column<bool>(type: "bit", nullable: true),
+                    EmailApplicationRejected = table.Column<bool>(type: "bit", nullable: true),
+                    EmailNewApplications = table.Column<bool>(type: "bit", nullable: true),
+                    EmailApplicationStatusUpdates = table.Column<bool>(type: "bit", nullable: true),
+                    EmailJobSubmission = table.Column<bool>(type: "bit", nullable: true),
+                    EmailJobApproved = table.Column<bool>(type: "bit", nullable: true),
+                    EmailJobRejected = table.Column<bool>(type: "bit", nullable: true),
+                    EmailMessagesReceived = table.Column<bool>(type: "bit", nullable: true),
+                    EmailUpcomingInterviews = table.Column<bool>(type: "bit", nullable: true),
+                    EmailApplicationDeadlines = table.Column<bool>(type: "bit", nullable: true),
+                    EmailCareerEvents = table.Column<bool>(type: "bit", nullable: true),
+                    EmailProfileViews = table.Column<bool>(type: "bit", nullable: true),
+                    EmailWeeklyReports = table.Column<bool>(type: "bit", nullable: true),
+                    EmailPerformanceAlerts = table.Column<bool>(type: "bit", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NotificationSettings", x => x.NotificationSettingID);
+                    table.ForeignKey(
+                        name: "FK_NotificationSettings_Users_UserID",
+                        column: x => x.UserID,
+                        principalTable: "Users",
+                        principalColumn: "UserID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PersonalMessages",
                 columns: table => new
                 {
@@ -694,6 +749,13 @@ namespace WorkSmart.Repository.Migrations
                 column: "UserID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_NotificationSettings_UserID",
+                table: "NotificationSettings",
+                column: "UserID",
+                unique: true,
+                filter: "[UserID] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PersonalMessages_ReceiverID",
                 table: "PersonalMessages",
                 column: "ReceiverID");
@@ -776,6 +838,9 @@ namespace WorkSmart.Repository.Migrations
 
             migrationBuilder.DropTable(
                 name: "Notifications");
+
+            migrationBuilder.DropTable(
+                name: "NotificationSettings");
 
             migrationBuilder.DropTable(
                 name: "PersonalMessages");

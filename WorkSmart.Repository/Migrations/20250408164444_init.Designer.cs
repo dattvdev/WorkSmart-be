@@ -12,7 +12,7 @@ using WorkSmart.Repository;
 namespace WorkSmart.Repository.Migrations
 {
     [DbContext(typeof(WorksmartDBContext))]
-    [Migration("20250331171105_init")]
+    [Migration("20250408164444_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -515,6 +515,134 @@ namespace WorkSmart.Repository.Migrations
                     b.HasIndex("UserID");
 
                     b.ToTable("NotificationJobTags");
+                });
+
+            modelBuilder.Entity("WorkSmart.Core.Entity.NotificationSetting", b =>
+                {
+                    b.Property<int>("NotificationSettingID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationSettingID"));
+
+                    b.Property<bool?>("ApplicationDeadlines")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("ApplicationRejected")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("ApplicationReviewed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("ApplicationStatusUpdates")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("CareerEvents")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailApplicationDeadlines")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailApplicationRejected")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailApplicationReviewed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailApplicationStatusUpdates")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailCareerEvents")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailInterviewInvitation")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailJobApproved")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailJobRejected")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailJobSubmission")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailMessagesReceived")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailNewApplications")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailNewJobMatches")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailPerformanceAlerts")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailProfileViews")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailRecommendedJobs")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailSavedJobsUpdates")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailUpcomingInterviews")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailWeeklyReports")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("InterviewInvitation")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("JobApproved")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("JobRejected")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("JobSubmission")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("MessagesReceived")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("NewApplications")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("NewJobMatches")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("PerformanceAlerts")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("ProfileViews")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("RecommendedJobs")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("SavedJobsUpdates")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("UpcomingInterviews")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("UserID")
+                        .HasColumnType("int");
+
+                    b.Property<bool?>("WeeklyReports")
+                        .HasColumnType("bit");
+
+                    b.HasKey("NotificationSettingID");
+
+                    b.HasIndex("UserID")
+                        .IsUnique()
+                        .HasFilter("[UserID] IS NOT NULL");
+
+                    b.ToTable("NotificationSettings");
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.Package", b =>
@@ -1060,6 +1188,16 @@ namespace WorkSmart.Repository.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("WorkSmart.Core.Entity.NotificationSetting", b =>
+                {
+                    b.HasOne("WorkSmart.Core.Entity.User", "User")
+                        .WithOne("NotificationSetting")
+                        .HasForeignKey("WorkSmart.Core.Entity.NotificationSetting", "UserID")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("WorkSmart.Core.Entity.PersonalMessage", b =>
                 {
                     b.HasOne("WorkSmart.Core.Entity.User", "Receiver")
@@ -1201,6 +1339,9 @@ namespace WorkSmart.Repository.Migrations
                     b.Navigation("MessagesSent");
 
                     b.Navigation("NotificationJobTags");
+
+                    b.Navigation("NotificationSetting")
+                        .IsRequired();
 
                     b.Navigation("Notifications");
 

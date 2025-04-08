@@ -6,7 +6,9 @@ using WorkSmart.API.SignalRService;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.ApplicationDtos;
 using WorkSmart.Core.Dto.JobDtos;
+using WorkSmart.Core.Dto.NotificationSettingDtos;
 using WorkSmart.Core.Interface;
+using static iTextSharp.text.pdf.qrcode.Version;
 
 namespace WorkSmart.Api.Controllers
 {
@@ -18,16 +20,18 @@ namespace WorkSmart.Api.Controllers
         private readonly ISendMailService _sendMailService;
         private readonly SignalRNotificationService _signalRService;
         private readonly IJobRepository _jobRepository;
-
+        private readonly NotificationSettingService _notificationSettingService;
         public ApplicationController(ApplicationService applicationService
             , ISendMailService sendMailService
             , SignalRNotificationService signalRService
-            , IJobRepository jobRepository)
+            , IJobRepository jobRepository
+            , NotificationSettingService notificationSettingService)
         {
             _applicationService = applicationService;
             _sendMailService = sendMailService;
             _signalRService = signalRService;
             _jobRepository = jobRepository;
+            _notificationSettingService = notificationSettingService;
         }
 
         // Lấy danh sách ứng viên theo JobID
@@ -93,53 +97,58 @@ namespace WorkSmart.Api.Controllers
                     {
                         return BadRequest("Failed to update recruitment number.");
                     }
-
+                    CandidateNotificationSettingsDto candidateSetting = (CandidateNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(candidate.UserID, candidate.User.Role); ;
+                    //EmployerNotificationSettingsDto employerSetting = (EmployerNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(candidate.Job.UserID, candidate.Job.User.Role);
                     // Lấy thông tin công việc cho email
                     var jobDetails = await _applicationService.GetJobDetailForApplicationAsync(candidateId);
-                    string jobTitle = jobDetails?.Title ?? "the position";
 
-                    // Chuẩn bị nội dung email từ chối
-                    string subject = "Your Application Status - Not Selected";
-                    string body = $@"Dear {candidate.User.FullName},
 
-                    We appreciate your interest in {jobTitle} at our company and the time you've taken to apply.
-
-                    After careful consideration, we regret to inform you that we have decided not to move forward with your application at this time.";
-
-                    // Thêm lý do từ chối vào email nếu có
-                    if (!string.IsNullOrEmpty(request.RejectionReason))
+                    if (candidateSetting != null)
                     {
-                        body += $@"
+                        if ((bool)candidateSetting.ApplicationRejected)
+                        {
+                            await _signalRService.SendNotificationToUser(
+                                candidate.UserID,
+                                "Application Status Updated",
+                                $"We regret to inform you that your application \"{jobDetails.Title}\" has been rejected.",
+                                "/candidate/applied-jobs"
+                            );
+                        }
+                        if ((bool)candidateSetting.EmailApplicationRejected)
+                        {
+                            string jobTitle = jobDetails?.Title ?? "the position";
 
-                        Reason: {request.RejectionReason}";
+                            // Chuẩn bị nội dung email từ chối
+                            string subject = "Your Application Status - Not Selected";
+                            string body = $@"Dear {candidate.User.FullName},
+
+                            We appreciate your interest in {jobTitle} at our company and the time you've taken to apply.
+
+                            After careful consideration, we regret to inform you that we have decided not to move forward with your application at this time.";
+
+                            // Thêm lý do từ chối vào email nếu có
+                            if (!string.IsNullOrEmpty(request.RejectionReason))
+                            {
+                                body += $@"
+
+                                Reason: {request.RejectionReason}";
+                            }
+
+                            body += $@"
+
+                                Although we are unable to offer you this position, we encourage you to apply for future openings that match your skills and experience.
+
+                                Thank you again for your interest in our company. We wish you the best in your job search and professional endeavors.
+
+                                Best regards,
+                                WorkSmart Team";
+
+                            // Gửi email với lý do từ chối
+                            await _sendMailService.SendEmailAsync(candidate.User.Email, subject, body);
+                        }
                     }
 
-                    body += $@"
 
-                    Although we are unable to offer you this position, we encourage you to apply for future openings that match your skills and experience.
-
-                    Thank you again for your interest in our company. We wish you the best in your job search and professional endeavors.
-
-                    Best regards,
-                    WorkSmart Team";
-
-                    // Gửi email với lý do từ chối
-                    await _sendMailService.SendEmailAsync(candidate.User.Email, subject, body);
-
-                    // Gửi thông báo realtime
-                    await _signalRService.SendNotificationToUser(
-                        candidate.UserID,
-                        "Application Status Updated",
-                        $"We regret to inform you that your application \"{jobDetails.Title}\" has been rejected.",
-                        "/candidate/applied-jobs"
-                    );
-                    var employerId = jobDetails.UserID;
-                    await _signalRService.SendNotificationToUser(
-                        employerId,
-                        "Candidate Rejection Complete",
-                        $"You've successfully rejected a candidate for \"{jobTitle}\".",
-                        $"/employer/manage-jobs/applied-candidates/{jobDetails.JobID}"
-                    );
                     return Ok(new
                     {
                         success = true,
@@ -176,42 +185,55 @@ namespace WorkSmart.Api.Controllers
                     {
                         return BadRequest("Failed to update recruitment number.");
                     }
-
+                    CandidateNotificationSettingsDto candidateSetting = (CandidateNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(candidate.UserID, candidate.User.Role); ;
+                    //EmployerNotificationSettingsDto employerSetting = (EmployerNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(candidate.Job.UserID, candidate.Job.User.Role);
                     // Lấy thông tin công việc cho email
                     var jobDetails = await _applicationService.GetJobDetailForApplicationAsync(candidateId);
-                    string jobTitle = jobDetails?.Title ?? "the position";
 
-                    string subject = "Your Application Status - Accepted";
-                    string body = $@"Dear {candidate.User.FullName},
+                    if (candidateSetting != null)
+                    {
+                        if ((bool)candidateSetting.ApplicationReviewed)
+                        {
+                            // Gửi thông báo realtime
+                            await _signalRService.SendNotificationToUser(
+                                candidate.UserID,
+                                "Application Status Updated",
+                                $"Congratulations! Your application \"{jobDetails.Title}\" has been approved.",
+                                "/candidate/applied-jobs"
+                            );
+                        }
+                        if ((bool)candidateSetting.EmailApplicationReviewed)
+                        {
+                            string jobTitle = jobDetails?.Title ?? "the position";
 
-                    Congratulations! We are pleased to inform you that your application for {jobTitle} has been accepted.
+                            string subject = "Your Application Status - Accepted";
+                            string body = $@"Dear {candidate.User.FullName},
 
-                    Our team was impressed with your qualifications and experience, and we believe you would be a valuable addition to our company.
+                            Congratulations! We are pleased to inform you that your application for {jobTitle} has been accepted.
 
-                    We will contact you shortly with more details about the next steps in the hiring process.
+                            Our team was impressed with your qualifications and experience, and we believe you would be a valuable addition to our company.
 
-                    Best regards,
-                    WorkSmart Team";
+                            We will contact you shortly with more details about the next steps in the hiring process.
 
-                    // Gửi email chấp nhận
-                    await _sendMailService.SendEmailAsync(candidate.User.Email, subject, body);
-                    
-                    
-                    var employerId = jobDetails.UserID;
-                    await _signalRService.SendNotificationToUser(
-                        employerId,
-                        "Candidate Acceptance Complete",
-                        $"You've successfully accepted a candidate for \"{jobTitle}\".",
-                        $"/employer/manage-jobs/applied-candidates/{jobDetails.JobID}"
-                    );
+                            Best regards,
+                            WorkSmart Team";
 
-                    // Gửi thông báo realtime
-                    await _signalRService.SendNotificationToUser(
-                        candidate.UserID,
-                        "Application Status Updated",
-                        $"Congratulations! Your application \"{jobDetails.Title}\" has been approved.",
-                        "/candidate/applied-jobs"
-                    );
+                            // Gửi email chấp nhận
+                            await _sendMailService.SendEmailAsync(candidate.User.Email, subject, body);
+                        }
+                    }
+
+
+
+                    /*    var employerId = jobDetails.UserID;
+                           await _signalRService.SendNotificationToUser(
+                               employerId,
+                               "Candidate Acceptance Complete",
+                               $"You've successfully accepted a candidate for \"{jobTitle}\".",
+                               $"/employer/manage-jobs/applied-candidates/{jobDetails.JobID}"
+                           );
+                   */
+
                     return Ok("Candidate accepted successfully.");
                 }
             }
@@ -225,22 +247,42 @@ namespace WorkSmart.Api.Controllers
             var (email, fullname) = await _applicationService.ApplyToJob(userId, jobId);
             if (email != null)
             {
+                var jobDetail = await _jobRepository.GetById(jobId);
+                CandidateNotificationSettingsDto candidateSetting = (CandidateNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(userId, "candidate"); ;
+                EmployerNotificationSettingsDto employerSetting = (EmployerNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(jobDetail.UserID, jobDetail.User.Role);
                 await _sendMailService.SendEmailAsync(email, "Thanks for your application",
                 $"Dear {fullname},\n\nYour application for the job has successfully.\n\nBest regards,\nYour Team");
 
-                var jobDetail = await _jobRepository.GetById(jobId);
-                await _signalRService.SendNotificationToUser(
-                       jobDetail.UserID,
-                       "New Application",
-                       $"Your application for \"{jobDetail.Title}\" job has new Application.",
-                       $"/employer/manage-jobs/applied-candidates/{jobDetail.JobID}"
-                   );
-                await _signalRService.SendNotificationToUser(
-                       userId,
-                       "Application Notification",
-                       $"Your Apply to \"{jobDetail.Title}\" has been applied",
-                       $"/candidate/applied-jobs"
-                   );
+                if (employerSetting != null)
+                {
+                    if ((bool)employerSetting.NewApplications)
+                    {
+                        await _signalRService.SendNotificationToUser(
+                           jobDetail.UserID,
+                           "New Application",
+                           $"Your application for \"{jobDetail.Title}\" job has new Application.",
+                           $"/employer/manage-jobs/applied-candidates/{jobDetail.JobID}"
+                        );
+                    }
+                    if ((bool)employerSetting.EmailNewApplications)
+                    {
+                        // Gửi email thông báo có ứng viên mới
+                        string body = $@"Dear {jobDetail.User.FullName},
+                                         We are pleased to inform you that a new application has been received for the job {jobDetail.Title}. 
+                                         Best regards,
+                                         WorkSmart Team";
+                        await _sendMailService.SendEmailAsync(jobDetail.User.Email
+                            , "New Application Received"
+                            , body);
+                    }
+
+                    /*  await _signalRService.SendNotificationToUser(
+                            userId,
+                            "Application Notification",
+                            $"Your Apply to \"{jobDetail.Title}\" has been applied",
+                            $"/candidate/applied-jobs"
+                        );*/
+                }
             }
 
             return Ok("Application submitted successfully.");

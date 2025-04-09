@@ -10,6 +10,7 @@ namespace WorkSmart.Core.Dto.NotificationSettingDtos
     {
         public int? NotificationSettingID { get; set; }
         public int? UserID { get; set; }
+
         // Real-time Notifications
         public bool? NewJobMatches { get; set; } = true;
         public bool? SavedJobsUpdates { get; set; } = true;

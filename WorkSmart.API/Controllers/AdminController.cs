@@ -28,6 +28,7 @@ namespace WorkSmart.API.Controllers
         private readonly IReportRepository _reportRepository;
         private readonly JobService _jobService;
         private readonly NotificationJobTagService _notificationJobTagService;
+        private readonly NotificationSettingService _notificationSettingService;
         private readonly ReportService _reportService;
         private readonly UserService _userService;
         public AdminController(IAccountRepository accountRepository
@@ -38,6 +39,7 @@ namespace WorkSmart.API.Controllers
             , IReportRepository reportRepository
             , JobService jobService
             , NotificationJobTagService notificationJobTagService
+            , NotificationSettingService notificationSettingService
             , ReportService reportService
             , UserService userService)
         {
@@ -50,6 +52,7 @@ namespace WorkSmart.API.Controllers
             _reportRepository = reportRepository;
             _jobService = jobService;
             _notificationJobTagService = notificationJobTagService;
+            _notificationSettingService = notificationSettingService;
             _reportService = reportService;
             _userService = userService;
         }
@@ -210,6 +213,8 @@ namespace WorkSmart.API.Controllers
             {
                 return BadRequest(new { Message = "This user is not banned yet" });
             }
+
+            var notificationSettings = await _notificationSettingService.GetByIdAsync(id, user.Role);
 
             await _signalRService.SendNotificationToUser(
                       id,

@@ -192,7 +192,7 @@ namespace WorkSmart.Api.Controllers
 
                     if (candidateSetting != null)
                     {
-                        if ((bool)candidateSetting.ApplicationReviewed)
+                        if ((bool)candidateSetting.ApplicationApproved)
                         {
                             // Gửi thông báo realtime
                             await _signalRService.SendNotificationToUser(
@@ -202,7 +202,7 @@ namespace WorkSmart.Api.Controllers
                                 "/candidate/applied-jobs"
                             );
                         }
-                        if ((bool)candidateSetting.EmailApplicationReviewed)
+                        if ((bool)candidateSetting.EmailApplicationApproved)
                         {
                             string jobTitle = jobDetails?.Title ?? "the position";
 

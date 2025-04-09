@@ -18,9 +18,6 @@ namespace WorkSmart.Core.Dto.NotificationSettingDtos
         public bool? JobApproved { get; set; } = true;
         public bool? JobRejected { get; set; } = true;
 
-        public bool? MessagesReceived { get; set; } = true;
-        public bool? ProfileViews { get; set; } = true;
-
         public bool? WeeklyReports { get; set; } = true;
         public bool? PerformanceAlerts { get; set; } = true;
 
@@ -31,9 +28,6 @@ namespace WorkSmart.Core.Dto.NotificationSettingDtos
         public bool? EmailJobSubmission { get; set; } = true;
         public bool? EmailJobApproved { get; set; } = true;
         public bool? EmailJobRejected { get; set; } = true;
-
-        public bool? EmailMessagesReceived { get; set; } = true;
-        public bool? EmailProfileViews { get; set; } = true;
 
         public bool? EmailWeeklyReports { get; set; } = true;
         public bool? EmailPerformanceAlerts { get; set; } = true;

@@ -8,36 +8,26 @@ namespace WorkSmart.Core.Dto.NotificationSettingDtos
 {
     public class CandidateNotificationSettingsUpdateDto
     {
-         // Real-time Notifications
-        public bool? NewJobMatches { get; set; }
-        public bool? SavedJobsUpdates { get; set; }
-        public bool? RecommendedJobs { get; set; }
+        public int? NotificationSettingID { get; set; }
+        public int? UserID { get; set; }
+        // Real-time Notifications
+        public bool? SavedJobsUpdates { get; set; } = true;
+        public bool? RecommendedJobs { get; set; } = true;
 
-        public bool? ApplicationReviewed { get; set; }
-        public bool? InterviewInvitation { get; set; }
-        public bool? ApplicationRejected { get; set; }
+        public bool? ApplicationApproved { get; set; } = true;
+        public bool? ApplicationApply { get; set; } = true;
+        public bool? ApplicationRejected { get; set; } = true;
 
-        public bool? MessagesReceived { get; set; }
-        public bool? ProfileViews { get; set; }
-
-        public bool? UpcomingInterviews { get; set; }
-        public bool? ApplicationDeadlines { get; set; }
-        public bool? CareerEvents { get; set; }
+        public bool? ApplicationDeadlines { get; set; } = true;
 
         // Email Notifications
-        public bool? EmailNewJobMatches { get; set; }
-        public bool? EmailSavedJobsUpdates { get; set; }
-        public bool? EmailRecommendedJobs { get; set; }
+        public bool? EmailSavedJobsUpdates { get; set; } = true;
+        public bool? EmailRecommendedJobs { get; set; } = true;
 
-        public bool? EmailApplicationReviewed { get; set; }
-        public bool? EmailInterviewInvitation { get; set; }
-        public bool? EmailApplicationRejected { get; set; }
+        public bool? EmailApplicationApproved { get; set; } = true;
+        public bool? EmailApplicationApply { get; set; } = true;
+        public bool? EmailApplicationRejected { get; set; } = true;
 
-        public bool? EmailMessagesReceived { get; set; }
-        public bool? EmailProfileViews { get; set; }
-
-        public bool? EmailUpcomingInterviews { get; set; }
-        public bool? EmailApplicationDeadlines { get; set; }
-        public bool? EmailCareerEvents { get; set; }
+        public bool? EmailApplicationDeadlines { get; set; } = true;
     }
 }

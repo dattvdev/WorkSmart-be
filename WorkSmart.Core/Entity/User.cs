@@ -45,7 +45,7 @@ namespace WorkSmart.Core.Entity
         public string? BusinessLicenseImage { get; set; }
         public string? LicenseVerificationStatus { get; set; } = "Active"; // Pending, Approved, Rejected
         public string? LicenseVerificationReason { get; set; } // Lý do từ chối
-
+        public NotificationSetting NotificationSetting { get; set; }
         public ICollection<Notification>? Notifications { get; set; }
         public ICollection<CV>? CVs { get; set; }
         public ICollection<FavoriteJob>? FavoriteJobs { get; set; }

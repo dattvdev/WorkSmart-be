@@ -16,13 +16,12 @@ namespace WorkSmart.Core.Entity
         // ===============================
 
         // Candidate
-        public bool? NewJobMatches { get; set; } = true;
         public bool? SavedJobsUpdates { get; set; } = true;
         public bool? RecommendedJobs { get; set; } = true;
 
         // Candidate
-        public bool? ApplicationReviewed { get; set; } = true;
-        public bool? InterviewInvitation { get; set; } = true;
+        public bool? ApplicationApproved { get; set; } = true;
+        public bool? ApplicationApply { get; set; } = true;
         public bool? ApplicationRejected { get; set; } = true;
 
         // Employer
@@ -34,16 +33,8 @@ namespace WorkSmart.Core.Entity
         public bool? JobApproved { get; set; } = true;
         public bool? JobRejected { get; set; } = true;
 
-        // Both Candidate & Employer
-        public bool? MessagesReceived { get; set; } = false;
-
         // Candidate
-        public bool? UpcomingInterviews { get; set; } = true;
         public bool? ApplicationDeadlines { get; set; } = true;
-        public bool? CareerEvents { get; set; } = true;
-
-        // Both Candidate & Employer
-        public bool? ProfileViews { get; set; } = false;
 
         // Employer
         public bool? WeeklyReports { get; set; } = true;
@@ -54,13 +45,12 @@ namespace WorkSmart.Core.Entity
         // ==========================
 
         // Candidate
-        public bool? EmailNewJobMatches { get; set; } = true;
         public bool? EmailSavedJobsUpdates { get; set; } = true;
         public bool? EmailRecommendedJobs { get; set; } = true;
 
         // Candidate
-        public bool? EmailApplicationReviewed { get; set; } = true;
-        public bool? EmailInterviewInvitation { get; set; } = true;
+        public bool? EmailApplicationApproved { get; set; } = true;
+        public bool? EmailApplicationApply { get; set; } = true;
         public bool? EmailApplicationRejected { get; set; } = true;
 
         // Employer
@@ -72,16 +62,9 @@ namespace WorkSmart.Core.Entity
         public bool? EmailJobApproved { get; set; } = true;
         public bool? EmailJobRejected { get; set; } = true;
 
-        // Both
-        public bool? EmailMessagesReceived { get; set; } = false;
 
         // Candidate
-        public bool? EmailUpcomingInterviews { get; set; } = true;
         public bool? EmailApplicationDeadlines { get; set; } = true;
-        public bool? EmailCareerEvents { get; set; } = true;
-
-        // Both
-        public bool? EmailProfileViews { get; set; } = false;
 
         // Employer
         public bool? EmailWeeklyReports { get; set; } = true;

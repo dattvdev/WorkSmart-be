@@ -3,6 +3,7 @@ using System.Security.Claims;
 using WorkSmart.API.SignalRService;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.CandidateDtos;
+using WorkSmart.Core.Dto.NotificationSettingDtos;
 using WorkSmart.Core.Dto.ReportDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Interface;
@@ -19,14 +20,16 @@ namespace WorkSmart.API.Controllers
         private readonly IAccountRepository _accountRepository;
         private readonly SendMailService _sendMailService;
         private readonly SignalRNotificationService _signalRService;
+        private readonly NotificationSettingService _notificationSettingService;
 
-        public CandidateController(CandidateService candidateService, ReportService reportService, IAccountRepository accountRepository, SendMailService sendMailService, SignalRNotificationService signalRService)
+        public CandidateController(CandidateService candidateService, ReportService reportService, IAccountRepository accountRepository, SendMailService sendMailService, SignalRNotificationService signalRService, NotificationSettingService notificationSettingService)
         {
             _candidateService = candidateService;
             _reportService = reportService;
             _accountRepository = accountRepository;
             _sendMailService = sendMailService;
             _signalRService = signalRService;
+            _notificationSettingService = notificationSettingService;
         }
 
         [HttpGet("GetListSearch")]
@@ -101,6 +104,8 @@ namespace WorkSmart.API.Controllers
 
                 if (!result)
                     return BadRequest(new { Error = "Unable to create report. Check job or user status." });
+
+                CandidateNotificationSettingsDto candidateSetting = (CandidateNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(userId, user.Role); ;
 
                 await _signalRService.SendNotificationToUser(
                     userId,

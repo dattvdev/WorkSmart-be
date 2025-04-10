@@ -34,6 +34,7 @@ namespace WorkSmart.Repository.Repository
                 .ToListAsync();
             return reports;
         }
+
         public async Task<ReportPost> CheckReportStatus(int userId, int jobId)
         {
             return await _context.ReportPosts

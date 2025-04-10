@@ -20,9 +20,27 @@ namespace WorkSmart.API.Controllers
             _hubContext = hubContext;
         }
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
+            // Get notification details before deletion to know which user to notify
+            var notification = await _notificationService.GetNotificationById(id);
+            if (notification == null)
+            {
+                return NotFound(new { success = false, message = "Notification not found" });
+            }
+
             _notificationService.DeleteNotification(id);
+
+            // Broadcast deletion to all of the user's clients
+            await _hubContext.Clients.Group(notification.UserID.ToString())
+                .SendAsync("NotificationDeleted", id);
+
+            // Update unread count
+            var unreadCount = await _notificationService.GetUnreadNotificationsCount(notification.UserID);
+            await _hubContext.Clients.Group(notification.UserID.ToString())
+                .SendAsync("UnreadCountUpdated", unreadCount);
+
+            return Ok(new { success = true });
         }
 
         [HttpGet("user/{userId}")]
@@ -43,6 +61,20 @@ namespace WorkSmart.API.Controllers
             var result = await _notificationService.MarkNotificationAsRead(id);
             if (result)
             {
+                // Get the notification to find the userId
+                var notification = await _notificationService.GetNotificationById(id);
+                if (notification != null)
+                {
+                    // Notify all clients in the user's group that this notification was read
+                    await _hubContext.Clients.Group(notification.UserID.ToString())
+                        .SendAsync("NotificationRead", id);
+
+                    // Also broadcast the new unread count
+                    var unreadCount = await _notificationService.GetUnreadNotificationsCount(notification.UserID);
+                    await _hubContext.Clients.Group(notification.UserID.ToString())
+                        .SendAsync("UnreadCountUpdated", unreadCount);
+                }
+
                 return Ok(new { success = true });
             }
             return NotFound(new { success = false, message = "Notification not found" });

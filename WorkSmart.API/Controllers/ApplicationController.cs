@@ -48,6 +48,20 @@ namespace WorkSmart.Api.Controllers
             return Ok(applications);
         }
 
+        // Lấy danh sách job candidate đã apply
+        [HttpGet("candidate/applied-jobs")]
+        public async Task<IActionResult> GetApplicationsByUserId(int userId)
+        {
+            var applications = await _applicationService.GetApplicationsByUserIdAsync(userId);
+
+            if (applications == null || !applications.Any())
+            {
+                return NotFound(new { message = "No applications found for this job." });
+            }
+
+            return Ok(applications);
+        }
+
         // Cập nhật trạng thái ứng viên
         [HttpPut("update/{applicationId}")]
         public async Task<IActionResult> UpdateApplicationStatus(int applicationId, [FromBody] string status)

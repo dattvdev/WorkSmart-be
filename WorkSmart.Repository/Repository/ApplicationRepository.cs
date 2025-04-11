@@ -41,9 +41,11 @@ namespace WorkSmart.Repository.Repository
         {
             return await _context.Applications
                 .Include(a => a.Job)
+                .Include(a => a.Job.User)
                 .Where(a => a.UserID == userId)  // Lọc theo UserID
                 .ToListAsync();
         }
+
         public async Task<Application> GetCandidateByIdAsync(int candidateId)
         {
             return await _context.Applications

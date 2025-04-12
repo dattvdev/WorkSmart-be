@@ -7,6 +7,7 @@ using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
 using WorkSmart.Core.Interface;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 namespace WorkSmart.Repository.Repository
 {
     public class JobRepository : BaseRepository<Job>, IJobRepository
@@ -103,12 +104,7 @@ namespace WorkSmart.Repository.Repository
             if (!string.IsNullOrWhiteSpace(request.Category) && !request.Category.Equals("All Categories"))
             {
                 query = query.Where(c => c.CategoryID.Contains(request.Category)); 
-            }
-
-            if (!string.IsNullOrWhiteSpace(request.Title))
-            {
-                query = query.Where(c => c.Title.ToLower().Contains(request.Title.ToLower()));
-            }
+            }    
 
             if (!string.IsNullOrWhiteSpace(request.JobPosition))
             {
@@ -147,6 +143,29 @@ namespace WorkSmart.Repository.Repository
             }
             // Tải dữ liệu về bộ nhớ trước khi xử lý Salary
             var jobList = await query.ToListAsync();
+            var titleList = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(request.Title))
+            {
+                titleList = request.Title.Split(',')
+                                         .Select(t => t.Trim().ToLower())
+                                         .Where(t => !string.IsNullOrEmpty(t))
+                                         .ToList();
+            }
+            if (titleList.Any())
+            {
+                jobList = jobList.Where(c =>
+                    titleList.Any(keyword =>
+                    {
+                        var title = c.Title.ToLower();
+
+                        if (keyword.Contains(" "))
+                            return title.Contains(keyword);
+                        else
+                            return Regex.IsMatch(title, $@"\b{Regex.Escape(keyword)}\b");
+                    })
+                ).ToList();
+            }
 
             if (request.MinSalary.HasValue)
             {

@@ -51,7 +51,9 @@ namespace WorkSmart.Repository.Repository
             {
                 query = query.Where(c => c.WorkType.ToLower() == request.WorkType.ToLower());
             }
-            query = query.Include(c => c.User);
+            query = query
+                .Include(c => c.User)
+                .Where(c => c.User.Role != "Admin");
 
             var cvs = await query.ToListAsync();
             query = query.Where(c => !c.User.IsPrivated);
@@ -79,6 +81,5 @@ namespace WorkSmart.Repository.Repository
 
             return (users, total);
         }
-
     }
 }

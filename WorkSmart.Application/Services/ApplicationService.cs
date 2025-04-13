@@ -142,5 +142,19 @@ namespace WorkSmart.Application.Services
             var applicationCounts = await _applicationRepository.ApplicationCountDashboard();
             return applicationCounts;
         }
+
+        public async Task<int> GetApplicationsCountByUserIdAsync(int userId)
+        {
+            var jobIds = await _jobRepository.GetJobIdsByUserIdAsync(userId);
+
+            if (jobIds == null || !jobIds.Any())
+            {
+                return 0;
+            }
+
+            var applications = await _applicationRepository.GetApplicationsByJobIdsAsync(jobIds);
+
+            return applications.Count();
+        }
     }
 }

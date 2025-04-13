@@ -688,5 +688,12 @@ namespace WorkSmart.Repository.Repository
             return locationPercentages;
         }
 
+        public async Task<IEnumerable<int>> GetJobIdsByUserIdAsync(int userId)
+        {
+            return await _context.Jobs
+                .Where(j => j.UserID == userId)
+                .Select(j => j.JobID)
+                .ToListAsync();
+        }
     }
 }

@@ -326,11 +326,19 @@ namespace WorkSmart.Api.Controllers
             var result = await _applicationService.CheckApplyStatus(userId, jobId);
             return Ok(result);
         }
+
         [HttpGet("ApplicationCountDashboard")]
         public async Task<IActionResult> ApplicationCountDashboard()
         {
             var result = await _applicationService.ApplicationCountDashboard();
             return Ok(result);
+        }
+
+        [HttpGet("User/{userId}/applications/count")]
+        public async Task<IActionResult> GetApplicationsCountByUserId(int userId)
+        {
+            var applicationsCount = await _applicationService.GetApplicationsCountByUserIdAsync(userId);
+            return Ok(new { totalApplications = applicationsCount });
         }
     }
 }

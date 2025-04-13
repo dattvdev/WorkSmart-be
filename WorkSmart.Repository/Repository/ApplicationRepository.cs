@@ -164,6 +164,13 @@ namespace WorkSmart.Repository.Repository
             return orderedData;
         }
 
-
+        public async Task<IEnumerable<Application>> GetApplicationsByJobIdsAsync(IEnumerable<int> jobIds)
+        {
+            return await _context.Applications
+                .Include(a => a.User)
+                .Include(a => a.CV)
+                .Where(a => jobIds.Contains(a.JobID))
+                .ToListAsync();
+        }
     }
 }

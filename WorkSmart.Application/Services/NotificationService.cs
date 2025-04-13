@@ -19,7 +19,11 @@ namespace WorkSmart.Application.Services
             _notificationRepository = notificationRepository;
             _mapper = mapper;
         }
-
+        public async Task<GetNotificationDto> GetNotificationById(int id)
+        {
+            var notification = await _notificationRepository.GetById(id);
+            return _mapper.Map<GetNotificationDto>(notification);
+        }
         public async Task<IEnumerable<GetNotificationDto>> GetByUserId(int id)
         {
             var notification = await _notificationRepository.GetByUserId(id);

@@ -198,6 +198,7 @@ namespace WorkSmart.API.Controllers
             }
         }
 
+        //Admin
         [HttpGet("check-report-status")]
         public async Task<IActionResult> CheckReportStatus([FromQuery] int jobId)
         {

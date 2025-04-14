@@ -522,19 +522,25 @@ namespace WorkSmart.Repository.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationSettingID"));
 
+                    b.Property<bool?>("ApplicationApply")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("ApplicationApproved")
+                        .HasColumnType("bit");
+
                     b.Property<bool?>("ApplicationDeadlines")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("ApplicationRejected")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("ApplicationReviewed")
-                        .HasColumnType("bit");
-
                     b.Property<bool?>("ApplicationStatusUpdates")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("CareerEvents")
+                    b.Property<bool?>("EmailApplicationApply")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailApplicationApproved")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("EmailApplicationDeadlines")
@@ -543,16 +549,7 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<bool?>("EmailApplicationRejected")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("EmailApplicationReviewed")
-                        .HasColumnType("bit");
-
                     b.Property<bool?>("EmailApplicationStatusUpdates")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("EmailCareerEvents")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("EmailInterviewInvitation")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("EmailJobApproved")
@@ -564,19 +561,10 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<bool?>("EmailJobSubmission")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("EmailMessagesReceived")
-                        .HasColumnType("bit");
-
                     b.Property<bool?>("EmailNewApplications")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("EmailNewJobMatches")
-                        .HasColumnType("bit");
-
                     b.Property<bool?>("EmailPerformanceAlerts")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("EmailProfileViews")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("EmailRecommendedJobs")
@@ -585,13 +573,7 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<bool?>("EmailSavedJobsUpdates")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("EmailUpcomingInterviews")
-                        .HasColumnType("bit");
-
                     b.Property<bool?>("EmailWeeklyReports")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("InterviewInvitation")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("JobApproved")
@@ -603,28 +585,16 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<bool?>("JobSubmission")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("MessagesReceived")
-                        .HasColumnType("bit");
-
                     b.Property<bool?>("NewApplications")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("NewJobMatches")
-                        .HasColumnType("bit");
-
                     b.Property<bool?>("PerformanceAlerts")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("ProfileViews")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("RecommendedJobs")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("SavedJobsUpdates")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("UpcomingInterviews")
                         .HasColumnType("bit");
 
                     b.Property<int?>("UserID")

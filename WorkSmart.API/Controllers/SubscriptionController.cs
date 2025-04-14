@@ -155,7 +155,7 @@ namespace WorkSmart.API.Controllers
                         {
                             { "Candidate Pro", 3 },
                             { "Candidate Plus", 2 },
-                            { "Candidate Free", 1 }
+                            { "Candidate Basic", 1 }
                         };
                     }
 

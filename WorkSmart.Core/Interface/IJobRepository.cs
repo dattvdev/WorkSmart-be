@@ -33,5 +33,6 @@ namespace WorkSmart.Core.Interface
         Task<List<Job>> GetExpiringJobsAsync();
         Task<List<Job>> GetExpiredJobs();
         Task<IEnumerable<int>> GetJobIdsByUserIdAsync(int userId);
+        Task<List<Job>> GetAllJobActive();
     }
 }

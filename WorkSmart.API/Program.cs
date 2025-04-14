@@ -70,6 +70,9 @@ builder.Services.AddSingleton<PayOS>(provider =>
 
     return new PayOS(config.ClientId, config.ApiKey, config.ChecksumKey);
 });
+builder.Configuration
+    .AddJsonFile("appsettings.json")
+    .AddEnvironmentVariables();
 
 var app = builder.Build();
 

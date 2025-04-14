@@ -173,6 +173,23 @@ namespace WorkSmart.Repository.Migrations
                     b.ToTable("CVs");
                 });
 
+            modelBuilder.Entity("WorkSmart.Core.Entity.CVEmbedding", b =>
+                {
+                    b.Property<int>("CVID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("VectorJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("CVID");
+
+                    b.ToTable("CVEmbeddings");
+                });
+
             modelBuilder.Entity("WorkSmart.Core.Entity.CV_Certification", b =>
                 {
                     b.Property<int>("CertificationID")
@@ -450,6 +467,23 @@ namespace WorkSmart.Repository.Migrations
                     b.ToTable("Jobs");
                 });
 
+            modelBuilder.Entity("WorkSmart.Core.Entity.JobEmbedding", b =>
+                {
+                    b.Property<int>("JobID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("VectorJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("JobID");
+
+                    b.ToTable("JobEmbeddings");
+                });
+
             modelBuilder.Entity("WorkSmart.Core.Entity.Notification", b =>
                 {
                     b.Property<int>("NotificationID")
@@ -522,19 +556,25 @@ namespace WorkSmart.Repository.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationSettingID"));
 
+                    b.Property<bool?>("ApplicationApply")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("ApplicationApproved")
+                        .HasColumnType("bit");
+
                     b.Property<bool?>("ApplicationDeadlines")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("ApplicationRejected")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("ApplicationReviewed")
-                        .HasColumnType("bit");
-
                     b.Property<bool?>("ApplicationStatusUpdates")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("CareerEvents")
+                    b.Property<bool?>("EmailApplicationApply")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("EmailApplicationApproved")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("EmailApplicationDeadlines")
@@ -543,16 +583,7 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<bool?>("EmailApplicationRejected")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("EmailApplicationReviewed")
-                        .HasColumnType("bit");
-
                     b.Property<bool?>("EmailApplicationStatusUpdates")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("EmailCareerEvents")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("EmailInterviewInvitation")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("EmailJobApproved")
@@ -564,19 +595,10 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<bool?>("EmailJobSubmission")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("EmailMessagesReceived")
-                        .HasColumnType("bit");
-
                     b.Property<bool?>("EmailNewApplications")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("EmailNewJobMatches")
-                        .HasColumnType("bit");
-
                     b.Property<bool?>("EmailPerformanceAlerts")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("EmailProfileViews")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("EmailRecommendedJobs")
@@ -585,13 +607,7 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<bool?>("EmailSavedJobsUpdates")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("EmailUpcomingInterviews")
-                        .HasColumnType("bit");
-
                     b.Property<bool?>("EmailWeeklyReports")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("InterviewInvitation")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("JobApproved")
@@ -603,28 +619,16 @@ namespace WorkSmart.Repository.Migrations
                     b.Property<bool?>("JobSubmission")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("MessagesReceived")
-                        .HasColumnType("bit");
-
                     b.Property<bool?>("NewApplications")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("NewJobMatches")
-                        .HasColumnType("bit");
-
                     b.Property<bool?>("PerformanceAlerts")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("ProfileViews")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("RecommendedJobs")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("SavedJobsUpdates")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("UpcomingInterviews")
                         .HasColumnType("bit");
 
                     b.Property<int?>("UserID")
@@ -1062,6 +1066,17 @@ namespace WorkSmart.Repository.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("WorkSmart.Core.Entity.CVEmbedding", b =>
+                {
+                    b.HasOne("WorkSmart.Core.Entity.CV", "CV")
+                        .WithOne("Embedding")
+                        .HasForeignKey("WorkSmart.Core.Entity.CVEmbedding", "CVID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CV");
+                });
+
             modelBuilder.Entity("WorkSmart.Core.Entity.CV_Certification", b =>
                 {
                     b.HasOne("WorkSmart.Core.Entity.CV", "CV")
@@ -1153,6 +1168,17 @@ namespace WorkSmart.Repository.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("WorkSmart.Core.Entity.JobEmbedding", b =>
+                {
+                    b.HasOne("WorkSmart.Core.Entity.Job", "Job")
+                        .WithOne("Embedding")
+                        .HasForeignKey("WorkSmart.Core.Entity.JobEmbedding", "JobID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Job");
                 });
 
             modelBuilder.Entity("WorkSmart.Core.Entity.Notification", b =>
@@ -1290,6 +1316,8 @@ namespace WorkSmart.Repository.Migrations
 
                     b.Navigation("Educations");
 
+                    b.Navigation("Embedding");
+
                     b.Navigation("Experiences");
 
                     b.Navigation("Skills");
@@ -1303,6 +1331,8 @@ namespace WorkSmart.Repository.Migrations
             modelBuilder.Entity("WorkSmart.Core.Entity.Job", b =>
                 {
                     b.Navigation("Applications");
+
+                    b.Navigation("Embedding");
 
                     b.Navigation("FavoriteJobs");
 

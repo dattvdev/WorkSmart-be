@@ -33,6 +33,8 @@ namespace WorkSmart.Repository
         public DbSet<Tag> Tags { get; set; }
         public DbSet<NotificationJobTag> NotificationJobTags { get; set; }
         public DbSet<NotificationSetting> NotificationSettings { get; set; }
+        public DbSet<CVEmbedding> CVEmbeddings { get; set; }
+        public DbSet<JobEmbedding> JobEmbeddings { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var builder = new ConfigurationBuilder()
@@ -126,6 +128,22 @@ namespace WorkSmart.Repository
                .WithOne(ns => ns.User) // NotificationSetting có một User
                .HasForeignKey<NotificationSetting>(ns => ns.UserID) // Khóa ngoại ở NotificationSetting
                .OnDelete(DeleteBehavior.Cascade); // Có thể chọn hành vi xóa (Cascade khi User bị xóa)
+            modelBuilder.Entity<CVEmbedding>()
+            .HasKey(e => e.CVID);
+
+            modelBuilder.Entity<CVEmbedding>()
+                .HasOne(e => e.CV)
+                .WithOne(cv => cv.Embedding) // nếu bạn có property ngược lại
+                .HasForeignKey<CVEmbedding>(e => e.CVID)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<JobEmbedding>()
+            .HasKey(e => e.JobID);
+
+            modelBuilder.Entity<JobEmbedding>()
+                .HasOne(e => e.Job)
+                .WithOne(j => j.Embedding)
+                .HasForeignKey<JobEmbedding>(e => e.JobID)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

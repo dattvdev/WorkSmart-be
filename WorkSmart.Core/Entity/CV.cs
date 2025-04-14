@@ -28,6 +28,8 @@ namespace WorkSmart.Core.Entity
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
         public User User { get; set; }
         public CV_Template? CVTemplate { get; set; }
+        public CVEmbedding? Embedding { get; set; }
+
         public ICollection<Application>? Applications { get; set; }
         [JsonIgnore]
         public ICollection<CV_Education>? Educations { get; set; }

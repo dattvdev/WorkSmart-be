@@ -41,7 +41,6 @@ namespace WorkSmart.Application.Mapper
                 .ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src => src.User.CompanyName));
             CreateMap<Job, ExpiredJobDto>()
                 .ForMember(dest => dest.HiddenAt, opt => opt.MapFrom(src => DateTime.Now));
-
         }
     }
 }

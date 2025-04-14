@@ -32,5 +32,6 @@ namespace WorkSmart.Core.Interface
 
         Task<List<Job>> GetExpiringJobsAsync();
         Task<List<Job>> GetExpiredJobs();
+        Task<List<Job>> GetAllJobActive();
     }
 }

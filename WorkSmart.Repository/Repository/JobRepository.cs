@@ -707,5 +707,11 @@ namespace WorkSmart.Repository.Repository
             return locationPercentages;
         }
 
+        public async Task<List<Job>> GetAllJobActive()
+        {
+            return await _dbSet
+                .Where(j => j.Status == JobStatus.Active)
+                .ToListAsync();
+        }
     }
 }

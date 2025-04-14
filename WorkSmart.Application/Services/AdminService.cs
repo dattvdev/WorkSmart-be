@@ -16,11 +16,13 @@ namespace WorkSmart.Application.Services
         private readonly IJobRepository _jobRepository;
         private readonly ISendMailService _sendMailService;
         //private readonly ISignalRService _signalRService;
-        public AdminService(IAccountRepository accountRepository, IJobRepository jobRepository, ISendMailService sendMailService)
+        private readonly JobRecommendationService _recommendationService;
+        public AdminService(IAccountRepository accountRepository, IJobRepository jobRepository, ISendMailService sendMailService, JobRecommendationService recommendationService)
         {
             _accountRepository = accountRepository;
             _jobRepository = jobRepository;
             _sendMailService = sendMailService;
+            _recommendationService = recommendationService;
         }
 
         public async Task<List<GetListVerificationDto>> GetPendingVerifications()
@@ -62,7 +64,7 @@ namespace WorkSmart.Application.Services
                 // Get job details to access employer information
                 var job = await _jobRepository.GetById(jobId);
                 var employer = await _accountRepository.GetById(job.UserID);
-
+                await _recommendationService.CreateEmbeddingForJobIfApproved(job);
                 // Send notification
                 //await _signalRService.SendNotificationToUser(
                 //    job.UserID,

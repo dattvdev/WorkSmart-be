@@ -93,7 +93,14 @@ namespace WorkSmart.API.Extension
             //services.AddScoped<JobNotificationBackgroundService>();
             services.AddMemoryCache();
             services.AddSignalR();
-
+            //recommend job
+            services.AddScoped<IJobRepository, JobRepository>();
+            services.AddScoped<ICVRepository, CVRepository>();
+            services.AddScoped<IJobEmbeddingRepository, JobEmbeddingRepository>();
+            services.AddScoped<ICVEmbeddingRepository, CVEmbeddingRepository>();
+            services.AddScoped<JobRecommendationService>();
+            //cache
+            services.AddMemoryCache();
             return services;
         }
     }

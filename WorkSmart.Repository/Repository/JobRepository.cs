@@ -714,6 +714,14 @@ namespace WorkSmart.Repository.Repository
                 .Select(j => j.JobID)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Job>> GetJobsActive()
+        {
+            return await _context.Jobs
+                .Include(j => j.User)
+                .ToListAsync();
+        }
+
         public async Task<List<Job>> GetAllJobActive()
         {
             return await _dbSet

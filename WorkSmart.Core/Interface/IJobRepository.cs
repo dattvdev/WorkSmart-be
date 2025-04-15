@@ -29,10 +29,10 @@ namespace WorkSmart.Core.Interface
         Task<IEnumerable<object>> JobCategoryDashboard();
         Task<IEnumerable<object>> JobStatusDashboard();
         Task<IEnumerable<object>> JobLocationDashboard();
-
         Task<List<Job>> GetExpiringJobsAsync();
         Task<List<Job>> GetExpiredJobs();
         Task<IEnumerable<int>> GetJobIdsByUserIdAsync(int userId);
+        Task<IEnumerable<Job>> GetJobsActive();
         Task<List<Job>> GetAllJobActive();
     }
 }

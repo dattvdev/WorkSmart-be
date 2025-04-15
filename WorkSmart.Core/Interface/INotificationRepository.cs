@@ -13,5 +13,6 @@ namespace WorkSmart.Core.Interface
         Task<int> GetUnreadNotificationsCount(int userId);
         Task<bool> MarkNotificationAsRead(int notificationId);
         Task<Notification> CreateNotification(Notification notification);
+        Task<IEnumerable<Notification>> GetCandidateJobNotifications(int userId);
     }
 }

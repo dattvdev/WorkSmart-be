@@ -724,7 +724,7 @@ namespace WorkSmart.Repository.Repository
 
         public async Task<List<Job>> GetAllJobActive()
         {
-            return await _dbSet
+            return await _dbSet.Include(j => j.User)
                 .Where(j => j.Status == JobStatus.Active)
                 .ToListAsync();
         }

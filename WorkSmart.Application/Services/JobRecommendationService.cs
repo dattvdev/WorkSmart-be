@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -49,24 +49,44 @@ namespace WorkSmart.Application.Services
 
             var cv = await _cvRepo.GetCVWithDetails(cvId);
             var activeJobs = await _jobRepo.GetAllJobActive();
+            var existingEmbeddings = await _jobEmbedRepo.GetAll();
+            var existingJobIds = existingEmbeddings.Select(e => e.JobID).ToHashSet();
+
+            var missingJobs = activeJobs.Where(j => !existingJobIds.Contains(j.JobID)).ToList();
+
+            // Chỉ embedding cho những job chưa có vector
+            if (missingJobs.Any())
+            {
+                var texts = missingJobs.Select(BuildJobText).ToList();
+                var vectors = await GetCohereEmbeddings(texts);
+
+                for (int i = 0; i < missingJobs.Count(); i++)
+                {
+                    var jobId = missingJobs[i].JobID;
+                    var vector = vectors[i];
+                    await _jobEmbedRepo.SaveOrUpdate(jobId, JsonConvert.SerializeObject(vector));
+                }
+            }
 
             var cvEmbedding = await GetCVEmbedding(cv);
-            var jobTexts = activeJobs.Select(BuildJobText).ToList();
-            var jobVectors = await GetCohereEmbeddings(jobTexts);
-
+            existingEmbeddings = await _jobEmbedRepo.GetAll();
             var results = new List<(Job job, float score)>();
 
-            for (int i = 0; i < activeJobs.Count; i++)
+            foreach (var job in activeJobs)
             {
-                float score = CosineSimilarity(cvEmbedding, jobVectors[i]);
-                if (score > 0.5f)
-                    results.Add((activeJobs[i], score));
+                var embedding = existingEmbeddings.FirstOrDefault(e => e.JobID == job.JobID);
+                if (embedding == null) continue;
+
+                var jobVector = JsonConvert.DeserializeObject<List<float>>(embedding.VectorJson);
+                float score = CosineSimilarity(cvEmbedding, jobVector);
+                if (score > 0.48f)
+                    results.Add((job, score));
             }
 
             results = results.OrderByDescending(x => x.score).ToList();
 
             var finalResults = results
-                .Select(r => new JobRecommendationDto { Job = _mapper.Map<JobDto>(r.job), Score = r.score })
+                .Select(r => new JobRecommendationDto { Job = _mapper.Map<JobDetailDto>(r.job), Score = r.score })
                 .ToList();
 
             _cache.Set(cacheKey, finalResults, TimeSpan.FromMinutes(10));

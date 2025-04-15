@@ -12,7 +12,6 @@ namespace WorkSmart.Application.Mapper
         {
 
             CreateMap<Job, JobDto>();
-                //.ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src => src.User.CompanyName));
             CreateMap<Tag, JobDetailTagDto>();
             CreateMap<Job, JobDetailDto>()
                 .ForMember(dest => dest.CompanySize, opt => opt.MapFrom(src => src.User.CompanySize))

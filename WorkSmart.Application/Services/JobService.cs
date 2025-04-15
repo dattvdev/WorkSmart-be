@@ -15,14 +15,17 @@ namespace WorkSmart.Application.Services
         private readonly IJobRepository _jobRepository;
         private readonly IMapper _mapper;
         private readonly ITagRepository _tagRepository;
+        private readonly JobRecommendationService _recommendationService;
         public JobService(IJobRepository jobRepository
             , IMapper mapper
             , ITagRepository tagRepository
-            , INotificationJobTagRepository notificationJobTagRepository)
+            , INotificationJobTagRepository notificationJobTagRepository
+            , JobRecommendationService recommendationService)
         {
             _jobRepository = jobRepository;
             _mapper = mapper;
             _tagRepository = tagRepository;
+            _recommendationService = recommendationService;
         }
 
         public async Task<(JobDetailDto, IEnumerable<JobDetailDto> similarJobs)> GetJobById(int jobId)
@@ -69,7 +72,6 @@ namespace WorkSmart.Application.Services
             var allTags = await _tagRepository.GetAll();
             if (jobDto.JobTagID != null && jobDto.JobTagID.Any())
             {
-
                 job.Tags = allTags.Where(t => jobDto.JobTagID.Contains(t.TagID)).ToList();
             }
             await _jobRepository.Add(job);
@@ -88,6 +90,10 @@ namespace WorkSmart.Application.Services
             job.Status = JobStatus.Pending;
             
             await _jobRepository.Save();
+
+            if (job.Status == JobStatus.Active)
+                await _recommendationService.UpdateJobEmbedding(job);
+
             return _mapper.Map<JobDto>(job);
         }
         public void DeleteJob(int jobId)

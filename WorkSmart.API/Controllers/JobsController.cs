@@ -216,6 +216,25 @@ namespace WorkSmart.API.Controllers
             }
         }
 
+        /// Get job details by ID (V2)
+        [HttpGet("detail/{id}")]
+        public async Task<IActionResult> GetJobDetailsById(int id)
+        {
+            try
+            {
+                var (job, similarJobs) = await _jobService.GetJobById(id);
+                if (job == null)
+                    return NotFound(new { message = "Job not found." });
+
+                return Ok(new { job });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error fetching job ID {JobID}: {Message}", id, ex.Message);
+                return StatusCode(500, new { message = "An error occurred while retrieving the job." });
+            }
+        }
+
         [HttpGet("GetListSearch")]
         public async Task<IActionResult> GetListSearch
             ([FromQuery] JobSearchRequestDto request)

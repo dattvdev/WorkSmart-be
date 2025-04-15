@@ -1,8 +1,12 @@
-﻿using System.Text.Json.Serialization;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace WorkSmart.Core.Entity
+namespace WorkSmart.Core.Dto.CVDtos
 {
-    public class CV
+    public class FeaturedCVDto
     {
         public int CVID { get; set; }
         public int UserID { get; set; }
@@ -23,18 +27,14 @@ namespace WorkSmart.Core.Entity
         public bool? IsFeatured { get; set; }
         public string? FileName { get; set; }
         public string? FilePath { get; set; }
-        public bool? IsHidden { get; set; } = false;
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
-        public User User { get; set; }
-        public CV_Template? CVTemplate { get; set; }
-        public CVEmbedding? Embedding { get; set; }
+        public bool? IsHidden { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
 
-        public ICollection<Application>? Applications { get; set; }
-        [JsonIgnore]
-        public ICollection<CV_Education>? Educations { get; set; }
-        public ICollection<CV_Experience>? Experiences { get; set; }
-        public ICollection<CV_Certification>? Certifications { get; set; }
-        public ICollection<CV_Skill>? Skills { get; set; }
+        // Related entities
+        public List<CVEducationDto>? Educations { get; set; }
+        public List<CVExperienceDto>? Experiences { get; set; }
+        public List<CVCertificationDto>? Certifications { get; set; }
+        public List<CVSkillDto>? Skills { get; set; }
     }
 }

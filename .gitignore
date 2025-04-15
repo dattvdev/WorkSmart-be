@@ -366,6 +366,7 @@ FodyWeavers.xsd
 # Configurations
 appsettings.json
 appsettings.*.json
+appsettings.Production.json
 secrets.json
 *.config
 # Logs and database files
@@ -392,3 +393,9 @@ coverage/
 node_modules/
 packages/
 dist/
+
+# Chặn thư mục Migrations ở root
+/Migrations/
+
+# Hoặc chặn ở mọi nơi trong project
+**/Migrations/

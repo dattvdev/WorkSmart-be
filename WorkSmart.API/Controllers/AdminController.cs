@@ -12,6 +12,7 @@ using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository.Repository;
 using WorkSmart.Core.Dto.ReportDtos;
+using WorkSmart.Core.Dto.AccountDtos;
 
 namespace WorkSmart.API.Controllers
 {
@@ -86,6 +87,20 @@ namespace WorkSmart.API.Controllers
 
             var result = _mapper.Map<List<AccountDto>>(filterUsers);
 
+            return Ok(result);
+        }
+
+        [HttpGet("users-with-featured-cv")]
+        public async Task<IActionResult> GetUsersWithFeaturedCV()
+        {
+            var users = await _userService.GetUsersWithFeaturedCV();
+
+            if (users == null || !users.Any())
+            {
+                return NotFound(new { Message = "No users found with featured CVs" });
+            }
+
+            var result = _mapper.Map<List<AccountWithFeaturedCVDto>>(users);
             return Ok(result);
         }
 

@@ -96,11 +96,12 @@ namespace WorkSmart.Application.Services
                     throw new ArgumentException("Đường dẫn file không được để trống", nameof(filePath));
                 }
 
-                // Sử dụng CvParserService để phân tích CV
-                var cvSections = _cvParserService.ExtractCvSections(filePath);
+                //// Sử dụng CvParserService để phân tích CV
+                //var cvSections = _cvParserService.ExtractCvSections(filePath);
 
-                cvSections = cvSections.Where(kvp => !string.IsNullOrWhiteSpace(kvp.Value))
-                                     .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                //cvSections = cvSections.Where(kvp => !string.IsNullOrWhiteSpace(kvp.Value))
+                //                     .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
                 // Tạo CV entity mới
                 var cv = new CV
                 {
@@ -111,84 +112,84 @@ namespace WorkSmart.Application.Services
                     UpdatedAt = DateTime.Now
                 };
 
-                // Điền thông tin Summary nếu có
-                if (cvSections.ContainsKey("Summary"))
-                {
-                    cv.Summary = cvSections["Summary"];
-                }
+                //// Điền thông tin Summary nếu có
+                //if (cvSections.ContainsKey("Summary"))
+                //{
+                //    cv.Summary = cvSections["Summary"];
+                //}
 
-                // Điền thông tin Personal nếu có
-                if (cvSections.ContainsKey("Personal"))
-                {
-                    // Phân tích thông tin cá nhân
-                    ExtractPersonalInfo(cvSections["Personal"], cv);
-                }
+                //// Điền thông tin Personal nếu có
+                //if (cvSections.ContainsKey("Personal"))
+                //{
+                //    // Phân tích thông tin cá nhân
+                //    ExtractPersonalInfo(cvSections["Personal"], cv);
+                //}
 
-                // Khởi tạo các collections để tránh null
-                cv.Skills = new List<CV_Skill>();
-                cv.Experiences = new List<CV_Experience>();
-                cv.Educations = new List<CV_Education>();
-                cv.Certifications = new List<CV_Certification>();
+                //// Khởi tạo các collections để tránh null
+                //cv.Skills = new List<CV_Skill>();
+                //cv.Experiences = new List<CV_Experience>();
+                //cv.Educations = new List<CV_Education>();
+                //cv.Certifications = new List<CV_Certification>();
 
-                // Thêm thông tin Skills
-                if (cvSections.ContainsKey("Skills") && !string.IsNullOrEmpty(cvSections["Skills"]))
-                {
-                    var skillsText = cvSections["Skills"];
-                    var skillsList = ParseSkills(skillsText);
+                //// Thêm thông tin Skills
+                //if (cvSections.ContainsKey("Skills") && !string.IsNullOrEmpty(cvSections["Skills"]))
+                //{
+                //    var skillsText = cvSections["Skills"];
+                //    var skillsList = ParseSkills(skillsText);
 
-                    foreach (var skill in skillsList)
-                    {
-                        cv.Skills.Add(new CV_Skill
-                        {
-                            SkillName = skill,
-                        });
-                    }
-                }
+                //    foreach (var skill in skillsList)
+                //    {
+                //        cv.Skills.Add(new CV_Skill
+                //        {
+                //            SkillName = skill,
+                //        });
+                //    }
+                //}
 
-                // Thêm thông tin Experiences
-                if (cvSections.ContainsKey("Experience") && !string.IsNullOrEmpty(cvSections["Experience"]))
-                {
-                    var experienceText = cvSections["Experience"];
-                    var experiencesList = ParseExperiences(experienceText);
+                //// Thêm thông tin Experiences
+                //if (cvSections.ContainsKey("Experience") && !string.IsNullOrEmpty(cvSections["Experience"]))
+                //{
+                //    var experienceText = cvSections["Experience"];
+                //    var experiencesList = ParseExperiences(experienceText);
 
-                    foreach (var exp in experiencesList)
-                    {
-                        cv.Experiences.Add(new CV_Experience
-                        {
-                            Description = exp,
-                        });
-                    }
-                }
+                //    foreach (var exp in experiencesList)
+                //    {
+                //        cv.Experiences.Add(new CV_Experience
+                //        {
+                //            Description = exp,
+                //        });
+                //    }
+                //}
 
-                // Thêm thông tin Education
-                if (cvSections.ContainsKey("Education") && !string.IsNullOrEmpty(cvSections["Education"]))
-                {
-                    var educationText = cvSections["Education"];
-                    var educationsList = ParseEducations(educationText);
+                //// Thêm thông tin Education
+                //if (cvSections.ContainsKey("Education") && !string.IsNullOrEmpty(cvSections["Education"]))
+                //{
+                //    var educationText = cvSections["Education"];
+                //    var educationsList = ParseEducations(educationText);
 
-                    foreach (var edu in educationsList)
-                    {
-                        cv.Educations.Add(new CV_Education
-                        {
-                            Description = edu,
-                        });
-                    }
-                }
+                //    foreach (var edu in educationsList)
+                //    {
+                //        cv.Educations.Add(new CV_Education
+                //        {
+                //            Description = edu,
+                //        });
+                //    }
+                //}
 
-                // Thêm thông tin Certifications
-                if (cvSections.ContainsKey("Certifications") && !string.IsNullOrEmpty(cvSections["Certifications"]))
-                {
-                    var certText = cvSections["Certifications"];
-                    var certsList = ParseCertifications(certText);
+                //// Thêm thông tin Certifications
+                //if (cvSections.ContainsKey("Certifications") && !string.IsNullOrEmpty(cvSections["Certifications"]))
+                //{
+                //    var certText = cvSections["Certifications"];
+                //    var certsList = ParseCertifications(certText);
 
-                    foreach (var cert in certsList)
-                    {
-                        cv.Certifications.Add(new CV_Certification
-                        {
-                            Description = cert,
-                        });
-                    }
-                }
+                //    foreach (var cert in certsList)
+                //    {
+                //        cv.Certifications.Add(new CV_Certification
+                //        {
+                //            Description = cert,
+                //        });
+                //    }
+                //}
 
                 // Lưu CV vào database sử dụng phương thức Add và Save
                 await _cvRepository.Add(cv);

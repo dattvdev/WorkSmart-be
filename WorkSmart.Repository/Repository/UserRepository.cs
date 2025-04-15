@@ -118,5 +118,19 @@ namespace WorkSmart.Repository.Repository
             return await _dbSet.Include(u => u.NotificationSetting).Where(u => u.UserID == id)
                 .FirstOrDefaultAsync();
         }
+        public async Task<IEnumerable<User>> GetUsersWithFeaturedCV()
+        {
+            return await _context.Users
+                .Include(u => u.CVs)
+                    .ThenInclude(cv => cv.Educations)
+                .Include(u => u.CVs)
+                    .ThenInclude(cv => cv.Experiences)
+                .Include(u => u.CVs)
+                    .ThenInclude(cv => cv.Certifications)
+                .Include(u => u.CVs)
+                    .ThenInclude(cv => cv.Skills)
+                .Where(u => u.Role != "Admin" && u.CVs.Any(cv => cv.IsFeatured == true))
+                .ToListAsync();
+        }
     }
 }

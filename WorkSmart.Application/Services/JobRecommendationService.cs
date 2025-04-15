@@ -1,4 +1,3 @@
-﻿// WorkSmart.Application/Services/JobRecommendationService.cs
 using AutoMapper;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;

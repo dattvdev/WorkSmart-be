@@ -48,13 +48,15 @@ namespace WorkSmart.API.Controllers
                     return NotFound("Package not exist");
                 }
 
+                string baseUrl = HttpContext.RequestServices.GetRequiredService<IConfiguration>()["FrontendUrl:BaseUrl"];
+
                 string cancelUrl = request.Role.ToLower() == "candidate"
-                    ? "http://localhost:5173/candidate/payment-cancel"
-                    : "http://localhost:5173/employer/payment-cancel";
+                    ? $"{baseUrl}/candidate/payment-cancel"
+                    : $"{baseUrl}/employer/payment-cancel";
 
                 string returnUrl = request.Role.ToLower() == "candidate"
-                    ? "http://localhost:5173/candidate/payment-return"
-                    : "http://localhost:5173/employer/payment-return";
+                    ? $"{baseUrl}/candidate/payment-return"
+                    : $"{baseUrl}/employer/payment-return";
 
                 long orderCode = long.Parse(DateTimeOffset.Now.ToString("yyyyMMddHHmmss"));
 
@@ -87,7 +89,7 @@ namespace WorkSmart.API.Controllers
                     items,
                     cancelUrl,
                     returnUrl,
-                    expiredAt: DateTimeOffset.Now.AddMinutes(5).ToUnixTimeSeconds()
+                    expiredAt: DateTimeOffset.Now.AddMinutes(15).ToUnixTimeSeconds()
                 );
 
                 var createPayment = await _payOS.createPaymentLink(paymentData);

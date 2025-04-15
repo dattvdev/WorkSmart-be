@@ -66,7 +66,23 @@ namespace WorkSmart.Repository.Repository
 
             return true;
         }
-        
-    }
 
+        public async Task<IEnumerable<Notification>> GetCandidateJobNotifications(int userId)
+        {
+            var query = _dbSet.Where(n => n.UserID == userId);
+
+            query = query.Where(n =>
+                n.Title.Contains("Saved Job") ||
+                n.Title.Contains("Recommended Job") ||
+                n.Title.Contains("Application Approved") ||
+                n.Title.Contains("Application Applied") ||
+                n.Title.Contains("Application Rejected") ||
+                n.Title.Contains("Application Deadline")
+            );
+
+            return await query
+                .OrderByDescending(n => n.CreatedAt)
+                .ToListAsync();
+        }
+    }
 }

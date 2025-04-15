@@ -14,11 +14,13 @@ namespace WorkSmart.API.Controllers
     {
         private readonly NotificationService _notificationService;
         private readonly IHubContext<NotificationHub> _hubContext;
+
         public NotificationController(NotificationService notificationService, IHubContext<NotificationHub> hubContext)
         {
             _notificationService = notificationService;
             _hubContext = hubContext;
         }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -49,12 +51,14 @@ namespace WorkSmart.API.Controllers
             var notifications = await _notificationService.GetByUserId(userId);
             return Ok(notifications);
         }
+
         [HttpGet("unread/{userId}")]
         public async Task<IActionResult> GetUnreadCount(int userId)
         {
             var count = await _notificationService.GetUnreadNotificationsCount(userId);
             return Ok(count);
         }
+
         [HttpPut("markAsRead/{id}")]
         public async Task<IActionResult> MarkAsRead(int id)
         {
@@ -80,5 +84,11 @@ namespace WorkSmart.API.Controllers
             return NotFound(new { success = false, message = "Notification not found" });
         }
 
+        [HttpGet("candidate-job/{userId}")]
+        public async Task<IActionResult> GetCandidateJobNotifications(int userId)
+        {
+            var notifications = await _notificationService.GetCandidateJobNotifications(userId);
+            return Ok(notifications);
+        }
     }
 }

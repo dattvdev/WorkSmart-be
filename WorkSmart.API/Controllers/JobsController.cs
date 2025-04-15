@@ -88,6 +88,21 @@ namespace WorkSmart.API.Controllers
             }
         }
 
+        [HttpGet("getJobsActive")]
+        public async Task<IActionResult> GetJobsActive()
+        {
+            try
+            {
+                var jobs = await _jobService.GetJobsActive();
+                return Ok(jobs);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error lits job: {Message}", ex.Message);
+                return StatusCode(500, new { message = "An error occurred while list the job." });
+            }
+        }
+
         [HttpGet("getAllJobManage")]
         public async Task<IActionResult> GetJobsForManagement([FromQuery] JobSearchRequestDto request)
         {

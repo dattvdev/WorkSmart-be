@@ -14,6 +14,7 @@ namespace WorkSmart.Application.Services
     {
         private readonly INotificationRepository _notificationRepository;
         private readonly IMapper _mapper;
+
         public NotificationService(INotificationRepository notificationRepository, IMapper mapper)
         {
             _notificationRepository = notificationRepository;
@@ -84,6 +85,31 @@ namespace WorkSmart.Application.Services
             await CreateNotification(notification);
         }
 
+        public async Task<IEnumerable<CandidateNotificationsDto>> GetCandidateJobNotifications(int userId)
+        {
+            var notifications = await _notificationRepository.GetCandidateJobNotifications(userId);
 
+            var result = _mapper.Map<IEnumerable<CandidateNotificationsDto>>(notifications);
+
+            foreach (var dto in result)
+            {
+                if (dto.Title.Contains("Saved Job"))
+                    dto.NotificationType = "SavedJobsUpdates";
+                else if (dto.Title.Contains("Recommended Job"))
+                    dto.NotificationType = "RecommendedJobs";
+                else if (dto.Title.Contains("Application Approved"))
+                    dto.NotificationType = "ApplicationApproved";
+                else if (dto.Title.Contains("Application Applied"))
+                    dto.NotificationType = "ApplicationApply";
+                else if (dto.Title.Contains("Application Rejected"))
+                    dto.NotificationType = "ApplicationRejected";
+                else if (dto.Title.Contains("Application Deadline"))
+                    dto.NotificationType = "ApplicationDeadlines";
+                else
+                    dto.NotificationType = "Other";
+            }
+
+            return result;
+        }
     } 
 }

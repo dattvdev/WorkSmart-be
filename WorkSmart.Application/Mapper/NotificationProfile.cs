@@ -15,6 +15,7 @@ namespace WorkSmart.Application.Mapper
         {
             CreateMap<Notification, GetNotificationDto>().ReverseMap();
             CreateMap<Notification, CreateNotificationDto>().ReverseMap();
+            CreateMap<Notification, CandidateNotificationsDto>().ReverseMap();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,6 +48,11 @@ namespace WorkSmart.Application.Services
         {
             var users = await _userRepository.CountDashboard();
             return users;
+        }
+
+        public async Task<IEnumerable<User>> GetUsersWithFeaturedCV()
+        {
+            return await _userRepository.GetUsersWithFeaturedCV();
         }
     }
 }

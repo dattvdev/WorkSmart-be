@@ -17,14 +17,16 @@ namespace WorkSmart.Application.Services
         private readonly ICVRepository _cvRepository;
         private readonly ICvParserService _cvParserService;
         private readonly IMapper _mapper;
-
+        private readonly JobRecommendationService _recommendationService;
         public CVService(ICVRepository cvRepository
-            ,IMapper mapper
-            , ICvParserService cvParserService)
+            , IMapper mapper
+            , ICvParserService cvParserService
+            , JobRecommendationService recommendationService)
         {
             _cvRepository = cvRepository;
             _mapper = mapper;
             _cvParserService = cvParserService;
+            _recommendationService = recommendationService;
         }
 
         public async Task<CVDto> CreateCVAsync(CVDto cvDto)
@@ -67,6 +69,11 @@ namespace WorkSmart.Application.Services
             _mapper.Map(cvDto,existingCv); // Ánh xạ tất cả thuộc tính từ DTO vào entity
             existingCv.UpdatedAt = DateTime.Now;
             _cvRepository.Update(existingCv);
+
+            // ✅ Cập nhật lại embedding vector
+            await _recommendationService.DeleteCVEmbedding(existingCv.CVID);
+            _recommendationService.ClearCVRecommendationCache(existingCv.CVID);
+
             return _mapper.Map<CVDto>(existingCv);  // Trả về CV được ánh xạ trở lại DTO
         }
 

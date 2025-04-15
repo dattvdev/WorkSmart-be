@@ -1,5 +1,4 @@
-﻿// WorkSmart.Application/Services/JobRecommendationService.cs
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -29,7 +28,7 @@ namespace WorkSmart.Application.Services
             IJobEmbeddingRepository jobEmbedRepo,
             ICVEmbeddingRepository cvEmbedRepo,
             IMemoryCache cache,
-            IConfiguration config, 
+            IConfiguration config,
             IMapper mapper)
         {
             _jobRepo = jobRepo;
@@ -52,14 +51,16 @@ namespace WorkSmart.Application.Services
             var activeJobs = await _jobRepo.GetAllJobActive();
 
             var cvEmbedding = await GetCVEmbedding(cv);
+            var jobTexts = activeJobs.Select(BuildJobText).ToList();
+            var jobVectors = await GetCohereEmbeddings(jobTexts);
+
             var results = new List<(Job job, float score)>();
 
-            foreach (var job in activeJobs)
+            for (int i = 0; i < activeJobs.Count; i++)
             {
-                var jobEmbedding = await GetJobEmbedding(job);
-                float score = CosineSimilarity(cvEmbedding, jobEmbedding);
+                float score = CosineSimilarity(cvEmbedding, jobVectors[i]);
                 if (score > 0.5f)
-                    results.Add((job, score));
+                    results.Add((activeJobs[i], score));
             }
 
             results = results.OrderByDescending(x => x.score).ToList();
@@ -72,7 +73,6 @@ namespace WorkSmart.Application.Services
 
             return finalResults;
         }
-
 
         public async Task UpdateJobEmbedding(Job job)
         {
@@ -103,19 +103,6 @@ namespace WorkSmart.Application.Services
             return vector;
         }
 
-        private async Task<List<float>> GetJobEmbedding(Job job)
-        {
-            var existing = await _jobEmbedRepo.GetByJobId(job.JobID);
-            if (existing != null && (DateTime.Now - existing.UpdatedAt).TotalHours < 24)
-                return JsonConvert.DeserializeObject<List<float>>(existing.VectorJson);
-
-            var text = BuildJobText(job);
-            var vector = await GetCohereEmbedding(text);
-
-            await _jobEmbedRepo.SaveOrUpdate(job.JobID, JsonConvert.SerializeObject(vector));
-            return vector;
-        }
-
         private string BuildCVText(CV cv)
         {
             var sb = new StringBuilder();
@@ -142,6 +129,12 @@ namespace WorkSmart.Application.Services
 
         private async Task<List<float>> GetCohereEmbedding(string input)
         {
+            var embeddings = await GetCohereEmbeddings(new List<string> { input });
+            return embeddings.First();
+        }
+
+        private async Task<List<List<float>>> GetCohereEmbeddings(List<string> inputs)
+        {
             var client = new RestClient("https://api.cohere.ai");
             var request = new RestRequest("/v1/embed", Method.Post);
 
@@ -150,7 +143,7 @@ namespace WorkSmart.Application.Services
 
             var body = new
             {
-                texts = new[] { input },
+                texts = inputs,
                 model = "embed-english-v3.0",
                 input_type = "search_document"
             };
@@ -162,7 +155,9 @@ namespace WorkSmart.Application.Services
                 throw new Exception($"Cohere Embedding API error: {response.Content}");
 
             dynamic result = JsonConvert.DeserializeObject(response.Content);
-            return ((IEnumerable<dynamic>)result.embeddings[0]).Select(x => (float)x).ToList();
+            return ((IEnumerable<dynamic>)result.embeddings)
+                .Select(vec => ((IEnumerable<dynamic>)vec).Select(x => (float)x).ToList())
+                .ToList();
         }
 
         private float CosineSimilarity(List<float> a, List<float> b)

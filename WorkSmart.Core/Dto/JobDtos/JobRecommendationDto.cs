@@ -9,7 +9,7 @@ namespace WorkSmart.Core.Dto.JobDtos
 {
     public class JobRecommendationDto
     {
-        public JobDto Job { get; set; }
+        public JobDetailDto Job { get; set; }
         public float Score { get; set; }
     }
 

@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using WorkSmart.Core.Entity;
 using WorkSmart.Repository;
 
@@ -10,6 +11,7 @@ public interface ICVEmbeddingRepository
 
 public interface IJobEmbeddingRepository
 {
+    Task<IEnumerable<JobEmbedding>> GetAll();
     Task<JobEmbedding?> GetByJobId(int jobId);
     Task SaveOrUpdate(int jobId, string vectorJson);
     Task Delete(int jobId);
@@ -80,5 +82,10 @@ public class JobEmbeddingRepository : IJobEmbeddingRepository
             _context.JobEmbeddings.Remove(entity);
             await _context.SaveChangesAsync();
         }
+    }
+
+    public async Task<IEnumerable<JobEmbedding>> GetAll()
+    {
+        return await _context.JobEmbeddings.ToListAsync();
     }
 }

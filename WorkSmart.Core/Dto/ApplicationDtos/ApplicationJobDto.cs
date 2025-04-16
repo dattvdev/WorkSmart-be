@@ -22,7 +22,7 @@ namespace WorkSmart.Core.Dto.ApplicationDtos
         public string? Address { get; set; }
         public string Gender { get; set; }
         public string? Avatar { get; set; }
-
+        public string? ApplicationStatus { get; set; }
         //job
         public string? CompanyName { get; set; }
         public string? Title { get; set; }

@@ -148,6 +148,7 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new { message = "Lỗi khi xử lý file: " + ex.Message });
             }
         }
+
     
         [HttpPut("hidecv/{cvId}")]
         public IActionResult HideCV(int cvId)

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using WorkSmart.API.SignalRService;
 using WorkSmart.Application.Mapper;
 using WorkSmart.Application.Services;

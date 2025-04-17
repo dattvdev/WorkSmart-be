@@ -5,6 +5,8 @@ using iTextSharp.text.pdf.parser;
 using iTextSharp.text.pdf;
 using System.Text.RegularExpressions;
 using System.Text;
+using WorkSmart.Core.Interface;
+using System.Security.Claims;
 namespace WorkSmart.API.Controllers
 {
     [ApiController]
@@ -12,12 +14,14 @@ namespace WorkSmart.API.Controllers
     public class CVController : ControllerBase
     {
         private readonly CVService _cvService;
+        private readonly ICvParserService _cvParserService;
         private readonly ILogger<CVController> _logger;
 
-        public CVController(CVService cvService,ILogger<CVController> logger)
+        public CVController(CVService cvService,ILogger<CVController> logger, ICvParserService cvParserService)
         {
             _cvService = cvService;
             _logger = logger;
+            _cvParserService = cvParserService;
         }
 
         [HttpPost("create")]
@@ -134,7 +138,7 @@ namespace WorkSmart.API.Controllers
                 }
 
                 // Gọi trực tiếp hàm ExtractCvContent để lấy nội dung
-                string cvContent = _cvService.ExtractCvContent(request.FilePath);
+                string cvContent = _cvParserService.ExtractCvContent(request.FilePath);
 
                 return Ok(new
                 {
@@ -149,7 +153,40 @@ namespace WorkSmart.API.Controllers
             }
         }
 
-    
+        [HttpPost("upload-parse-cv")]
+        public async Task<IActionResult> UploadParseCV([FromBody] CvUploadDto request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(request.FilePath))
+                {
+                    return BadRequest(new { message = "Vui lòng cung cấp đường dẫn file." });
+                }
+
+                if (!request.FilePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest(new { message = "Chỉ hỗ trợ tệp PDF." });
+                }
+
+                // Trích xuất nội dung CV
+                string cvContent = _cvParserService.ExtractCvContent(request.FilePath);
+
+                // Phân tích CV bằng AI và lưu vào database
+                var parsedCvData = await _cvParserService.ParseCvAsync(cvContent, request.UserId);
+
+                return Ok(new
+                {
+                    message = "Phân tích CV thành công",
+                    data = parsedCvData
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi xử lý file CV");
+                return StatusCode(500, new { message = "Lỗi khi xử lý file: " + ex.Message });
+            }
+        }
+
         [HttpPut("hidecv/{cvId}")]
         public IActionResult HideCV(int cvId)
         {

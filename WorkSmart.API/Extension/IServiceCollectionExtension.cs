@@ -68,6 +68,7 @@ namespace WorkSmart.API.Extension
             services.AddAutoMapper(typeof(PackageProfile));
             //cv
             services.AddScoped<ICVRepository, CVRepository>();
+            services.AddScoped<OpenAIService>();
             services.AddScoped<CVService>();
             services.AddScoped<ICvParserService, CvParserService>();
             //mail

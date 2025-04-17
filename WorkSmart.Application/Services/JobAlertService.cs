@@ -2,6 +2,7 @@
 using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Interface;
+using WorkSmart.Repository.Repository;
 
 namespace WorkSmart.Application.Services
 {
@@ -28,8 +29,8 @@ namespace WorkSmart.Application.Services
 
         public async Task<List<JobAlertDto>> GetAlertsByUser(int userId)
         {
-            var alerts = _jobAlertRepo.GetJobAlertsByUserId(userId); 
-            return _mapper.Map<List<JobAlertDto>>(alerts);
+            var data = await _jobAlertRepo.GetJobAlertsByUserId(userId);
+            return _mapper.Map<List<JobAlertDto>>(data);
         }
         public async Task<bool> DeleteAlert(int alertId,int userId)
         {

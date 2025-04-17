@@ -10,6 +10,7 @@ namespace WorkSmart.Application.Mapper
         {
             CreateMap<JobAlert,JobAlertDto>().ReverseMap();
             CreateMap<JobAlertCreateDto,JobAlert>();
+
         }
     }
 }

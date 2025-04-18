@@ -8,7 +8,6 @@ namespace WorkSmart.Core.Dto
 {
     public class ParsedCvData
     {
-        // Thông tin cơ bản
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string JobPosition { get; set; }
@@ -18,6 +17,8 @@ namespace WorkSmart.Core.Dto
         public string Phone { get; set; }
         public string Email { get; set; }
         public string Link { get; set; }
+        public string FileName { get; set; }
+        public string FilePath { get; set; }
 
         // Các danh sách thông tin
         public List<ParsedEducation> Educations { get; set; } = new List<ParsedEducation>();

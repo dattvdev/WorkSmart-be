@@ -35,6 +35,8 @@ namespace WorkSmart.Repository
         public DbSet<NotificationSetting> NotificationSettings { get; set; }
         public DbSet<CVEmbedding> CVEmbeddings { get; set; }
         public DbSet<JobEmbedding> JobEmbeddings { get; set; }
+        public DbSet<JobAlert> JobAlerts { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var builder = new ConfigurationBuilder()

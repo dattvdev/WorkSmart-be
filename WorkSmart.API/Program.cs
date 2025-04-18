@@ -12,7 +12,6 @@ using WorkSmart.Core.Interface;
 using WorkSmart.Repository.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
-var frontendUrl = builder.Configuration["FrontendUrl:BaseUrl"];
 
 // Add services to the container.
 builder.Services.AddCors(options =>
@@ -20,7 +19,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAll",
         policy =>
         {
-            policy.WithOrigins(frontendUrl) // Thay bằng origin thực tế của client, không sử dụng all vì không đi chung được  với AllowCredentials (bắt buộc) 
+            policy.WithOrigins("http://localhost:5173","http://localhost:7141") // Thay bằng origin thực tế của client, không sử dụng all vì không đi chung được  với AllowCredentials (bắt buộc) 
                   .AllowAnyMethod()
                   .AllowAnyHeader()
                   .AllowCredentials(); // Quan trọng cho SignalR
@@ -46,7 +45,7 @@ builder.Services.AddAuthentication(options =>
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
-        ValidAudiences = new List<string> {"admin", "employer", "candidate" },
+        ValidAudiences = new List<string> { "admin","employer","candidate" },
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
@@ -68,11 +67,8 @@ builder.Services.AddSingleton<PayOS>(provider =>
         throw new InvalidOperationException("PayOS configuration is missing or invalid.");
     }
 
-    return new PayOS(config.ClientId, config.ApiKey, config.ChecksumKey);
+    return new PayOS(config.ClientId,config.ApiKey,config.ChecksumKey);
 });
-builder.Configuration
-    .AddJsonFile("appsettings.json")
-    .AddEnvironmentVariables();
 
 var app = builder.Build();
 

@@ -101,6 +101,9 @@ namespace WorkSmart.API.Extension
             services.AddScoped<IJobEmbeddingRepository, JobEmbeddingRepository>();
             services.AddScoped<ICVEmbeddingRepository, CVEmbeddingRepository>();
             services.AddScoped<JobRecommendationService>();
+            //job-alert
+            services.AddScoped<IJobAlertRepository,JobAlertRepository>();
+            services.AddScoped<JobAlertService>();
             //cache
             services.AddMemoryCache();
             return services;

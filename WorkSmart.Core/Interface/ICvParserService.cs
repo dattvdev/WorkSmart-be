@@ -13,6 +13,6 @@ namespace WorkSmart.Core.Interface
 
         string ExtractCvContent(string filePath);
 
-        Task<ParsedCvData> ParseCvAsync(string cvContent, int userId);
+        Task<ParsedCvData> ParseCvAsync(string cvContent, int userId, string filePath, string fileName);
     }
 }

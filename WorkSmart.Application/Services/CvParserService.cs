@@ -113,15 +113,18 @@ namespace WorkSmart.Application.Services
             return content;
         }
 
-        public async Task<ParsedCvData> ParseCvAsync(string cvContent, int userId)
+        public async Task<ParsedCvData> ParseCvAsync(string cvContent, int userId, string filePath, string fileName)
         {
             try
             {
                 // Gọi OpenAI để phân tích nội dung CV
                 var parsedData = await _openAiService.ParseCvContentAsync(cvContent);
 
+                parsedData.FilePath = filePath;
+                parsedData.FileName = fileName;
+
                 // Lưu dữ liệu vào cơ sở dữ liệu
-                await SaveParsedCvToDatabase(parsedData, userId);
+                await SaveParsedCvToDatabase(parsedData, userId, filePath, fileName);
 
                 return parsedData;
             }
@@ -132,12 +135,14 @@ namespace WorkSmart.Application.Services
             }
         }
 
-        private async Task<int> SaveParsedCvToDatabase(ParsedCvData parsedData, int userId)
+        private async Task<int> SaveParsedCvToDatabase(ParsedCvData parsedData, int userId, string filePath, string fileName)
         {
             // Tạo entity CV mới
             var cvEntity = new CV
             {
                 UserID = userId,
+                FileName = fileName,
+                FilePath = filePath,
                 FirstName = parsedData.FirstName,
                 LastName = parsedData.LastName,
                 JobPosition = parsedData.JobPosition,

@@ -263,7 +263,7 @@ namespace WorkSmart.Api.Controllers
             {
                 var jobDetail = await _jobRepository.GetById(jobId);
                 CandidateNotificationSettingsDto candidateSetting = (CandidateNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(userId, "candidate"); ;
-                EmployerNotificationSettingsDto employerSetting = (EmployerNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(jobDetail.UserID, jobDetail.User.Role);
+                EmployerNotificationSettingsDto employerSetting = (EmployerNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(jobDetail.UserID, "employer");
                 await _sendMailService.SendEmailAsync(email, "Thanks for your application",
                 $"Dear {fullname},\n\nYour application for the job has successfully.\n\nBest regards,\nYour Team");
 

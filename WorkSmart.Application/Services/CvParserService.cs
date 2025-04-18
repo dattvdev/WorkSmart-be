@@ -151,8 +151,8 @@ namespace WorkSmart.Application.Services
                 Address = parsedData.Address,
                 Phone = parsedData.Phone,
                 Email = parsedData.Email,
-                Link = parsedData.Link,
-                Title = $"CV của {parsedData.FirstName} {parsedData.LastName}",
+                Link = filePath,
+                Title = fileName,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
                 IsHidden = false

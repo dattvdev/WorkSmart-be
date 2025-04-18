@@ -89,7 +89,7 @@ Notes:
 
                 var requestBody = new
                 {
-                    model = "gpt-4", // Or other suitable OpenAI model
+                    model = "gpt-4o-mini", // Or other suitable OpenAI model
                     messages = new[]
                     {
                         new
@@ -241,7 +241,7 @@ Notes:
 
                 var requestBody = new
                 {
-                    model = "gpt-4",
+                    model = "gpt-4o-mini",
                     messages = new[]
                     {
                         new

@@ -15,20 +15,10 @@ namespace WorkSmart.API.Extension
     {
         public static IServiceCollection AddScopeCollection(this IServiceCollection services, IConfiguration configuration)
         {
-            var connectionString = Environment.GetEnvironmentVariable("CUSTOMCONNSTR_DefaultConnection") // ✅ Đúng với Azure
-                        ?? configuration.GetConnectionString("DefaultConnection")
-                        ?? configuration["ConnectionStrings:DefaultConnection"];
-
-
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                throw new Exception("❌ Không tìm thấy ConnectionString");
-            }
-            
-
-
-            services.AddDbContext<WorksmartDBContext>(options =>
-                options.UseSqlServer(connectionString));
+            var connectionString =
+            Environment.GetEnvironmentVariable("CUSTOMCONNSTR_DefaultConnection") // lấy từ tab "Connection strings" trong Azure
+            ?? configuration.GetConnectionString("DefaultConnection")
+            ?? configuration["ConnectionStrings:DefaultConnection"];
 
             if (string.IsNullOrWhiteSpace(connectionString))
             {
@@ -37,6 +27,12 @@ namespace WorkSmart.API.Extension
 
             services.AddDbContext<WorksmartDBContext>(options =>
                 options.UseSqlServer(connectionString));
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new Exception("❌ Không tìm thấy ConnectionString");
+            }
+
             //job
             services.AddScoped<IJobRepository, JobRepository>();
             services.AddScoped<JobService>();

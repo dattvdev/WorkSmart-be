@@ -31,9 +31,9 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers();
-Console.WriteLine("ENV ConnectionString: " + builder.Configuration.GetConnectionString("DefaultConnection"));
+// Truyền builder.Configuration vào
+builder.Services.AddScopeCollection(builder.Configuration);
 
-builder.Services.AddScopeCollection();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

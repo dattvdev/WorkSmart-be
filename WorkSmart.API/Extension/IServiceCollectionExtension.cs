@@ -17,8 +17,13 @@ namespace WorkSmart.API.Extension
         {
             //Add extentions here
             //connect DB
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new ArgumentNullException(nameof(connectionString), "Connection string must not be null or empty.");
+            }
+
             services.AddDbContext<WorksmartDBContext>(options =>
-            options.UseSqlServer(Connectionstring));
+                options.UseSqlServer(connectionString));
             //job
             services.AddScoped<IJobRepository, JobRepository>();
             services.AddScoped<JobService>();

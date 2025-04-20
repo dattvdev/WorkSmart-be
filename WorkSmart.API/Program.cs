@@ -49,7 +49,7 @@ foreach (var kv in builder.Configuration.AsEnumerable())
         logger.LogInformation("{key} = {value}", kv.Key, kv.Value);
 }
 // Truyền builder.Configuration vào
-builder.Services.AddScopeCollection(builder.Configuration);
+builder.Services.AddScopeCollection(builder.Configuration.GetConnectionString("DefaultConnection").ToString());
 
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

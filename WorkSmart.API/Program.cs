@@ -16,21 +16,6 @@ builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true) // cho phép không có file này
     .AddEnvironmentVariables();
-app.UseExceptionHandler(errorApp =>
-{
-    errorApp.Run(async context =>
-    {
-        context.Response.StatusCode = 500;
-        context.Response.ContentType = "text/plain";
-
-        var error = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
-        if (error != null)
-        {
-            var ex = error.Error;
-            await context.Response.WriteAsync($"Unhandled error: {ex.Message}\n{ex.StackTrace}");
-        }
-    });
-});
 
 // Add services to the container.
 builder.Services.AddCors(options =>
@@ -90,6 +75,21 @@ builder.Services.AddSingleton<PayOS>(provider =>
 });
 
 var app = builder.Build();
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "text/plain";
+
+        var error = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+        if (error != null)
+        {
+            var ex = error.Error;
+            await context.Response.WriteAsync($"Unhandled error: {ex.Message}\n{ex.StackTrace}");
+        }
+    });
+});
 
 // Configure the HTTP request pipeline.
 
@@ -103,8 +103,8 @@ app.UseCors("AllowAll"); // Áp dụng chính sách AllowAll
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
 app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Net.payOS;
+using System.Collections;
 using System.Text;
 using WorkSmart.API.Extension;
 using WorkSmart.API.Hubs;
@@ -31,6 +32,20 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers();
+Console.WriteLine("🔗 ConnectionString: " + builder.Configuration.GetConnectionString("DefaultConnection"));
+
+Console.WriteLine("🔍--- Environment Variables ---");
+foreach (DictionaryEntry env in Environment.GetEnvironmentVariables())
+{
+    Console.WriteLine($"{env.Key} = {env.Value}");
+}
+
+Console.WriteLine("🔍--- App Configuration Values ---");
+foreach (var kv in builder.Configuration.AsEnumerable())
+{
+    if (!string.IsNullOrWhiteSpace(kv.Value)) // tránh log null
+        Console.WriteLine($"{kv.Key} = {kv.Value}");
+}
 // Truyền builder.Configuration vào
 builder.Services.AddScopeCollection(builder.Configuration);
 

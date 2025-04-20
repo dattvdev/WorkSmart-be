@@ -22,6 +22,21 @@ namespace WorkSmart.API.Extension
             {
                 throw new Exception("❌ Không tìm thấy ConnectionString");
             }
+            Console.WriteLine("🔗 ConnectionString: " + builder.Configuration.GetConnectionString("DefaultConnection"));
+
+            Console.WriteLine("🔍--- Environment Variables ---");
+            foreach (DictionaryEntry env in Environment.GetEnvironmentVariables())
+            {
+                Console.WriteLine($"{env.Key} = {env.Value}");
+            }
+            
+            Console.WriteLine("🔍--- App Configuration Values ---");
+            foreach (var kv in builder.Configuration.AsEnumerable())
+            {
+                if (!string.IsNullOrWhiteSpace(kv.Value)) // tránh log null
+                    Console.WriteLine($"{kv.Key} = {kv.Value}");
+            }
+
 
             services.AddDbContext<WorksmartDBContext>(options =>
                 options.UseSqlServer(connectionString));

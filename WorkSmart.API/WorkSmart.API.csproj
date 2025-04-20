@@ -11,10 +11,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+  <None Update="appsettings.json">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <Optional>true</Optional>
+  </None>
+</ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CloudinaryDotNet" Version="1.27.4" />

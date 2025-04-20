@@ -89,7 +89,7 @@ Notes:
 
                 var requestBody = new
                 {
-                    model = "gpt-4", // Or other suitable OpenAI model
+                    model = "gpt-4o-mini", // Or other suitable OpenAI model
                     messages = new[]
                     {
                         new
@@ -113,34 +113,92 @@ Notes:
                     "application/json");
 
                 var response = await _httpClient.PostAsync($"{_baseUrl}/chat/completions", content);
-                response.EnsureSuccessStatusCode();
+
+                // Kiểm tra phản hồi HTTP
+                if (!response.IsSuccessStatusCode)
+                {
+                    return CreateEmptyCvData();
+                }
 
                 var responseString = await response.Content.ReadAsStringAsync();
-                var responseObject = JsonConvert.DeserializeObject<dynamic>(responseString);
 
-                string parsedCvJson = responseObject.choices[0].message.content.ToString();
-
-                // Clean JSON string if needed
-                if (parsedCvJson.StartsWith("```json"))
+                try
                 {
-                    parsedCvJson = parsedCvJson.Replace("```json", "").Replace("```", "").Trim();
+                    var responseObject = JsonConvert.DeserializeObject<dynamic>(responseString);
+
+                    // Kiểm tra cấu trúc phản hồi
+                    if (responseObject?.choices == null || responseObject.choices.Count == 0 ||
+                        responseObject.choices[0]?.message?.content == null)
+                    {
+                        return CreateEmptyCvData();
+                    }
+
+                    string parsedCvJson = responseObject.choices[0].message.content.ToString();
+
+                    if (parsedCvJson.StartsWith("```json"))
+                    {
+                        parsedCvJson = parsedCvJson.Replace("```json", "").Replace("```", "").Trim();
+                    }
+
+                    try
+                    {
+                        var parsedData = JsonConvert.DeserializeObject<ParsedCvData>(parsedCvJson);
+
+                        if (parsedData == null)
+                        {
+                            return CreateEmptyCvData();
+                        }
+
+                        if (string.IsNullOrEmpty(parsedData.Summary))
+                        {
+                            try
+                            {
+                                parsedData.Summary = await GenerateSummaryFromCvData(parsedData);
+                            }
+                            catch (Exception summaryEx)
+                            {
+                                parsedData.Summary = "Professional with experience in the field.";
+                            }
+                        }
+
+                        return parsedData;
+                    }
+                    catch (JsonReaderException jsonEx)
+                    {
+                        return CreateEmptyCvData();
+                    }
                 }
-
-                var parsedData = JsonConvert.DeserializeObject<ParsedCvData>(parsedCvJson);
-
-                // If summary is still empty after initial parsing, generate it separately
-                if (string.IsNullOrEmpty(parsedData.Summary))
+                catch (Exception parseEx)
                 {
-                    parsedData.Summary = await GenerateSummaryFromCvData(parsedData);
+                    return CreateEmptyCvData();
                 }
-
-                return parsedData;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error when analyzing CV with OpenAI");
-                throw;
+                return CreateEmptyCvData();
             }
+        }
+
+        private ParsedCvData CreateEmptyCvData()
+        {
+            return new ParsedCvData
+            {
+                FirstName = "",
+                LastName = "",
+                JobPosition = "",
+                WorkType = "",
+                Summary = "Professional with relevant experience and skills.",
+                Address = "",
+                Phone = "",
+                Email = "",
+                Link = "",
+                FileName = "",
+                FilePath = "",
+                Educations = new List<ParsedEducation>(),
+                Experiences = new List<ParsedExperience>(),
+                Certifications = new List<ParsedCertification>(),
+                Skills = new List<ParsedSkill>()
+            };
         }
 
         private async Task<string> GenerateSummaryFromCvData(ParsedCvData cvData)
@@ -183,7 +241,7 @@ Notes:
 
                 var requestBody = new
                 {
-                    model = "gpt-4",
+                    model = "gpt-4o-mini",
                     messages = new[]
                     {
                         new

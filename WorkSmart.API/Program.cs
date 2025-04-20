@@ -32,7 +32,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 
-builder.Services.AddScopeCollection(builder.Configuration.GetConnectionString("DefaultConnection").ToString());
+builder.Services.AddScopeCollection(builder.Configuration["ConnectionStrings:DefaultConnection"]);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

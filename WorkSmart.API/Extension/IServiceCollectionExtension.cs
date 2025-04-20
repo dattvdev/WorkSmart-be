@@ -13,14 +13,20 @@ namespace WorkSmart.API.Extension
 {
     public static class IServiceCollectionExtension
     {
-        public static IServiceCollection AddScopeCollection(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddScopeCollection(this IServiceCollection services)
         {
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
-            Console.WriteLine(">> Connection String: " + connectionString);
+            var config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())           // để hỗ trợ appsettings.json
+                .AddJsonFile("appsettings.json", optional: true)
+                .AddEnvironmentVariables()
+                .Build();
+
+            var connectionString = config.GetConnectionString("DefaultConnection")
+                                ?? config["ConnectionStrings:DefaultConnection"]; // fallback
 
             if (string.IsNullOrWhiteSpace(connectionString))
             {
-                throw new ArgumentNullException(nameof(connectionString), "Connection string must not be null or empty.");
+                throw new Exception("❌ Không tìm thấy ConnectionString");
             }
 
             services.AddDbContext<WorksmartDBContext>(options =>

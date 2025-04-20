@@ -12,7 +12,10 @@ using WorkSmart.Core.Interface;
 using WorkSmart.Repository.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true) // cho phép không có file này
+    .AddEnvironmentVariables();
 // Add services to the container.
 builder.Services.AddCors(options =>
 {

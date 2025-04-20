@@ -13,17 +13,17 @@ namespace WorkSmart.API.Extension
 {
     public static class IServiceCollectionExtension
     {
-        public static IServiceCollection AddScopeCollection(this IServiceCollection services, string? Connectionstring)
+        public static IServiceCollection AddScopeCollection(this IServiceCollection services, IConfiguration configuration)
         {
-            //Add extentions here
-            //connect DB
-            if (string.IsNullOrWhiteSpace(ConnectionString))
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+            if (string.IsNullOrWhiteSpace(connectionString))
             {
-                throw new ArgumentNullException(nameof(ConnectionString), "Connection string must not be null or empty.");
+                throw new ArgumentNullException(nameof(connectionString), "Connection string must not be null or empty.");
             }
 
             services.AddDbContext<WorksmartDBContext>(options =>
-                options.UseSqlServer(ConnectionString));
+                options.UseSqlServer(connectionString));
             //job
             services.AddScoped<IJobRepository, JobRepository>();
             services.AddScoped<JobService>();

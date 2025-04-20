@@ -16,6 +16,22 @@ builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true) // cho phép không có file này
     .AddEnvironmentVariables();
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "text/plain";
+
+        var error = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+        if (error != null)
+        {
+            var ex = error.Error;
+            await context.Response.WriteAsync($"Unhandled error: {ex.Message}\n{ex.StackTrace}");
+        }
+    });
+});
+
 // Add services to the container.
 builder.Services.AddCors(options =>
 {
@@ -76,11 +92,10 @@ builder.Services.AddSingleton<PayOS>(provider =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 //app.UseCors("AllowAll"); // Áp dụng chính sách AllowAll
 app.UseCors("AllowAll"); // Áp dụng chính sách AllowAll

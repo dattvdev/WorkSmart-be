@@ -31,6 +31,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers();
+Console.WriteLine("ENV ConnectionString: " + builder.Configuration.GetConnectionString("DefaultConnection"));
 
 builder.Services.AddScopeCollection(builder.Configuration);
 

@@ -16,6 +16,7 @@ namespace WorkSmart.API.Extension
         public static IServiceCollection AddScopeCollection(this IServiceCollection services, IConfiguration configuration)
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection");
+            Console.WriteLine(">> Connection String: " + connectionString);
 
             if (string.IsNullOrWhiteSpace(connectionString))
             {

@@ -32,23 +32,8 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers();
-var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
 
-logger.LogInformation("🔗 ConnectionString: {connStr}", builder.Configuration.GetConnectionString("DefaultConnection"));
-
-logger.LogInformation("🔍--- Environment Variables ---");
-foreach (DictionaryEntry env in Environment.GetEnvironmentVariables())
-{
-    logger.LogInformation("{key} = {value}", env.Key, env.Value);
-}
-
-logger.LogInformation("🔍--- App Configuration Values ---");
-foreach (var kv in builder.Configuration.AsEnumerable())
-{
-    if (!string.IsNullOrWhiteSpace(kv.Value))
-        logger.LogInformation("{key} = {value}", kv.Key, kv.Value);
-}
-// Truyền builder.Configuration vào
+// Truyền ConnectionString vào
 builder.Services.AddScopeCollection(builder.Configuration.GetConnectionString("DefaultConnection").ToString());
 
 

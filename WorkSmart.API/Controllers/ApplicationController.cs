@@ -289,13 +289,16 @@ namespace WorkSmart.Api.Controllers
                             , "New Application Received"
                             , body);
                     }
-
-                    /*  await _signalRService.SendNotificationToUser(
-                            userId,
-                            "Application Notification",
-                            $"Your Apply to \"{jobDetail.Title}\" has been applied",
-                            $"/candidate/applied-jobs"
-                        );*/
+                    if ((bool)candidateSetting.ApplicationApply)
+                    {
+                        await _signalRService.SendNotificationToUser(
+                          userId,
+                          "Application Notification",
+                          $"Your Apply to \"{jobDetail.Title}\" has been applied",
+                          $"/candidate/applied-jobs"
+                      );
+                    }
+                    
                 }
             }
 

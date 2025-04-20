@@ -23,7 +23,6 @@ namespace WorkSmart.Repository
         public DbSet<FavoriteJob> FavoriteJobs { get; set; }
         public DbSet<Application> Applications { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-        public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<ReportUser> ReportUsers { get; set; }
         public DbSet<PersonalMessage> PersonalMessages { get; set; }
         public DbSet<ReportPost> ReportPosts { get; set; }
@@ -63,16 +62,6 @@ namespace WorkSmart.Repository
                 .HasOne(pm => pm.Receiver)
                 .WithMany(u => u.MessagesReceived)
                 .HasForeignKey(pm => pm.ReceiverID)
-                .OnDelete(DeleteBehavior.NoAction);
-            modelBuilder.Entity<Feedback>()
-                .HasOne(f => f.Sender)
-                .WithMany(u => u.FeedbacksSent)
-                .HasForeignKey(f => f.SenderID)
-                .OnDelete(DeleteBehavior.NoAction);
-            modelBuilder.Entity<Feedback>()
-                .HasOne(f => f.Receiver)
-                .WithMany(u => u.FeedbacksReceived)
-                .HasForeignKey(f => f.ReceiverID)
                 .OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<ReportUser>()
                 .HasOne(r => r.Receiver)

@@ -19,7 +19,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAll",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173","http://localhost:7141") // Thay bằng origin thực tế của client, không sử dụng all vì không đi chung được  với AllowCredentials (bắt buộc) 
+            policy.WithOrigins("http://localhost:5173","http://localhost:7141", "https://worksmart-fe.vercel.app") // Thay bằng origin thực tế của client, không sử dụng all vì không đi chung được  với AllowCredentials (bắt buộc) 
                   .AllowAnyMethod()
                   .AllowAnyHeader()
                   .AllowCredentials(); // Quan trọng cho SignalR
@@ -28,7 +28,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 
-builder.Services.AddScopeCollection(builder.Configuration.GetConnectionString("DefaultConnection").ToString());
+builder.Services.AddScopeCollection(builder.Configuration);
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

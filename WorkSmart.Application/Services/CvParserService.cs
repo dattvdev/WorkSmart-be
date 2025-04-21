@@ -95,22 +95,36 @@ namespace WorkSmart.Application.Services
         public string ExtractCvContent(string filePath)
         {
             StringBuilder text = new StringBuilder();
-
-            using (PdfReader reader = new PdfReader(filePath))
+            try
             {
-                for (int i = 1; i <= reader.NumberOfPages; i++)
+                using (PdfReader reader = new PdfReader(filePath))
                 {
-                    text.Append(PdfTextExtractor.GetTextFromPage(reader, i));
+                    for (int i = 1; i <= reader.NumberOfPages; i++)
+                    {
+                        // Thêm dấu ngắt trang để phân biệt rõ giữa các trang
+                        if (i > 1) text.AppendLine("\n--- PAGE BREAK ---\n");
+
+                        // Sử dụng chiến lược trích xuất chi tiết hơn
+                        var strategy = new SimpleTextExtractionStrategy();
+                        string pageText = PdfTextExtractor.GetTextFromPage(reader, i, strategy);
+                        text.AppendLine(pageText);
+                    }
                 }
+
+                string content = text.ToString();
+
+                content = Regex.Replace(content, @"[\uE000-\uF8FF]", ""); // Loại bỏ ký tự đặc biệt
+                content = Regex.Replace(content, @"\r\n", "\n"); // Chuẩn hóa các dấu xuống dòng
+                content = Regex.Replace(content, @"\n{3,}", "\n\n"); // Giảm số dòng trống liên tiếp
+
+
+                return content;
             }
-
-            string content = text.ToString();
-
-            // Loại bỏ ký tự Unicode đặc biệt, khoảng trắng thừa
-            content = Regex.Replace(content, @"[\uE000-\uF8FF]", ""); // Loại bỏ ký tự đặc biệt
-            content = Regex.Replace(content, @"\s{2,}", " "); // Chuẩn hóa khoảng trắng
-
-            return content;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error extracting content from PDF");
+                throw;
+            }
         }
 
         public async Task<ParsedCvData> ParseCvAsync(string cvContent, int userId, string filePath, string fileName)

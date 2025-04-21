@@ -269,6 +269,7 @@ namespace WorkSmart.Api.Controllers
 
                 if (employerSetting != null)
                 {
+
                     if ((bool)employerSetting.NewApplications)
                     {
                         await _signalRService.SendNotificationToUser(
@@ -300,6 +301,7 @@ namespace WorkSmart.Api.Controllers
                     }
                     
                 }
+                    
             }
 
             return Ok("Application submitted successfully.");

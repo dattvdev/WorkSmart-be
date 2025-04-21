@@ -24,7 +24,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAll",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173","http://localhost:7141", "https://worksmart-fe.vercel.app") // Thay bằng origin thực tế của client, không sử dụng all vì không đi chung được  với AllowCredentials (bắt buộc) 
+            policy.WithOrigins("http://localhost:5173", "https://worksmart-fe.vercel.app") // Thay bằng origin thực tế của client, không sử dụng all vì không đi chung được  với AllowCredentials (bắt buộc) 
                   .AllowAnyMethod()
                   .AllowAnyHeader()
                   .AllowCredentials(); // Quan trọng cho SignalR
@@ -103,7 +103,6 @@ app.UseSwaggerUI();
 
 //app.UseCors("AllowAll"); // Áp dụng chính sách AllowAll
 app.UseCors("AllowAll"); // Áp dụng chính sách AllowAll
-
 
 app.UseHttpsRedirection();
 

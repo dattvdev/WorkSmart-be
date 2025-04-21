@@ -28,5 +28,11 @@ namespace WorkSmart.Application.Services
             var transactions = await _transactionRepository.GetAllByUserId(userId);
             return _mapper.Map<List<GetListTransactionDto>>(transactions);
         }
+
+        public async Task<List<GetListTransactionDto>> GetAll()
+        {
+            var transactions = await _transactionRepository.GetAll();
+            return _mapper.Map<List<GetListTransactionDto>>(transactions);
+        }
     }
 }

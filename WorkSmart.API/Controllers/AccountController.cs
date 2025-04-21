@@ -522,7 +522,7 @@ namespace WorkSmart.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Error = "An error occurred while processing your request." });
+                return StatusCode(500, new { Error = ex });
             }
         }
 

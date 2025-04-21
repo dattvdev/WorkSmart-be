@@ -365,13 +365,16 @@ namespace WorkSmart.Api.Controllers
                         };
                         await _sendMailService.SendMail(employerEmailContent);
                     }
-
-                    /*  await _signalRService.SendNotificationToUser(
-                            userId,
-                            "Application Notification",
-                            $"Your Apply to \"{jobDetail.Title}\" has been applied",
-                            $"/candidate/applied-jobs"
-                        );*/
+                    if ((bool)candidateSetting.ApplicationApply)
+                    {
+                        await _signalRService.SendNotificationToUser(
+                          userId,
+                          "Application Notification",
+                          $"Your Apply to \"{jobDetail.Title}\" has been applied",
+                          $"/candidate/applied-jobs"
+                      );
+                    }
+                    
                 }
             }
 

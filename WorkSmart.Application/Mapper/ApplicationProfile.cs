@@ -15,13 +15,13 @@ namespace WorkSmart.Application.Mapper
         {
 
             CreateMap<Core.Entity.Application, ApplicationJobDto>()
-                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName))
-                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber))
-                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
-                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.User.Address))
-                .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.User.DateOfBirth))
-                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.User.Gender))
-                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.User.Avatar))
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Job.User.FullName))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.Job.User.PhoneNumber))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Job.User.Email))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Job.User.Address))
+                .ForMember(dest => dest.DateOfBirth, opt => opt.MapFrom(src => src.Job.User.DateOfBirth))
+                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Job.User.Gender))
+                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.Job.User.Avatar))
 
                 .ForMember(dest => dest.RejectionReason, opt => opt.MapFrom(src => src.RejectionReason))
                 .ForMember(dest => dest.ApplicationStatus, opt => opt.MapFrom(src => src.Status))

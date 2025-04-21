@@ -31,7 +31,11 @@ namespace WorkSmart.Application.Services
             try
             {
                 string systemPrompt = @"
-You are an AI specialized in CV analysis. Please analyze the CV content into structured sections and return the result in JSON format as follows:
+You are an AI specialized in CV analysis. Below is the content of a CV that may have irregular formatting due to PDF extraction. Your job is to carefully analyze the content and extract structured information, even if the formatting is not perfect.
+
+First, identify clear sections like Contact Details, Education, Skills, Experience, etc. Then, extract all information available in each section.
+
+Return the result in JSON format as follows:
 {
   ""firstName"": """",
   ""lastName"": """",
@@ -78,15 +82,17 @@ You are an AI specialized in CV analysis. Please analyze the CV content into str
 }
 
 Notes:
-1. Split the full name into firstName and lastName
-2. Time fields (startedAt, endedAt, createAt) should be returned in month/year or day/month/year format if possible
-3. Extract workType (such as Full-time, Part-time, Remote, etc.) if available
-4. Link can be personal website, LinkedIn, GitHub, etc.
-5. Ensure valid JSON is returned
-6. For each skill, add a brief description if possible
-7. For the summary field, if it's not explicitly present in the CV, please generate a comprehensive professional summary based on the candidate's experience, skills, and education. This summary should highlight their key strengths, career focus, and professional value proposition in 3-5 sentences.
+1. Look for contact information near the top of the document, including email, phone, and location
+2. Split the full name into firstName and lastName
+3. Look for section headers that might indicate different parts of the CV (Experience, Education, etc.)
+4. Time fields should be returned in month/year or day/month/year format if possible
+5. Extract workType (such as Full-time, Part-time, Remote, etc.) if available
+6. The job position might be found near the name or in a separate professional title section
+7. For each skill, separate the skill name from its proficiency level (if available)
+8. If a summary section exists, use that directly; otherwise do not generate one at this stage
+9. Return empty array [] for sections that don't have any items
+10. Return empty string """" for fields where information is not available
 ";
-
                 var requestBody = new
                 {
                     model = "gpt-4o-mini", // Or other suitable OpenAI model

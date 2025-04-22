@@ -34,5 +34,7 @@ namespace WorkSmart.Core.Interface
         Task<IEnumerable<int>> GetJobIdsByUserIdAsync(int userId);
         Task<IEnumerable<Job>> GetJobsActive();
         Task<List<Job>> GetAllJobActive();
+        Task<bool> IsDuplicateJobTitle(int userID, string normalizedTitle);
+        Task<bool> IsDuplicateJobTitleForUpdate(int userID, int jobID, string normalizedTitle);
     }
 }

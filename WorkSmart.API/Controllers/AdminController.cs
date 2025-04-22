@@ -767,6 +767,8 @@ namespace WorkSmart.API.Controllers
             List<int> listTagIds = job.Item1.Tags;
             var listUserId = _notificationJobTagService.GetNotiUserByListTagID(listTagIds);
             var subject = "There is a new job that you might be interested in";
+            string baseUrl = HttpContext.RequestServices.GetRequiredService<IConfiguration>()["FrontendUrl:BaseUrl"];
+
 
             foreach (var userId in listUserId.Result)
             {
@@ -919,7 +921,7 @@ namespace WorkSmart.API.Controllers
                                         <p>Click the button below to view job details and apply now:</p>
                 
                                         <div class='button-container'>
-                                            <a href='http://localhost:5173/job-list/{job.Item1.JobID}' class='button'>View Job Details</a>
+                                            <a href='{baseUrl}/{job.Item1.JobID}' class='button'>View Job Details</a>
                                         </div>
                 
                                         <p>If you have any questions, please don't hesitate to contact us.</p>

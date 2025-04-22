@@ -696,6 +696,12 @@ namespace WorkSmart.Repository.Repository
 
             return locationPercentages;
         }
+        public async Task<bool> IsDuplicateJobTitle(int userID, string normalizedTitle)
+        {
+            return await _context.Jobs
+                .Where(j => j.UserID == userID)
+                .AnyAsync(j => j.Title.Trim().ToLower() == normalizedTitle);
+        }
 
         public async Task<IEnumerable<int>> GetJobIdsByUserIdAsync(int userId)
         {

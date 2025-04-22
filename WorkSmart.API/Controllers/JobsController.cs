@@ -879,6 +879,8 @@ namespace WorkSmart.API.Controllers
         // Helper method to generate email body
         private string GenerateInvitationEmailBody(JobDetailDto job, GetCandidateProfileDto candidate)
         {
+            string baseUrl = HttpContext.RequestServices.GetRequiredService<IConfiguration>()["FrontendUrl:BaseUrl"];
+
             return $@"
         <html>
             <head>
@@ -982,7 +984,7 @@ namespace WorkSmart.API.Controllers
                         <p>If you are interested in exploring this opportunity further, please click the button below to respond to this invitation:</p>
                         
                         <div class='button-container'>
-                            <a href='http://localhost:5173/job-list/{job.JobID}' class='button'>View Job Details</a>
+                            <a href='{baseUrl}/{job.JobID}' class='button'>View Job Details</a>
                         </div>
                         
                         <p>Should you have any questions or require additional information about the position or our company, please don't hesitate to contact us.</p>

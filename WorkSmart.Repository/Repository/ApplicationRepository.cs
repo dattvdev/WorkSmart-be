@@ -33,8 +33,7 @@ namespace WorkSmart.Repository.Repository
             return await _context.Applications
                 .Include(a => a.User)  
                 .Include(a => a.CV)
-                .Include(a => a.Job)
-                .Include(a => a.Job.User)
+                .Include(a => a.CV.User)
                 .Where(a => a.JobID == jobId)
                 .ToListAsync();
         }
@@ -44,7 +43,8 @@ namespace WorkSmart.Repository.Repository
             return await _context.Applications
                 .Include(a => a.Job)
                 .Include(a => a.Job.User)
-                .Where(a => a.UserID == userId)  // Lọc theo UserID
+                .Where(a => a.UserID == userId)
+                .OrderByDescending(a => a.CreatedAt)
                 .ToListAsync();
         }
 

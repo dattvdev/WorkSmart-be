@@ -677,6 +677,20 @@ namespace WorkSmart.Repository.Repository
 
             return locationPercentages;
         }
+        public async Task<bool> IsDuplicateJobTitle(int userID, string normalizedTitle)
+        {
+            return await _context.Jobs
+                .Where(j => j.UserID == userID)
+                .AnyAsync(j => j.Title.Trim().ToLower() == normalizedTitle);
+        }
 
+        // Check if a job with the same title already exists for the given user when updating a job
+        public async Task<bool> IsDuplicateJobTitleForUpdate(int userID, int jobID, string normalizedTitle)
+        {
+            return await _context.Jobs
+                .Where(j => j.UserID == userID)
+                .Where(j => j.JobID != jobID) // Exclude the current job
+                .AnyAsync(j => j.Title.Trim().ToLower() == normalizedTitle);
+        }
     }
 }

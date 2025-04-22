@@ -33,6 +33,7 @@ namespace WorkSmart.Repository.Repository
             return await _context.Applications
                 .Include(a => a.User)  
                 .Include(a => a.CV)
+                .Include(a => a.CV.User)
                 .Where(a => a.JobID == jobId)
                 .ToListAsync();
         }

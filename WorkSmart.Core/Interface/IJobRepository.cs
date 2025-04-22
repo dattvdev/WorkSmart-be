@@ -32,5 +32,7 @@ namespace WorkSmart.Core.Interface
 
         Task<List<Job>> GetExpiringJobsAsync();
         Task<List<Job>> GetExpiredJobs();
+        Task<bool> IsDuplicateJobTitle(int userID, string normalizedTitle);
+        Task<bool> IsDuplicateJobTitleForUpdate(int userID, int jobID, string normalizedTitle);
     }
 }

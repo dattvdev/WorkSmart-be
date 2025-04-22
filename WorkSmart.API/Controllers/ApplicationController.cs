@@ -6,7 +6,9 @@ using WorkSmart.API.SignalRService;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.ApplicationDtos;
 using WorkSmart.Core.Dto.JobDtos;
+using WorkSmart.Core.Dto.NotificationSettingDtos;
 using WorkSmart.Core.Interface;
+using static iTextSharp.text.pdf.qrcode.Version;
 
 namespace WorkSmart.Api.Controllers
 {
@@ -18,16 +20,18 @@ namespace WorkSmart.Api.Controllers
         private readonly ISendMailService _sendMailService;
         private readonly SignalRNotificationService _signalRService;
         private readonly IJobRepository _jobRepository;
-
+        private readonly NotificationSettingService _notificationSettingService;
         public ApplicationController(ApplicationService applicationService
             , ISendMailService sendMailService
             , SignalRNotificationService signalRService
-            , IJobRepository jobRepository)
+            , IJobRepository jobRepository
+            , NotificationSettingService notificationSettingService)
         {
             _applicationService = applicationService;
             _sendMailService = sendMailService;
             _signalRService = signalRService;
             _jobRepository = jobRepository;
+            _notificationSettingService = notificationSettingService;
         }
 
         // Lấy danh sách ứng viên theo JobID
@@ -35,6 +39,20 @@ namespace WorkSmart.Api.Controllers
         public async Task<IActionResult> GetApplicationsByJobId(int jobId)
         {
             var applications = await _applicationService.GetApplicationsByJobIdAsync(jobId);
+
+            if (applications == null || !applications.Any())
+            {
+                return NotFound(new { message = "No applications found for this job." });
+            }
+
+            return Ok(applications);
+        }
+
+        // Lấy danh sách job candidate đã apply
+        [HttpGet("candidate/applied-jobs")]
+        public async Task<IActionResult> GetApplicationsByUserId(int userId)
+        {
+            var applications = await _applicationService.GetApplicationsByUserIdAsync(userId);
 
             if (applications == null || !applications.Any())
             {
@@ -93,53 +111,74 @@ namespace WorkSmart.Api.Controllers
                     {
                         return BadRequest("Failed to update recruitment number.");
                     }
-
+                    CandidateNotificationSettingsDto candidateSetting = (CandidateNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(candidate.UserID, candidate.User.Role); ;
+                    //EmployerNotificationSettingsDto employerSetting = (EmployerNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(candidate.Job.UserID, candidate.Job.User.Role);
                     // Lấy thông tin công việc cho email
                     var jobDetails = await _applicationService.GetJobDetailForApplicationAsync(candidateId);
-                    string jobTitle = jobDetails?.Title ?? "the position";
 
-                    // Chuẩn bị nội dung email từ chối
-                    string subject = "Your Application Status - Not Selected";
-                    string body = $@"Dear {candidate.User.FullName},
 
-                    We appreciate your interest in {jobTitle} at our company and the time you've taken to apply.
-
-                    After careful consideration, we regret to inform you that we have decided not to move forward with your application at this time.";
-
-                    // Thêm lý do từ chối vào email nếu có
-                    if (!string.IsNullOrEmpty(request.RejectionReason))
+                    if (candidateSetting != null)
                     {
-                        body += $@"
+                        if ((bool)candidateSetting.ApplicationRejected)
+                        {
+                            await _signalRService.SendNotificationToUser(
+                                candidate.UserID,
+                                "Application Status Updated",
+                                $"We regret to inform you that your application \"{jobDetails.Title}\" has been rejected.",
+                                "/candidate/applied-jobs"
+                            );
+                        }
+                        if ((bool)candidateSetting.EmailApplicationRejected)
+                        {
+                            string jobTitle = jobDetails?.Title ?? "the position";
+                            string rejectionReason = !string.IsNullOrEmpty(request.RejectionReason) ? request.RejectionReason : "";
 
-                        Reason: {request.RejectionReason}";
+                            var emailContent = new Core.Dto.MailDtos.MailContent
+                            {
+                                To = candidate.User.Email,
+                                Subject = "Your Application Status - Not Selected",
+                                Body = $@"<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>Application Status Update</title>
+</head>
+<body style=""font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f9f9f9;"">
+    <div style=""max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);"">
+        <div style=""background-color: #f44336; color: white; padding: 20px; text-align: center;"">
+            <h2 style=""margin: 0; padding: 0;"">Application Status Update</h2>
+        </div>
+        
+        <div style=""padding: 30px;"">
+            <h1 style=""color: #f44336; text-align: center; margin-top: 0;"">Application Not Selected</h1>
+            
+            <div style=""background-color: #fff1f0; border-left: 4px solid #f44336; padding: 15px; margin-bottom: 20px; border-radius: 4px;"">
+                <p style=""margin-top: 0;"">Dear {candidate.User.FullName},</p>
+                <p>We appreciate your interest in <strong>{jobTitle}</strong> at our company and the time you've taken to apply.</p>
+                <p>After careful consideration, we regret to inform you that we have decided not to move forward with your application at this time.</p>
+                {(string.IsNullOrEmpty(rejectionReason) ? "" : $"<p><strong>Reason:</strong> {rejectionReason}</p>")}
+            </div>
+            
+            <p>Although we are unable to offer you this position, we encourage you to apply for future openings that match your skills and experience.</p>
+            
+            <p>Thank you again for your interest in our company. We wish you the best in your job search and professional endeavors.</p>
+            
+            <p style=""margin-top: 30px;"">Best regards,<br>WorkSmart Team</p>
+        </div>
+        
+        <div style=""background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #777;"">
+            <p style=""margin: 0;"">© 2025 WorkSmart. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>"
+                            };
+                            await _sendMailService.SendMail(emailContent);
+                        }
                     }
 
-                    body += $@"
 
-                    Although we are unable to offer you this position, we encourage you to apply for future openings that match your skills and experience.
-
-                    Thank you again for your interest in our company. We wish you the best in your job search and professional endeavors.
-
-                    Best regards,
-                    WorkSmart Team";
-
-                    // Gửi email với lý do từ chối
-                    await _sendMailService.SendEmailAsync(candidate.User.Email, subject, body);
-
-                    // Gửi thông báo realtime
-                    await _signalRService.SendNotificationToUser(
-                        candidate.UserID,
-                        "Application Status Updated",
-                        $"We regret to inform you that your application \"{jobDetails.Title}\" has been rejected.",
-                        "/candidate/applied-jobs"
-                    );
-                    var employerId = jobDetails.UserID;
-                    await _signalRService.SendNotificationToUser(
-                        employerId,
-                        "Candidate Rejection Complete",
-                        $"You've successfully rejected a candidate for \"{jobTitle}\".",
-                        $"/employer/manage-jobs/applied-candidates/{jobDetails.JobID}"
-                    );
                     return Ok(new
                     {
                         success = true,
@@ -176,42 +215,81 @@ namespace WorkSmart.Api.Controllers
                     {
                         return BadRequest("Failed to update recruitment number.");
                     }
-
+                    CandidateNotificationSettingsDto candidateSetting = (CandidateNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(candidate.UserID, candidate.User.Role); ;
+                    //EmployerNotificationSettingsDto employerSetting = (EmployerNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(candidate.Job.UserID, candidate.Job.User.Role);
                     // Lấy thông tin công việc cho email
                     var jobDetails = await _applicationService.GetJobDetailForApplicationAsync(candidateId);
-                    string jobTitle = jobDetails?.Title ?? "the position";
 
-                    string subject = "Your Application Status - Accepted";
-                    string body = $@"Dear {candidate.User.FullName},
+                    if (candidateSetting != null)
+                    {
+                        if ((bool)candidateSetting.ApplicationApproved)
+                        {
+                            // Gửi thông báo realtime
+                            await _signalRService.SendNotificationToUser(
+                                candidate.UserID,
+                                "Application Status Updated",
+                                $"Congratulations! Your application \"{jobDetails.Title}\" has been approved.",
+                                "/candidate/applied-jobs"
+                            );
+                        }
+                        if ((bool)candidateSetting.EmailApplicationApproved)
+                        {
+                            string jobTitle = jobDetails?.Title ?? "the position";
 
-                    Congratulations! We are pleased to inform you that your application for {jobTitle} has been accepted.
+                            var emailContent = new Core.Dto.MailDtos.MailContent
+                            {
+                                To = candidate.User.Email,
+                                Subject = "Your Application Status - Accepted",
+                                Body = $@"<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>Application Status Update</title>
+</head>
+<body style=""font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f9f9f9;"">
+    <div style=""max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);"">
+        <div style=""background-color: #4CAF50; color: white; padding: 20px; text-align: center;"">
+            <h2 style=""margin: 0; padding: 0;"">Application Status Update</h2>
+        </div>
+        
+        <div style=""padding: 30px;"">
+            <h1 style=""color: #4CAF50; text-align: center; margin-top: 0;"">Congratulations!</h1>
+            
+            <div style=""background-color: #f0fff0; border-left: 4px solid #4CAF50; padding: 15px; margin-bottom: 20px; border-radius: 4px;"">
+                <p style=""margin-top: 0;"">Dear {candidate.User.FullName},</p>
+                <p>We are pleased to inform you that your application for <strong>{jobTitle}</strong> has been accepted.</p>
+            </div>
+            
+            <p>Our team was impressed with your qualifications and experience, and we believe you would be a valuable addition to our company.</p>
+            
+            <p>We will contact you shortly with more details about the next steps in the hiring process.</p>
+            
+            <p style=""margin-top: 30px;"">Best regards,<br>WorkSmart Team</p>
+        </div>
+        
+        <div style=""background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #777;"">
+            <p style=""margin: 0;"">© 2025 WorkSmart. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>"
+                            };
+                            await _sendMailService.SendMail(emailContent);
+                        }
+                    }
 
-                    Our team was impressed with your qualifications and experience, and we believe you would be a valuable addition to our company.
 
-                    We will contact you shortly with more details about the next steps in the hiring process.
 
-                    Best regards,
-                    WorkSmart Team";
+                    /*    var employerId = jobDetails.UserID;
+                           await _signalRService.SendNotificationToUser(
+                               employerId,
+                               "Candidate Acceptance Complete",
+                               $"You've successfully accepted a candidate for \"{jobTitle}\".",
+                               $"/employer/manage-jobs/applied-candidates/{jobDetails.JobID}"
+                           );
+                   */
 
-                    // Gửi email chấp nhận
-                    await _sendMailService.SendEmailAsync(candidate.User.Email, subject, body);
-                    
-                    
-                    var employerId = jobDetails.UserID;
-                    await _signalRService.SendNotificationToUser(
-                        employerId,
-                        "Candidate Acceptance Complete",
-                        $"You've successfully accepted a candidate for \"{jobTitle}\".",
-                        $"/employer/manage-jobs/applied-candidates/{jobDetails.JobID}"
-                    );
-
-                    // Gửi thông báo realtime
-                    await _signalRService.SendNotificationToUser(
-                        candidate.UserID,
-                        "Application Status Updated",
-                        $"Congratulations! Your application \"{jobDetails.Title}\" has been approved.",
-                        "/candidate/applied-jobs"
-                    );
                     return Ok("Candidate accepted successfully.");
                 }
             }
@@ -225,22 +303,81 @@ namespace WorkSmart.Api.Controllers
             var (email, fullname) = await _applicationService.ApplyToJob(userId, jobId);
             if (email != null)
             {
+                var jobDetail = await _jobRepository.GetById(jobId);
+                CandidateNotificationSettingsDto candidateSetting = (CandidateNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(userId, "candidate"); ;
+                EmployerNotificationSettingsDto employerSetting = (EmployerNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(jobDetail.UserID, "employer");
                 await _sendMailService.SendEmailAsync(email, "Thanks for your application",
                 $"Dear {fullname},\n\nYour application for the job has successfully.\n\nBest regards,\nYour Team");
 
-                var jobDetail = await _jobRepository.GetById(jobId);
-                await _signalRService.SendNotificationToUser(
-                       jobDetail.UserID,
-                       "New Application",
-                       $"Your application for \"{jobDetail.Title}\" job has new Application.",
-                       $"/employer/manage-jobs/applied-candidates/{jobDetail.JobID}"
-                   );
-                await _signalRService.SendNotificationToUser(
-                       userId,
-                       "Application Notification",
-                       $"Your Apply to \"{jobDetail.Title}\" has been applied",
-                       $"/candidate/applied-jobs"
-                   );
+                if (employerSetting != null)
+                {
+
+                    if ((bool)employerSetting.NewApplications)
+                    {
+                        await _signalRService.SendNotificationToUser(
+                           jobDetail.UserID,
+                           "New Application",
+                           $"Your application for \"{jobDetail.Title}\" job has new Application.",
+                           $"/employer/manage-jobs/applied-candidates/{jobDetail.JobID}"
+                        );
+                    }
+                    if ((bool)employerSetting.EmailNewApplications)
+                    {
+                        var employerEmailContent = new Core.Dto.MailDtos.MailContent
+                        {
+                            To = jobDetail.User.Email,
+                            Subject = "New Application Received",
+                            Body = $@"<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>New Application</title>
+</head>
+<body style=""font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f9f9f9;"">
+    <div style=""max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);"">
+        <div style=""background-color: #673AB7; color: white; padding: 20px; text-align: center;"">
+            <h2 style=""margin: 0; padding: 0;"">New Application Alert</h2>
+        </div>
+        
+        <div style=""padding: 30px;"">
+            <h1 style=""color: #673AB7; text-align: center; margin-top: 0;"">New Candidate Application</h1>
+            
+            <div style=""background-color: #f5f0ff; border-left: 4px solid #673AB7; padding: 15px; margin-bottom: 20px; border-radius: 4px;"">
+                <p style=""margin-top: 0;"">Dear {jobDetail.User.FullName},</p>
+                <p>We are pleased to inform you that a new application has been received for the job <strong>{jobDetail.Title}</strong>.</p>
+            </div>
+            
+            <p>You can review this application and all other candidates from your employer dashboard.</p>
+            
+            <div style=""text-align: center; margin: 30px 0;"">
+                <a href=""#"" style=""display: inline-block; background-color: #673AB7; color: white; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold;"">View Applications</a>
+            </div>
+            
+            <p style=""margin-top: 30px;"">Best regards,<br>WorkSmart Team</p>
+        </div>
+        
+        <div style=""background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #777;"">
+            <p style=""margin: 0;"">© 2025 WorkSmart. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>"
+                        };
+                        await _sendMailService.SendMail(employerEmailContent);
+                    }
+                    if ((bool)candidateSetting.ApplicationApply)
+                    {
+                        await _signalRService.SendNotificationToUser(
+                          userId,
+                          "Application Notification",
+                          $"Your Apply to \"{jobDetail.Title}\" has been applied",
+                          $"/candidate/applied-jobs"
+                      );
+                    }
+                    
+                }
+                    
             }
 
             return Ok("Application submitted successfully.");
@@ -270,6 +407,7 @@ namespace WorkSmart.Api.Controllers
             var result = await _applicationService.CheckApplyStatus(userId, jobId);
             return Ok(result);
         }
+
         [HttpGet("ApplicationCountDashboard")]
         public async Task<IActionResult> ApplicationCountDashboard()
         {
@@ -287,6 +425,13 @@ namespace WorkSmart.Api.Controllers
             }
 
             return Ok(applications);
+        }
+
+        [HttpGet("User/{userId}/applications/count")]
+        public async Task<IActionResult> GetApplicationsCountByUserId(int userId)
+        {
+            var applicationsCount = await _applicationService.GetApplicationsCountByUserIdAsync(userId);
+            return Ok(new { totalApplications = applicationsCount });
         }
     }
 }

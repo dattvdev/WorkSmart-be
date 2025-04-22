@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using WorkSmart.Core.Dto.AdminDtos;
@@ -16,11 +18,16 @@ namespace WorkSmart.Application.Services
         private readonly IJobRepository _jobRepository;
         private readonly ISendMailService _sendMailService;
         //private readonly ISignalRService _signalRService;
-        public AdminService(IAccountRepository accountRepository, IJobRepository jobRepository, ISendMailService sendMailService)
+        private readonly JobRecommendationService _recommendationService;
+        private readonly string baseUrl;
+
+        public AdminService(IAccountRepository accountRepository, IJobRepository jobRepository, ISendMailService sendMailService, JobRecommendationService recommendationService, IConfiguration config)
         {
             _accountRepository = accountRepository;
             _jobRepository = jobRepository;
             _sendMailService = sendMailService;
+            _recommendationService = recommendationService;
+            baseUrl = config["FrontendUrl:BaseUrl"]!;
         }
 
         public async Task<List<GetListVerificationDto>> GetPendingVerifications()
@@ -62,7 +69,7 @@ namespace WorkSmart.Application.Services
                 // Get job details to access employer information
                 var job = await _jobRepository.GetById(jobId);
                 var employer = await _accountRepository.GetById(job.UserID);
-
+                await _recommendationService.CreateEmbeddingForJobIfApproved(job);
                 // Send notification
                 //await _signalRService.SendNotificationToUser(
                 //    job.UserID,
@@ -150,7 +157,7 @@ namespace WorkSmart.Application.Services
             </div>
             
             <div style=""text-align: center;"">
-                <a href=""/api/Job/{job.JobID}"" class=""button"">View Job</a>
+                <a href=""{baseUrl}/api/Job/{job.JobID}"" class=""button"">View Job</a>
             </div>
         </div>
         
@@ -281,7 +288,7 @@ namespace WorkSmart.Application.Services
             </div>
             
             <div style=""text-align: center;"">
-                <a href=""http://localhost:5173/employer/dashboard"" class=""button"">Go to Dashboard</a>
+                <a href=""{baseUrl}"" class=""""button"""">Go to Dashboard</a>
             </div>
         </div>
         

@@ -7,7 +7,7 @@ using WorkSmart.Core.Enums;
 
 namespace WorkSmart.Core.Interface
 {
-    public interface IJobRepository  : IBaseRepository<Job>
+    public interface IJobRepository : IBaseRepository<Job>
     {
         Task<Job> GetJobDetail(int id);
         Task<IEnumerable<Job>> GetJobsByEmployerId(int employerId);
@@ -29,9 +29,11 @@ namespace WorkSmart.Core.Interface
         Task<IEnumerable<object>> JobCategoryDashboard();
         Task<IEnumerable<object>> JobStatusDashboard();
         Task<IEnumerable<object>> JobLocationDashboard();
-
         Task<List<Job>> GetExpiringJobsAsync();
         Task<List<Job>> GetExpiredJobs();
+        Task<IEnumerable<int>> GetJobIdsByUserIdAsync(int userId);
+        Task<IEnumerable<Job>> GetJobsActive();
+        Task<List<Job>> GetAllJobActive();
         Task<bool> IsDuplicateJobTitle(int userID, string normalizedTitle);
         Task<bool> IsDuplicateJobTitleForUpdate(int userID, int jobID, string normalizedTitle);
     }

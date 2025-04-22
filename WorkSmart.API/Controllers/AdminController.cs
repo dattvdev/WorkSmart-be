@@ -12,6 +12,7 @@ using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository.Repository;
 using WorkSmart.Core.Dto.ReportDtos;
+using WorkSmart.Core.Dto.AccountDtos;
 
 namespace WorkSmart.API.Controllers
 {
@@ -28,6 +29,7 @@ namespace WorkSmart.API.Controllers
         private readonly IReportRepository _reportRepository;
         private readonly JobService _jobService;
         private readonly NotificationJobTagService _notificationJobTagService;
+        private readonly NotificationSettingService _notificationSettingService;
         private readonly ReportService _reportService;
         private readonly UserService _userService;
         public AdminController(IAccountRepository accountRepository
@@ -38,6 +40,7 @@ namespace WorkSmart.API.Controllers
             , IReportRepository reportRepository
             , JobService jobService
             , NotificationJobTagService notificationJobTagService
+            , NotificationSettingService notificationSettingService
             , ReportService reportService
             , UserService userService)
         {
@@ -50,6 +53,7 @@ namespace WorkSmart.API.Controllers
             _reportRepository = reportRepository;
             _jobService = jobService;
             _notificationJobTagService = notificationJobTagService;
+            _notificationSettingService = notificationSettingService;
             _reportService = reportService;
             _userService = userService;
         }
@@ -83,6 +87,20 @@ namespace WorkSmart.API.Controllers
 
             var result = _mapper.Map<List<AccountDto>>(filterUsers);
 
+            return Ok(result);
+        }
+
+        [HttpGet("users-with-featured-cv")]
+        public async Task<IActionResult> GetUsersWithFeaturedCV()
+        {
+            var users = await _userService.GetUsersWithFeaturedCV();
+
+            if (users == null || !users.Any())
+            {
+                return NotFound(new { Message = "No users found with featured CVs" });
+            }
+
+            var result = _mapper.Map<List<AccountWithFeaturedCVDto>>(users);
             return Ok(result);
         }
 
@@ -210,6 +228,8 @@ namespace WorkSmart.API.Controllers
             {
                 return BadRequest(new { Message = "This user is not banned yet" });
             }
+
+            var notificationSettings = await _notificationSettingService.GetByIdAsync(id, user.Role);
 
             await _signalRService.SendNotificationToUser(
                       id,
@@ -747,6 +767,8 @@ namespace WorkSmart.API.Controllers
             List<int> listTagIds = job.Item1.Tags;
             var listUserId = _notificationJobTagService.GetNotiUserByListTagID(listTagIds);
             var subject = "There is a new job that you might be interested in";
+            string baseUrl = HttpContext.RequestServices.GetRequiredService<IConfiguration>()["FrontendUrl:BaseUrl"];
+
 
             foreach (var userId in listUserId.Result)
             {
@@ -899,7 +921,7 @@ namespace WorkSmart.API.Controllers
                                         <p>Click the button below to view job details and apply now:</p>
                 
                                         <div class='button-container'>
-                                            <a href='http://localhost:5173/job-list/{job.Item1.JobID}' class='button'>View Job Details</a>
+                                            <a href='{baseUrl}/{job.Item1.JobID}' class='button'>View Job Details</a>
                                         </div>
                 
                                         <p>If you have any questions, please don't hesitate to contact us.</p>

@@ -12,17 +12,19 @@ public class JobNotificationBackgroundService : BackgroundService
     private readonly ILogger<JobNotificationBackgroundService> _logger;
     private readonly ISendMailService _sendMailService;
     private readonly IHostEnvironment _environment;
+    private readonly string baseUrl;
 
     public JobNotificationBackgroundService(
         IServiceScopeFactory scopeFactory,
         ILogger<JobNotificationBackgroundService> logger,
         ISendMailService sendMailService,
-        IHostEnvironment environment)
+        IHostEnvironment environment, IConfiguration config)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
         _sendMailService = sendMailService;
         _environment = environment;
+        baseUrl = config["FrontendUrl:BaseUrl"]!;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -126,7 +128,7 @@ public class JobNotificationBackgroundService : BackgroundService
                                         <p>If you wish to extend the posting period, please visit your dashboard.</p>
     
                                         <div style=""text-align: center;"">
-                                            <a href=""http://localhost:5173/employer/manage-jobs"" class=""btn"">Manage Job Posting</a>
+                                            <a href=""{baseUrl}"" class=""btn"">Manage Job Posting</a>
                                         </div>
     
                                         <p>If you have any questions, please don't hesitate to contact us.</p>

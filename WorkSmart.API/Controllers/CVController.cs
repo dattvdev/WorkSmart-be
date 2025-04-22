@@ -5,6 +5,8 @@ using iTextSharp.text.pdf.parser;
 using iTextSharp.text.pdf;
 using System.Text.RegularExpressions;
 using System.Text;
+using WorkSmart.Core.Interface;
+using System.Security.Claims;
 namespace WorkSmart.API.Controllers
 {
     [ApiController]
@@ -12,12 +14,14 @@ namespace WorkSmart.API.Controllers
     public class CVController : ControllerBase
     {
         private readonly CVService _cvService;
+        private readonly ICvParserService _cvParserService;
         private readonly ILogger<CVController> _logger;
 
-        public CVController(CVService cvService,ILogger<CVController> logger)
+        public CVController(CVService cvService,ILogger<CVController> logger, ICvParserService cvParserService)
         {
             _cvService = cvService;
             _logger = logger;
+            _cvParserService = cvParserService;
         }
 
         [HttpPost("create")]
@@ -94,13 +98,13 @@ namespace WorkSmart.API.Controllers
             {
                 if (string.IsNullOrEmpty(request.FilePath))
                 {
-                    return BadRequest(new { message = "Vui lòng cung cấp đường dẫn file." });
+                    return BadRequest(new { message = "Please provide file path." });
                 }
 
                 // Kiểm tra file có phải PDF không
                 if (!request.FilePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
                 {
-                    return BadRequest(new { message = "Chỉ hỗ trợ tệp PDF." });
+                    return BadRequest(new { message = "Only PDF files are accepted." });
                 }
 
                 //string cvContent = _cvService.ExtractCvContent(request.FilePath);
@@ -108,13 +112,13 @@ namespace WorkSmart.API.Controllers
 
                 return Ok(new
                 {
-                    message = "Trích xuất thành công",
+                    message = "Extracted successfully",
                     cvDto,
                 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Lỗi khi xử lý file: " + ex.Message });
+                return StatusCode(500, new { message = "Error processing file: " + ex.Message });
             }
         }
 
@@ -125,31 +129,70 @@ namespace WorkSmart.API.Controllers
             {
                 if (string.IsNullOrEmpty(request.FilePath))
                 {
-                    return BadRequest(new { message = "Vui lòng cung cấp đường dẫn file." });
+                    return BadRequest(new { message = "Please provide file path." });
                 }
                 // Kiểm tra file có phải PDF không
                 if (!request.FilePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
                 {
-                    return BadRequest(new { message = "Chỉ hỗ trợ tệp PDF." });
+                    return BadRequest(new { message = "Only PDF files are accepted." });
                 }
 
                 // Gọi trực tiếp hàm ExtractCvContent để lấy nội dung
-                string cvContent = _cvService.ExtractCvContent(request.FilePath);
+                string cvContent = _cvParserService.ExtractCvContent(request.FilePath);
 
                 return Ok(new
                 {
-                    message = "Trích xuất thành công",
+                    message = "Extracted successfully",
                     content = cvContent
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi khi xử lý file CV");
-                return StatusCode(500, new { message = "Lỗi khi xử lý file: " + ex.Message });
+                return StatusCode(500, new { message = "Error processing file: " + ex.Message });
             }
         }
 
-    
+        [HttpPost("upload-parse-cv")]
+        public async Task<IActionResult> UploadParseCV([FromBody] CvUploadDto request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(request.FilePath))
+                {
+                    return BadRequest(new { message = "Please provide file path." });
+                }
+
+                if (!request.FilePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest(new { message = "Only PDF files are accepted." });
+                }
+
+                // Trích xuất nội dung CV
+                string cvContent = _cvParserService.ExtractCvContent(request.FilePath);
+
+                // Phân tích CV bằng AI và lưu vào database
+                var parsedCvData = await _cvParserService.ParseCvAsync(cvContent, request.UserId, request.FilePath, request.FileName);
+
+                return Ok(new
+                {
+                    message = "Extracted successfully",
+                    parsedCvData
+                });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { message = "User authentication required" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error processing file: " + ex.Message });
+            }
+        }
+
         [HttpPut("hidecv/{cvId}")]
         public IActionResult HideCV(int cvId)
         {

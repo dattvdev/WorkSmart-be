@@ -21,7 +21,6 @@ namespace WorkSmart.Core.Entity
         public string? WorkType { get; set; }
         public string? Location { get; set; }
         public string? JobPosition { get; set; }
-        //public double? Salary { get; set; }
         public string? Salary { get; set; }
         public int? Exp { get; set; }
         public bool Priority { get; set; } = false;
@@ -32,6 +31,8 @@ namespace WorkSmart.Core.Entity
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
         public string? ReasonRejectedJob { get; set; }
         public string? CategoryID { get; set; }
+        public JobEmbedding? Embedding { get; set; }
+
         public User User { get; set; }
         public ICollection<Application>? Applications { get; set; }
         public ICollection<FavoriteJob>? FavoriteJobs { get; set; }

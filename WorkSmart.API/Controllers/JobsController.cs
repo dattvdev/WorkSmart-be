@@ -28,12 +28,16 @@ namespace WorkSmart.API.Controllers
         private readonly NotificationJobTagService _notificationJobTagService;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly string filePath = "./freePlanSettings.json";
+        private readonly CandidateService _candidateService;
+        private readonly EmployerService _employerService;
         public JobController(JobService jobService
             , ILogger<JobController> logger
             , SignalRNotificationService signalRService
             , ISendMailService sendMailService
             , NotificationJobTagService notificationJobTagService
-            , IServiceScopeFactory serviceScopeFactory) // Thêm parameter này
+            , IServiceScopeFactory serviceScopeFactory // Thêm parameter này
+            , CandidateService candidateService
+            , EmployerService employerService)
         {
             _jobService = jobService;
             _logger = logger;
@@ -41,6 +45,8 @@ namespace WorkSmart.API.Controllers
             _sendMailService = sendMailService;
             _notificationJobTagService = notificationJobTagService;
             _serviceScopeFactory = serviceScopeFactory; // Gán giá trị
+            _candidateService = candidateService;
+            _employerService = employerService;
         }
 
         [HttpPost("create")]
@@ -79,6 +85,21 @@ namespace WorkSmart.API.Controllers
             try
             {
                 var jobs = await _jobService.GetAllJobsAsync();
+                return Ok(jobs);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error lits job: {Message}", ex.Message);
+                return StatusCode(500, new { message = "An error occurred while list the job." });
+            }
+        }
+
+        [HttpGet("getJobsActive")]
+        public async Task<IActionResult> GetJobsActive()
+        {
+            try
+            {
+                var jobs = await _jobService.GetJobsActive();
                 return Ok(jobs);
             }
             catch (Exception ex)
@@ -193,6 +214,25 @@ namespace WorkSmart.API.Controllers
                     return NotFound(new { message = "Job not found." });
 
                 return Ok(new { job, similarJobs });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error fetching job ID {JobID}: {Message}", id, ex.Message);
+                return StatusCode(500, new { message = "An error occurred while retrieving the job." });
+            }
+        }
+
+        /// Get job details by ID (V2)
+        [HttpGet("detail/{id}")]
+        public async Task<IActionResult> GetJobDetailsById(int id)
+        {
+            try
+            {
+                var (job, similarJobs) = await _jobService.GetJobById(id);
+                if (job == null)
+                    return NotFound(new { message = "Job not found." });
+
+                return Ok(new { job });
             }
             catch (Exception ex)
             {
@@ -361,6 +401,9 @@ namespace WorkSmart.API.Controllers
                                     .button-container {{
                                         text-align: center;
                                         margin: 30px 0 20px;
+                                    }}
+                                    .button-container .button{{
+                                        color: white;
                                     }}
                                     .button {{
                                         display: inline-block;
@@ -784,5 +827,182 @@ namespace WorkSmart.API.Controllers
         //        return StatusCode(500, new { success = false, message = ex.Message });
         //    }
         //}
+
+        [HttpPost("send-invitation")]
+        public async Task<IActionResult> SendJobInvitation([FromBody] JobInvitationRequestDto request)
+        {
+            if (request == null || request.CandidateId <= 0 || request.JobId <= 0)
+            {
+                return BadRequest("Invalid candidate or job information");
+            }
+
+            try
+            {
+                // Get job details
+                var (jobResult, similarJobs) = await _jobService.GetJobById(request.JobId);
+                if (jobResult == null)
+                {
+                    return NotFound($"Job with ID {request.JobId} not found");
+                }
+
+                // Get employer details
+                var employer = await _employerService.GetEmployerProfile(request.EmployerId);
+                if (employer == null)
+                {
+                    return NotFound($"Employer with ID {request.EmployerId} not found");
+                }
+
+                // Get candidate details
+                var candidate = await _candidateService.GetCandidateProfile(request.CandidateId);
+                if (candidate == null)
+                {
+                    return NotFound($"Candidate with ID {request.CandidateId} not found");
+                }
+
+                // Create email subject
+                var subject = $"Job Opportunity: {jobResult.Title} at {employer.CompanyName}";
+
+                // Create professional HTML email body
+                var body = GenerateInvitationEmailBody(jobResult, candidate);
+
+                // Send email
+                await _sendMailService.SendEmailAsync(candidate.Email, subject, body);
+
+                return Ok(new { success = true, message = "Invitation email sent successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Failed to send invitation email", error = ex.Message });
+            }
+        }
+
+        // Helper method to generate email body
+        private string GenerateInvitationEmailBody(JobDetailDto job, GetCandidateProfileDto candidate)
+        {
+            string baseUrl = HttpContext.RequestServices.GetRequiredService<IConfiguration>()["FrontendUrl:BaseUrl"];
+
+            return $@"
+        <html>
+            <head>
+                <style>
+                    body {{
+                        font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+                        background-color: #f7f9fc;
+                        margin: 0;
+                        padding: 0;
+                        color: #333;
+                    }}
+                    .email-container {{
+                        max-width: 600px;
+                        margin: 30px auto;
+                        background: #ffffff;
+                        padding: 0;
+                        border-radius: 12px;
+                        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
+                        overflow: hidden;
+                    }}
+                    .header {{
+                        background: linear-gradient(135deg, #0062cc, #1e90ff);
+                        color: white;
+                        padding: 25px 20px;
+                        font-size: 22px;
+                        font-weight: bold;
+                        text-align: center;
+                        letter-spacing: 0.5px;
+                    }}
+                    .content {{
+                        padding: 30px 25px;
+                        font-size: 16px;
+                        line-height: 1.6;
+                        color: #444;
+                    }}
+                    .job-title {{
+                        font-size: 20px;
+                        font-weight: bold;
+                        color: #0062cc;
+                        margin: 15px 0;
+                        padding-bottom: 10px;
+                        border-bottom: 1px solid #eaeaea;
+                    }}
+                    .job-info {{
+                        background-color: #f8f9fa;
+                        border-left: 4px solid #0062cc;
+                        padding: 15px;
+                        margin: 20px 0;
+                        border-radius: 0 6px 6px 0;
+                    }}
+                    .button-container {{
+                        text-align: center;
+                        margin: 30px 0 20px;
+                    }}
+                    .button {{
+                        display: inline-block;
+                        padding: 14px 30px;
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #fff;
+                        background-color: #0062cc;
+                        text-decoration: none;
+                        border-radius: 50px;
+                        transition: all 0.3s ease;
+                    }}
+                    .button:hover {{
+                        background-color: #0051a8;
+                    }}
+                    .footer {{
+                        background-color: #f8f9fa;
+                        padding: 20px;
+                        font-size: 13px;
+                        color: #777;
+                        text-align: center;
+                        border-top: 1px solid #eaeaea;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class='email-container'>
+                    <div class='header'>
+                        Job Opportunity at {job.CompanyName}
+                    </div>
+                    <div class='content'>
+                        <p>Dear {candidate.FullName},</p>
+                        
+                        <p>I hope this email finds you well. We at {job.CompanyName} were impressed by your profile and qualifications, and we believe your skills and experience would be a valuable addition to our team.</p>
+                        
+                        <p>We would like to invite you to apply for the following position:</p>
+                        
+                        <div class='job-info'>
+                            <p class='job-title'>{job.Title}</p>
+                            <p><strong>Company:</strong> {job.CompanyName}</p>
+                            <p><strong>Location:</strong> {job.Location}</p>
+                            <p><strong>Salary Range:</strong> {job.Salary}</p>
+                            <p><strong>Work Type:</strong> {job.WorkType}</p>
+                        </div>
+                        
+                        <p>Your experience in particularly caught our attention, and we believe this opportunity aligns well with your career trajectory.</p>
+                        
+                        <p>If you are interested in exploring this opportunity further, please click the button below to respond to this invitation:</p>
+                        
+                        <div class='button-container'>
+                            <a href='{baseUrl}/{job.JobID}' class='button'>View Job Details</a>
+                        </div>
+                        
+                        <p>Should you have any questions or require additional information about the position or our company, please don't hesitate to contact us.</p>
+                        
+                        <p>We look forward to your response and potentially welcoming you to our team.</p>
+                        
+                        <p>Best regards,<br>
+                        Recruitment Team<br>
+                        {job.CompanyName}</p>
+                    </div>
+                    <div class='footer'>
+                        <p>© {DateTime.Now.Year} {job.CompanyName}. All rights reserved.</p>
+                        <p>This email was sent to you because your profile matches our job requirements.</p>
+                    </div>
+                </div>
+            </body>
+        </html>
+    ";
+        }
     }
 }

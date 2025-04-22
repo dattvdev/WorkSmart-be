@@ -7,6 +7,7 @@ using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
 using WorkSmart.Core.Interface;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 namespace WorkSmart.Repository.Repository
 {
     public class JobRepository : BaseRepository<Job>, IJobRepository
@@ -99,15 +100,11 @@ namespace WorkSmart.Repository.Repository
 
             var query = _JobdbSet.Include(c => c.User).AsQueryable();
             query = query.Where(c => c.Status == JobStatus.Active);
+            query = query.Where(c => c.Deadline > DateTime.Now);
             if (!string.IsNullOrWhiteSpace(request.Category) && !request.Category.Equals("All Categories"))
             {
                 query = query.Where(c => c.CategoryID.Contains(request.Category)); 
-            }
-
-            if (!string.IsNullOrWhiteSpace(request.Title))
-            {
-                query = query.Where(c => c.Title.ToLower().Contains(request.Title.ToLower()));
-            }
+            }    
 
             if (!string.IsNullOrWhiteSpace(request.JobPosition))
             {
@@ -130,13 +127,45 @@ namespace WorkSmart.Repository.Repository
                 query = query.Where(c => c.Tags.Any(t => request.Tags.Contains(t.TagID)));
             }
 
+            // Đầu tiên sắp xếp theo Priority (true lên trước)
+            var orderedQuery = query.OrderByDescending(c => c.Priority);
+
+            // Sau đó sắp xếp theo UpdatedAt dựa vào MostRecent
             if (request.MostRecent)
             {
-                query = query.OrderByDescending(c => c.UpdatedAt);
+                // Nếu MostRecent = true, sắp xếp theo UpdatedAt giảm dần (mới nhất lên đầu)
+                query = orderedQuery.ThenByDescending(c => c.UpdatedAt);
             }
-
+            else
+            {
+                // Nếu MostRecent = false, sắp xếp theo UpdatedAt tăng dần (cũ nhất lên đầu)
+                query = orderedQuery.ThenBy(c => c.UpdatedAt);
+            }
             // Tải dữ liệu về bộ nhớ trước khi xử lý Salary
             var jobList = await query.ToListAsync();
+            var titleList = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(request.Title))
+            {
+                titleList = request.Title.Split(',')
+                                         .Select(t => t.Trim().ToLower())
+                                         .Where(t => !string.IsNullOrEmpty(t))
+                                         .ToList();
+            }
+            if (titleList.Any())
+            {
+                jobList = jobList.Where(c =>
+                    titleList.Any(keyword =>
+                    {
+                        var title = c.Title.ToLower();
+
+                        if (keyword.Contains(" "))
+                            return title.Contains(keyword);
+                        else
+                            return Regex.IsMatch(title, $@"\b{Regex.Escape(keyword)}\b");
+                    })
+                ).ToList();
+            }
 
             if (request.MinSalary.HasValue)
             {
@@ -148,16 +177,6 @@ namespace WorkSmart.Repository.Repository
                     && min >= minSalary).ToList();
             }
 
-            /*if (request.MaxSalary.HasValue)
-            {
-                double maxSalary = request.MaxSalary.Value;
-                jobList = jobList.Where(c => c.Salary != null
-                    && c.Salary.Contains("-")
-                    && c.Salary.Split('-').Length == 2
-                    && double.TryParse(c.Salary.Split('-')[1], out double max)
-                    && max <= maxSalary).ToList();
-            }*/
-            // Lấy tổng số bản ghi trước khi phân trang
             int total = jobList.Count();
 
             var Jobs = jobList
@@ -684,13 +703,26 @@ namespace WorkSmart.Repository.Repository
                 .AnyAsync(j => j.Title.Trim().ToLower() == normalizedTitle);
         }
 
-        // Check if a job with the same title already exists for the given user when updating a job
-        public async Task<bool> IsDuplicateJobTitleForUpdate(int userID, int jobID, string normalizedTitle)
+        public async Task<IEnumerable<int>> GetJobIdsByUserIdAsync(int userId)
         {
             return await _context.Jobs
-                .Where(j => j.UserID == userID)
-                .Where(j => j.JobID != jobID) // Exclude the current job
-                .AnyAsync(j => j.Title.Trim().ToLower() == normalizedTitle);
+                .Where(j => j.UserID == userId)
+                .Select(j => j.JobID)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Job>> GetJobsActive()
+        {
+            return await _context.Jobs
+                .Include(j => j.User)
+                .ToListAsync();
+        }
+
+        public async Task<List<Job>> GetAllJobActive()
+        {
+            return await _dbSet.Include(j => j.User)
+                .Where(j => j.Status == JobStatus.Active)
+                .ToListAsync();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using WorkSmart.API.SignalRService;
 using WorkSmart.Application.Mapper;
 using WorkSmart.Application.Services;
@@ -12,12 +13,17 @@ namespace WorkSmart.API.Extension
 {
     public static class IServiceCollectionExtension
     {
-        public static IServiceCollection AddScopeCollection(this IServiceCollection services, string? Connectionstring)
+        public static IServiceCollection AddScopeCollection(this IServiceCollection services, string connectionString)
         {
-            //Add extentions here
-            //connect DB
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new Exception("❌ Không tìm thấy ConnectionString");
+            }
+
             services.AddDbContext<WorksmartDBContext>(options =>
-            options.UseSqlServer(Connectionstring));
+                options.UseSqlServer(connectionString));
+
             //job
             services.AddScoped<IJobRepository, JobRepository>();
             services.AddScoped<JobService>();
@@ -67,6 +73,7 @@ namespace WorkSmart.API.Extension
             services.AddAutoMapper(typeof(PackageProfile));
             //cv
             services.AddScoped<ICVRepository, CVRepository>();
+            services.AddScoped<OpenAIService>();
             services.AddScoped<CVService>();
             services.AddScoped<ICvParserService, CvParserService>();
             //mail
@@ -83,13 +90,27 @@ namespace WorkSmart.API.Extension
             services.AddScoped<ITransactionRepository, TransactionRepository>();
             services.AddScoped<TransactionService>();
             services.AddAutoMapper(typeof (TransactionProfile));
-
+            //Background
             services.AddSingleton<JobNotificationBackgroundService>();
             services.AddHostedService(sp => sp.GetRequiredService<JobNotificationBackgroundService>());
+            //NotificationSetting
+            services.AddScoped<INotificationSettingRepository, NotificationSettingRepository>();
+            services.AddScoped<NotificationSettingService>();
+            services.AddAutoMapper(typeof(NotificationSettingProfile));
             //services.AddScoped<JobNotificationBackgroundService>();
             services.AddMemoryCache();
             services.AddSignalR();
-
+            //recommend job
+            services.AddScoped<IJobRepository, JobRepository>();
+            services.AddScoped<ICVRepository, CVRepository>();
+            services.AddScoped<IJobEmbeddingRepository, JobEmbeddingRepository>();
+            services.AddScoped<ICVEmbeddingRepository, CVEmbeddingRepository>();
+            services.AddScoped<JobRecommendationService>();
+            //job-alert
+            services.AddScoped<IJobAlertRepository,JobAlertRepository>();
+            services.AddScoped<JobAlertService>();
+            //cache
+            services.AddMemoryCache();
             return services;
         }
     }

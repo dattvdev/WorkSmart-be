@@ -4,6 +4,8 @@ using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.PackageDtos;
 using WorkSmart.Core.Dto.SubscriptionDtos;
 using WorkSmart.Core.Entity;
+using WorkSmart.Core.Interface;
+using WorkSmart.Repository.Repository;
 
 namespace WorkSmart.API.Controllers
 {
@@ -13,12 +15,14 @@ namespace WorkSmart.API.Controllers
     {
         private readonly SubscriptionService _subscriptionService;
         private readonly PackageService _packageService;
+        private readonly IAccountRepository _accountRepository;
         private readonly IMapper _mapper;
 
-        public SubscriptionController(SubscriptionService subscriptionService, PackageService packageService, IMapper mapper)
+        public SubscriptionController(SubscriptionService subscriptionService, PackageService packageService, IMapper mapper, IAccountRepository accountRepository)
         {
             _subscriptionService = subscriptionService;
             _packageService = packageService;
+            _accountRepository = accountRepository;
             _mapper = mapper;
         }
 
@@ -124,28 +128,180 @@ namespace WorkSmart.API.Controllers
         {
             try
             {
+                var user = await _accountRepository.GetById(userId);
                 var subscriptionsWithPackages = await _subscriptionService.GetByUserId(userId);
-
                 // Lọc ra các subscription vẫn còn hiệu lực
                 var activeSubscriptions = subscriptionsWithPackages
                     .Where(item => item.subscription.ExpDate > DateTime.Now)
-                    .OrderByDescending(item => item.subscription.ExpDate)
                     .ToList();
 
                 if (activeSubscriptions.Any())
                 {
-                    // Lấy subscription có thời hạn dài nhất
-                    var latestSubscription = activeSubscriptions.First();
+                    // Định nghĩa thứ tự ưu tiên của các gói theo loại user
+                    var packagePriority = new Dictionary<string, int>();
+
+                    if (user.Role == "Employer")
+                    {
+                        packagePriority = new Dictionary<string, int>
+                        {
+                            { "Employer Premium", 3 },
+                            { "Employer Standard", 2 },
+                            { "Employer Basic", 1 }
+                        };
+                    }
+                    else if (user.Role == "Candidate")
+                    {
+                        packagePriority = new Dictionary<string, int>
+                        {
+                            { "Candidate Pro", 3 },
+                            { "Candidate Plus", 2 },
+                            { "Candidate Basic", 1 }
+                        };
+                    }
+
+                    // Sắp xếp theo mức độ của gói (cao nhất lên đầu)
+                    var highestSubscription = activeSubscriptions
+                        .OrderByDescending(item => packagePriority.ContainsKey(item.package.Name)
+                            ? packagePriority[item.package.Name]
+                            : 0)
+                        .First();
+
+//                    var expiryEmailContent = new Core.Dto.MailDtos.MailContent
+//                    {
+//                        To = user.Email,
+//                        Subject = "Your Subscription Package is About to Expire",
+//                        Body = $@"
+//<!DOCTYPE html>
+//<html lang=""en"">
+//<head>
+//    <meta charset=""UTF-8"">
+//    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+//    <title>Subscription Package Expiring Soon</title>
+//    <style>
+//        body {{
+//            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+//            line-height: 1.6;
+//            color: #333;
+//            margin: 0;
+//            padding: 0;
+//            background-color: #f9f9f9;
+//        }}
+//        .email-container {{
+//            max-width: 600px;
+//            margin: 0 auto;
+//            background-color: #ffffff;
+//            border-radius: 8px;
+//            overflow: hidden;
+//            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+//        }}
+//        .header {{
+//            background-color: #FF9800;
+//            color: white;
+//            padding: 20px;
+//            text-align: center;
+//        }}
+//        .content {{
+//            padding: 30px;
+//        }}
+//        .message {{
+//            background-color: #fff3e0;
+//            border-left: 4px solid #FF9800;
+//            padding: 15px;
+//            margin-bottom: 20px;
+//            border-radius: 4px;
+//        }}
+//        .subscription-details {{
+//            background-color: #f5f5f5;
+//            padding: 15px;
+//            border-radius: 4px;
+//            margin-bottom: 20px;
+//        }}
+//        .cta-button {{
+//            display: inline-block;
+//            background-color: #FF9800;
+//            color: white;
+//            text-decoration: none;
+//            padding: 12px 25px;
+//            border-radius: 4px;
+//            font-weight: bold;
+//            margin: 20px 0;
+//        }}
+//        .package-options {{
+//            display: flex;
+//            justify-content: space-between;
+//            flex-wrap: wrap;
+//            margin: 20px 0;
+//        }}
+//        .package {{
+//            border: 1px solid #ddd;
+//            border-radius: 4px;
+//            padding: 15px;
+//            width: 30%;
+//            text-align: center;
+//            margin-bottom: 15px;
+//        }}
+//        .package-name {{
+//            font-weight: bold;
+//            font-size: 18px;
+//            margin-bottom: 10px;
+//        }}
+//        .footer {{
+//            background-color: #f5f5f5;
+//            padding: 20px;
+//            text-align: center;
+//            font-size: 12px;
+//            color: #777;
+//        }}
+//        @media only screen and (max-width: 600px) {{
+//            .package {{
+//                width: 100%;
+//                margin-bottom: 15px;
+//            }}
+//        }}
+//    </style>
+//</head>
+//<body>
+//    <div class=""email-container"">
+//        <div class=""header"">
+//            <h2>Subscription Package Expiring Soon</h2>
+//        </div>
+//        <div class=""content"">
+//            <h1 style=""color: #FF9800; text-align: center;"">Don't Let Your Service Be Interrupted!</h1>
+//            <div class=""message"">
+//                <p>Dear {user.FullName},</p>
+//                <p>We would like to inform you that your {highestSubscription.package.Name} subscription package will expire on <strong>{highestSubscription.subscription.ExpDate.ToString("dd/MM/yyyy HH:mm:ss")}</strong>.</p>
+//            </div>
+//            <div class=""subscription-details"">
+//                <h3>Current Subscription Details:</h3>
+//                <p><strong>Package:</strong> {highestSubscription.package.Name}</p>
+//                <p><strong>Start Date:</strong> {highestSubscription.subscription.CreatedAt.ToString("dd/MM/yyyy")}</p>
+//                <p><strong>Expiration Date:</strong> {highestSubscription.subscription.ExpDate.ToString("dd/MM/yyyy HH:mm:ss")}</p>
+//                <p><strong>Time Remaining:</strong> {(highestSubscription.subscription.ExpDate - DateTime.Now).Days} days</p>
+//            </div>
+//            <p>To continue enjoying full access to WorkSmart's features and services, please renew your subscription package or upgrade to a higher tier for an enhanced experience.</p>
+            
+//            <p>If you allow your subscription to expire, certain features will be restricted and you may not have full access to our services.</p>
+            
+//            <p>Thank you for your trust and continued use of WorkSmart's services!</p>
+//        </div>
+//        <div class=""footer"">
+//            <p>© 2025 WorkSmart. All rights reserved.</p>
+//            <p>Need assistance? Contact our support team at support@worksmart.com</p>
+//        </div>
+//    </div>
+//</body>
+//</html>"
+//                    };
 
                     return Ok(new
                     {
                         HasActiveSubscription = true,
-                        ActiveSubscription = latestSubscription.subscription,
-                        Package = latestSubscription.package,
-                        ExpireDate = latestSubscription.subscription.ExpDate.ToString("yyyy-MM-dd HH:mm:ss")
+                        ActiveSubscription = highestSubscription.subscription,
+                        Package = highestSubscription.package,
+                        ExpireDate = highestSubscription.subscription.ExpDate.ToString("yyyy-MM-dd HH:mm:ss"),
+                        RemainingSubscriptionsCount = activeSubscriptions.Count - 1
                     });
                 }
-
                 return Ok(new
                 {
                     HasActiveSubscription = false,

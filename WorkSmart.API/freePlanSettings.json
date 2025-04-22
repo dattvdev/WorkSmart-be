@@ -5,7 +5,7 @@
     "DefaultFeaturedJob": 0
   },
   "candidateFreePlan": {
-    "MaxCVsPerDay": 2,
+    "MaxCVsPerDay": 1,
     "UpdatedAt": "03/04/2025 6:17:59 CH"
   }
 }

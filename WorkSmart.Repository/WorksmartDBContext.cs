@@ -23,7 +23,6 @@ namespace WorkSmart.Repository
         public DbSet<FavoriteJob> FavoriteJobs { get; set; }
         public DbSet<Application> Applications { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-        public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<ReportUser> ReportUsers { get; set; }
         public DbSet<PersonalMessage> PersonalMessages { get; set; }
         public DbSet<ReportPost> ReportPosts { get; set; }
@@ -32,14 +31,13 @@ namespace WorkSmart.Repository
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<NotificationJobTag> NotificationJobTags { get; set; }
+        public DbSet<NotificationSetting> NotificationSettings { get; set; }
+        public DbSet<CVEmbedding> CVEmbeddings { get; set; }
+        public DbSet<JobEmbedding> JobEmbeddings { get; set; }
+        public DbSet<JobAlert> JobAlerts { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            var builder = new ConfigurationBuilder()
-               .SetBasePath(Directory.GetCurrentDirectory())
-               .AddJsonFile("appsettings.json", true, true);
-            IConfigurationRoot config = builder.Build();
-            optionsBuilder.UseSqlServer(config.GetConnectionString("DefaultConnection"));
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -59,16 +57,6 @@ namespace WorkSmart.Repository
                 .HasOne(pm => pm.Receiver)
                 .WithMany(u => u.MessagesReceived)
                 .HasForeignKey(pm => pm.ReceiverID)
-                .OnDelete(DeleteBehavior.NoAction);
-            modelBuilder.Entity<Feedback>()
-                .HasOne(f => f.Sender)
-                .WithMany(u => u.FeedbacksSent)
-                .HasForeignKey(f => f.SenderID)
-                .OnDelete(DeleteBehavior.NoAction);
-            modelBuilder.Entity<Feedback>()
-                .HasOne(f => f.Receiver)
-                .WithMany(u => u.FeedbacksReceived)
-                .HasForeignKey(f => f.ReceiverID)
                 .OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<ReportUser>()
                 .HasOne(r => r.Receiver)
@@ -120,6 +108,27 @@ namespace WorkSmart.Repository
                 .HasOne(rp => rp.Job) 
                 .WithMany(j => j.ReportPosts)  
                 .HasForeignKey(rp => rp.JobID)  
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<User>()
+               .HasOne(u => u.NotificationSetting) // User có một NotificationSetting
+               .WithOne(ns => ns.User) // NotificationSetting có một User
+               .HasForeignKey<NotificationSetting>(ns => ns.UserID) // Khóa ngoại ở NotificationSetting
+               .OnDelete(DeleteBehavior.Cascade); // Có thể chọn hành vi xóa (Cascade khi User bị xóa)
+            modelBuilder.Entity<CVEmbedding>()
+            .HasKey(e => e.CVID);
+
+            modelBuilder.Entity<CVEmbedding>()
+                .HasOne(e => e.CV)
+                .WithOne(cv => cv.Embedding) // nếu bạn có property ngược lại
+                .HasForeignKey<CVEmbedding>(e => e.CVID)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<JobEmbedding>()
+            .HasKey(e => e.JobID);
+
+            modelBuilder.Entity<JobEmbedding>()
+                .HasOne(e => e.Job)
+                .WithOne(j => j.Embedding)
+                .HasForeignKey<JobEmbedding>(e => e.JobID)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

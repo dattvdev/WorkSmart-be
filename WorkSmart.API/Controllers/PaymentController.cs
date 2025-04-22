@@ -48,13 +48,15 @@ namespace WorkSmart.API.Controllers
                     return NotFound("Package not exist");
                 }
 
+                string baseUrl = HttpContext.RequestServices.GetRequiredService<IConfiguration>()["FrontendUrl:BaseUrl"];
+
                 string cancelUrl = request.Role.ToLower() == "candidate"
-                    ? "http://localhost:5173/candidate/payment-cancel"
-                    : "http://localhost:5173/employer/payment-cancel";
+                    ? $"{baseUrl}/candidate/payment-cancel"
+                    : $"{baseUrl}/employer/payment-cancel";
 
                 string returnUrl = request.Role.ToLower() == "candidate"
-                    ? "http://localhost:5173/candidate/payment-return"
-                    : "http://localhost:5173/employer/payment-return";
+                    ? $"{baseUrl}/candidate/payment-return"
+                    : $"{baseUrl}/employer/payment-return";
 
                 long orderCode = long.Parse(DateTimeOffset.Now.ToString("yyyyMMddHHmmss"));
 
@@ -362,7 +364,7 @@ namespace WorkSmart.API.Controllers
                     await _signalRService.SendNotificationToUser(
                         existingTransaction.UserID,
                         "Payment Successful",
-                        $"Your payment for order {"existingTransaction.Content"} has been confirmed.",
+                        $"Your payment for order {existingTransaction.Content} has been confirmed.",
                         $"employer/transaction-history"
                     );
 
@@ -514,7 +516,6 @@ namespace WorkSmart.API.Controllers
                 }
 
                 var existingTransaction = await _context.Transactions
-                    .Include(t => t.User)
                     .FirstOrDefaultAsync(t => t.OrderCode == orderCode);
 
                 if (existingTransaction == null)
@@ -522,12 +523,22 @@ namespace WorkSmart.API.Controllers
                     return NotFound("Transaction not found");
                 }
 
+                if (existingTransaction.Status == "CANCELLED" || existingTransaction.Status == "FAILED")
+                {
+                    return Ok(new
+                    {
+                        status = existingTransaction.Status,
+                        message = $"Payment was already processed with status: {existingTransaction.Status}",
+                        orderCode = orderCode
+                    });
+                }
+
                 existingTransaction.Status = "CANCELLED";
                 existingTransaction.UpdatedAt = DateTime.Now;
                 await _context.SaveChangesAsync();
 
                 await _signalRService.SendNotificationToUser(
-                    existingTransaction.User.UserID,
+                    existingTransaction.UserID,
                     "Payment Cancelled",
                     $"Your payment for order {existingTransaction.Content} has been cancelled."
                 );

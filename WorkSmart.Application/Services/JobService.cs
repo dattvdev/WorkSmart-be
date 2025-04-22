@@ -184,7 +184,33 @@ namespace WorkSmart.Application.Services
 
             return await _jobRepository.ToggleJobPriorityAsync(jobId);
         }
+        public async Task<bool> IsDuplicateJobTitleAsync(int userID, string title)
+        {
+            if (string.IsNullOrWhiteSpace(title) || userID <= 0)
+            {
+                return false;
+            }
 
+            // Normalize the title for comparison (trim and convert to lowercase)
+            string normalizedTitle = title.Trim().ToLower();
+
+            // Check if a job with this title already exists for this user
+            return await _jobRepository.IsDuplicateJobTitle(userID, normalizedTitle);
+        }
+
+        public async Task<bool> IsDuplicateJobTitleForUpdateAsync(int userID, int jobID, string title)
+        {
+            if (string.IsNullOrWhiteSpace(title) || userID <= 0 || jobID <= 0)
+            {
+                return false;
+            }
+
+            // Normalize the title for comparison
+            string normalizedTitle = title.Trim().ToLower();
+
+            // Check if any other job (excluding the current one) has the same title
+            return await _jobRepository.IsDuplicateJobTitleForUpdate(userID, jobID, normalizedTitle);
+        }
         public async Task<IEnumerable<object>> JobCategoryDashboard()
         {
             return await _jobRepository.JobCategoryDashboard();

@@ -44,7 +44,8 @@ namespace WorkSmart.Repository.Repository
         {
             return await _context.Applications
                 .Include(a => a.Job)
-                .Include(a => a.Job.User)
+                    .ThenInclude(b => b.User)
+                .Include(c => c.User)
                 .Where(a => a.UserID == userId)
                 .OrderByDescending(a => a.CreatedAt)
                 .ToListAsync();
@@ -175,5 +176,32 @@ namespace WorkSmart.Repository.Repository
                 .Where(a => jobIds.Contains(a.JobID))
                 .ToListAsync();
         }
+        public async Task<bool> UpdateInterviewDetailsAsync(int applicationId, InterviewInvitationRequestDto request)
+        {
+            var application = await _context.Applications
+                .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
+
+            if (application == null)
+            {
+                return false;
+            }
+
+            application.UpdatedAt = DateTime.Now;
+
+            // Lưu thông tin phỏng vấn
+            // Nếu có bảng Interview riêng, bạn có thể tạo và lưu thông tin ở đây
+            // Hoặc có thể lưu metadata dưới dạng JSON thông qua một trường mở rộng
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
     }
 }

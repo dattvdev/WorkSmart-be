@@ -42,7 +42,7 @@ namespace WorkSmart.API.Controllers
         [HttpDelete("delete-cv-vector/{cvId}")]
         public async Task<IActionResult> DeleteCVVector(int cvId)
         {
-            await _service.DeleteCVEmbedding(cvId);
+            _service.DeleteCVEmbedding(cvId);
             return Ok("CV vector deleted");
         }
 

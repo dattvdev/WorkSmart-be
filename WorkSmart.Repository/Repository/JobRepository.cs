@@ -333,7 +333,7 @@ namespace WorkSmart.Repository.Repository
 
             var jobTagIds = job.Tags.Select(t => t.TagID).ToList(); // Lấy danh sách TagID của job
 
-            var similarJobs = _dbSet.Include(j => j.Tags)
+            var similarJobs = _dbSet.Include(j => j.Tags).Include(u => u.User)
                 .Where(j => j.JobID != jobId)
                 .AsEnumerable() // Chuyển truy vấn về bộ nhớ
                 .Where(j => j.Tags.Any(t => jobTagIds.Contains(t.TagID))) // Lọc các job có Tag trùng
@@ -343,10 +343,12 @@ namespace WorkSmart.Repository.Repository
 
             return similarJobs;
         }
+
         public async Task<Job> GetByJobId(int id)
         {
             return await _dbSet.Include(t => t.Tags).FirstOrDefaultAsync(j => j.JobID == id);
         }
+
         // lấy đường dãn tới file cấu hình 
         private async Task<int> GetMaxJobsPerDayFromSettings()
         {
@@ -379,6 +381,7 @@ namespace WorkSmart.Repository.Repository
 
             return defaultLimit;
         }
+
         public async Task<bool> CheckLimitCreateJob(int userID, int? maxJobsPerDayFromClient = null)
         {
             var today = DateTime.UtcNow.Date;
@@ -402,6 +405,74 @@ namespace WorkSmart.Repository.Repository
             int limitToUse = maxJobsPerDayFromClient ?? defaultLimit;
 
             return jobCount < limitToUse;
+        }
+
+        public async Task<JobCreationLimitDto> GetRemainingJobCreationLimit(int userID)
+        {
+            var today = DateTime.UtcNow.Date;
+
+            var jobsCreatedToday = await _dbSet.CountAsync(j =>
+                j.UserID == userID && EF.Functions.DateDiffDay(j.CreatedAt, today) == 0);
+
+            var user = await _context.Users.FindAsync(userID);
+            if (user == null)
+            {
+                throw new Exception($"User with ID {userID} not found");
+            }
+
+            var activeSubscriptions = await _context.Subscriptions
+                .Include(s => s.Package)
+                .Where(s => s.UserID == userID && s.ExpDate > DateTime.Now)
+                .ToListAsync();
+
+            int dailyLimit;
+            string packageName = "Free Plan";
+
+            if (activeSubscriptions.Any())
+            {
+                var packagePriority = new Dictionary<string, int>();
+
+                if (user.Role == "Employer")
+                {
+                    packagePriority = new Dictionary<string, int>
+            {
+                { "Employer Premium", 3 },
+                { "Employer Standard", 2 },
+                { "Employer Basic", 1 }
+            };
+                }
+
+                var highestSubscription = activeSubscriptions
+                    .OrderByDescending(s => packagePriority.ContainsKey(s.Package.Name)
+                        ? packagePriority[s.Package.Name]
+                        : 0)
+                    .First();
+
+                if (highestSubscription.Package.JobPostLimitPerDay.HasValue)
+                {
+                    dailyLimit = highestSubscription.Package.JobPostLimitPerDay.Value;
+                    packageName = highestSubscription.Package.Name;
+                }
+                else
+                {
+                    dailyLimit = await GetMaxJobsPerDayFromSettings();
+                }
+            }
+            else
+            {
+                dailyLimit = await GetMaxJobsPerDayFromSettings();
+            }
+
+            int remainingLimit = Math.Max(0, dailyLimit - jobsCreatedToday);
+
+            return new JobCreationLimitDto
+            {
+                RemainingLimit = remainingLimit,
+                TotalLimit = dailyLimit,
+                UsedToday = jobsCreatedToday,
+                Message = $"User has {remainingLimit} job creation attempts left today. ({jobsCreatedToday}/{dailyLimit} used)",
+                PackageName = packageName
+            };
         }
 
         public async Task<bool> CheckLimitCreateFeaturedJob(int userID)

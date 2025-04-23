@@ -501,6 +501,7 @@ namespace WorkSmart.API.Controllers
             }
             return Ok(new { success = true, message = "Job approved successfully" });
         }
+
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<IEnumerable<JobDto>>> GetJobsByUserId(int userId)
         {
@@ -508,6 +509,7 @@ namespace WorkSmart.API.Controllers
 
             return Ok(jobs);
         }
+
         [HttpGet("checkLimitCreateJobPerDay/{userID}")]
         public async Task<bool> CheckLimitCreateJob(int userID, [FromQuery] int? maxJobsPerDay = null)
         {
@@ -515,6 +517,14 @@ namespace WorkSmart.API.Controllers
             var check = await _jobService.CheckLimitCreateJob(userID, maxJobsPerDay);
             return check;
         }
+
+        [HttpGet("getRemainingJobCreationLimit/{userID}")]
+        public async Task<ActionResult<JobCreationLimitDto>> GetRemainingJobCreationLimit(int userID)
+        {
+            var result = await _jobService.GetRemainingJobCreationLimit(userID);
+            return Ok(result);
+        }
+
         [HttpGet("CheckLimitCreateFeaturedJob/{userId}")]
         public async Task<bool> CheckLimitCreateFeaturedJob(int userId)
         {

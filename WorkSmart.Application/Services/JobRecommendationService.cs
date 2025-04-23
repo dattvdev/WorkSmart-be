@@ -198,7 +198,7 @@ namespace WorkSmart.Application.Services
             _cache.Remove(cacheKey);
         }
 
-        public async Task DeleteCVEmbedding(int cvId) => await _cvEmbedRepo.Delete(cvId);
+        public void  DeleteCVEmbedding(int cvId) =>  _cvEmbedRepo.Delete(cvId);
         public async Task DeleteJobEmbedding(int jobId) => await _jobEmbedRepo.Delete(jobId);
         public async Task<Job?> GetJobById(int jobId) => await _jobRepo.GetById(jobId);
     }

@@ -106,10 +106,7 @@ namespace WorkSmart.Application.Services
             {
                 throw new KeyNotFoundException($"Application with ID {applicationId} for job {jobId} not found.");
             }
-            //Console.WriteLine($"Before mapping: User.Avatar = {application.User.Avatar}");
             var applicationDto = _mapper.Map<ApplicationJobDto>(application);
-            //Console.WriteLine($"After mapping: DTO.Avatar = {applicationDto.Avatar}");
-            //var applicationDto = _mapper.Map<ApplicationJobDto>(application);
             return applicationDto;
         }
         public async Task<(string email, string fullname)> ApplyToJob(int userId, int jobId)

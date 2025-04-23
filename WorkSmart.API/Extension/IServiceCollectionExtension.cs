@@ -13,12 +13,17 @@ namespace WorkSmart.API.Extension
 {
     public static class IServiceCollectionExtension
     {
-        public static IServiceCollection AddScopeCollection(this IServiceCollection services, string? Connectionstring)
+        public static IServiceCollection AddScopeCollection(this IServiceCollection services, string connectionString)
         {
-            //Add extentions here
-            //connect DB
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new Exception("❌ Không tìm thấy ConnectionString");
+            }
+
             services.AddDbContext<WorksmartDBContext>(options =>
-            options.UseSqlServer(Connectionstring));
+                options.UseSqlServer(connectionString));
+
             //job
             services.AddScoped<IJobRepository, JobRepository>();
             services.AddScoped<JobService>();
@@ -68,6 +73,7 @@ namespace WorkSmart.API.Extension
             services.AddAutoMapper(typeof(PackageProfile));
             //cv
             services.AddScoped<ICVRepository, CVRepository>();
+            services.AddScoped<OpenAIService>();
             services.AddScoped<CVService>();
             services.AddScoped<ICvParserService, CvParserService>();
             //mail
@@ -75,15 +81,15 @@ namespace WorkSmart.API.Extension
             //report
             services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<ReportService>();
-            services.AddAutoMapper(typeof(ReportProfile));           
+            services.AddAutoMapper(typeof(ReportProfile));
             //favorite-job
-            services.AddScoped<IFavoriteJobRepository,FavoriteJobRepository>();
+            services.AddScoped<IFavoriteJobRepository, FavoriteJobRepository>();
             services.AddScoped<FavoriteJobService>();
             services.AddAutoMapper(typeof(FavoriteJobProfile));
             //payOS
             services.AddScoped<ITransactionRepository, TransactionRepository>();
             services.AddScoped<TransactionService>();
-            services.AddAutoMapper(typeof (TransactionProfile));
+            services.AddAutoMapper(typeof(TransactionProfile));
             //Background
             services.AddSingleton<JobNotificationBackgroundService>();
             services.AddHostedService(sp => sp.GetRequiredService<JobNotificationBackgroundService>());
@@ -101,10 +107,10 @@ namespace WorkSmart.API.Extension
             services.AddScoped<ICVEmbeddingRepository, CVEmbeddingRepository>();
             services.AddScoped<JobRecommendationService>();
             //job-alert
-            services.AddScoped<IJobAlertRepository,JobAlertRepository>();
+            services.AddScoped<IJobAlertRepository, JobAlertRepository>();
             services.AddScoped<JobAlertService>();
             //cv-template
-            services.AddScoped<ICVTemplateRepository,CVTemplateRepository>();
+            services.AddScoped<ICVTemplateRepository, CVTemplateRepository>();
             services.AddScoped<CVTemplateService>();
             //cache
             services.AddMemoryCache();

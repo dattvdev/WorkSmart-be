@@ -100,7 +100,7 @@ namespace WorkSmart.Repository.Repository
 
             var query = _JobdbSet.Include(c => c.User).AsQueryable();
             query = query.Where(c => c.Status == JobStatus.Active);
-
+            query = query.Where(c => c.Deadline > DateTime.Now);
             if (!string.IsNullOrWhiteSpace(request.Category) && !request.Category.Equals("All Categories"))
             {
                 query = query.Where(c => c.CategoryID.Contains(request.Category)); 
@@ -177,16 +177,6 @@ namespace WorkSmart.Repository.Repository
                     && min >= minSalary).ToList();
             }
 
-            /*if (request.MaxSalary.HasValue)
-            {
-                double maxSalary = request.MaxSalary.Value;
-                jobList = jobList.Where(c => c.Salary != null
-                    && c.Salary.Contains("-")
-                    && c.Salary.Split('-').Length == 2
-                    && double.TryParse(c.Salary.Split('-')[1], out double max)
-                    && max <= maxSalary).ToList();
-            }*/
-            // Lấy tổng số bản ghi trước khi phân trang
             int total = jobList.Count();
 
             var Jobs = jobList
@@ -706,6 +696,12 @@ namespace WorkSmart.Repository.Repository
 
             return locationPercentages;
         }
+        public async Task<bool> IsDuplicateJobTitle(int userID, string normalizedTitle)
+        {
+            return await _context.Jobs
+                .Where(j => j.UserID == userID)
+                .AnyAsync(j => j.Title.Trim().ToLower() == normalizedTitle);
+        }
 
         public async Task<IEnumerable<int>> GetJobIdsByUserIdAsync(int userId)
         {
@@ -727,6 +723,11 @@ namespace WorkSmart.Repository.Repository
             return await _dbSet.Include(j => j.User)
                 .Where(j => j.Status == JobStatus.Active)
                 .ToListAsync();
+        }
+
+        public Task<bool> IsDuplicateJobTitleForUpdate(int userID, int jobID, string normalizedTitle)
+        {
+            throw new NotImplementedException();
         }
     }
 }

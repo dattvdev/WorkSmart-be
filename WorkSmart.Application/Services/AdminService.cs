@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using WorkSmart.Core.Dto.AdminDtos;
@@ -17,12 +19,15 @@ namespace WorkSmart.Application.Services
         private readonly ISendMailService _sendMailService;
         //private readonly ISignalRService _signalRService;
         private readonly JobRecommendationService _recommendationService;
-        public AdminService(IAccountRepository accountRepository, IJobRepository jobRepository, ISendMailService sendMailService, JobRecommendationService recommendationService)
+        private readonly string baseUrl;
+
+        public AdminService(IAccountRepository accountRepository, IJobRepository jobRepository, ISendMailService sendMailService, JobRecommendationService recommendationService, IConfiguration config)
         {
             _accountRepository = accountRepository;
             _jobRepository = jobRepository;
             _sendMailService = sendMailService;
             _recommendationService = recommendationService;
+            baseUrl = config["FrontendUrl:BaseUrl"]!;
         }
 
         public async Task<List<GetListVerificationDto>> GetPendingVerifications()
@@ -152,7 +157,7 @@ namespace WorkSmart.Application.Services
             </div>
             
             <div style=""text-align: center;"">
-                <a href=""/api/Job/{job.JobID}"" class=""button"">View Job</a>
+                <a href=""{baseUrl}/api/Job/{job.JobID}"" class=""button"">View Job</a>
             </div>
         </div>
         
@@ -283,7 +288,7 @@ namespace WorkSmart.Application.Services
             </div>
             
             <div style=""text-align: center;"">
-                <a href=""http://localhost:5173/employer/dashboard"" class=""button"">Go to Dashboard</a>
+                <a href=""{baseUrl}"" class=""""button"""">Go to Dashboard</a>
             </div>
         </div>
         

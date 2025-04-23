@@ -68,6 +68,7 @@ namespace WorkSmart.Repository.Repository
             if (cv != null)
             {
                 cv.IsHidden = true;
+                cv.IsFeatured = false;
                 _dbSet.Update(cv);
                 _context.SaveChanges();
             }

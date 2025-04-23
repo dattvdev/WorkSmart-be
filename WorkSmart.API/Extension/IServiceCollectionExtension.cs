@@ -100,6 +100,12 @@ namespace WorkSmart.API.Extension
             services.AddScoped<IJobEmbeddingRepository, JobEmbeddingRepository>();
             services.AddScoped<ICVEmbeddingRepository, CVEmbeddingRepository>();
             services.AddScoped<JobRecommendationService>();
+            //job-alert
+            services.AddScoped<IJobAlertRepository,JobAlertRepository>();
+            services.AddScoped<JobAlertService>();
+            //cv-template
+            services.AddScoped<ICVTemplateRepository,CVTemplateRepository>();
+            services.AddScoped<CVTemplateService>();
             //cache
             services.AddMemoryCache();
             return services;

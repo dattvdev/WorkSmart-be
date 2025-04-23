@@ -355,7 +355,8 @@ namespace WorkSmart.API.Controllers
                         user.Email,
                         user.FullName,
                         user.Avatar,
-                        user.Role
+                        user.Role,
+                        user.CompanyName
                     }
                 });
             }
@@ -516,7 +517,8 @@ namespace WorkSmart.API.Controllers
                         user.Email,
                         user.FullName,
                         user.Avatar,
-                        user.Role
+                        user.Role,
+                        user.CompanyName
                     }
                 });
             }

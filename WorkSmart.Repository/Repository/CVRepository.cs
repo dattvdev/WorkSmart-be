@@ -78,10 +78,14 @@ namespace WorkSmart.Repository.Repository
 
         public async Task<CVCreationLimitDto> GetRemainingCVCreationLimit(int userID)
         {
-            var totalSystemCreatedCVs = await _context.CVs
-                .CountAsync(cv => cv.UserID == userID &&
-                                  string.IsNullOrEmpty(cv.FileName) &&
-                                  string.IsNullOrEmpty(cv.FilePath));
+            var today = DateTime.UtcNow.Date;
+
+            var totalSystemCreatedCVs = await _dbSet.CountAsync(cv => 
+                cv.UserID == userID &&
+                string.IsNullOrEmpty(cv.FileName) &&
+                string.IsNullOrEmpty(cv.FilePath) &&
+                EF.Functions.DateDiffDay(cv.CreatedAt, today) == 0 &&
+                (!cv.IsHidden.HasValue || cv.IsHidden == false));
 
             var user = await _context.Users.FindAsync(userID);
             if (user == null)
@@ -95,7 +99,7 @@ namespace WorkSmart.Repository.Repository
                 .ToListAsync();
 
             int cvLimit;
-            string packageName = "Free Plan";
+            string packageName = "Free";
 
             if (activeSubscriptions.Any())
             {

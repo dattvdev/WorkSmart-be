@@ -415,6 +415,19 @@ namespace WorkSmart.Api.Controllers
             return Ok(result);
         }
 
+        [HttpGet("User/{userId}/applications")]
+        public async Task<IActionResult> GetApplicationsByUserIdAsync(int userId)
+        {
+            var applications = await _applicationService.GetApplicationsByUserIdAsync(userId);
+
+            if (applications == null || !applications.Any())
+            {
+                return NotFound(new { message = "No applications found for this user." });
+            }
+
+            return Ok(applications);
+        }
+
         [HttpGet("User/{userId}/applications/count")]
         public async Task<IActionResult> GetApplicationsCountByUserId(int userId)
         {

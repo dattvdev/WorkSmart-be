@@ -2,6 +2,7 @@
 using WorkSmart.Core.Dto.PackageDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Interface;
+using WorkSmart.Repository.Repository;
 
 namespace WorkSmart.Application.Services
 {
@@ -30,6 +31,22 @@ namespace WorkSmart.Application.Services
             var package = await _packageRepository.GetById(id);
             return _mapper.Map<GetPackageDto>(package);
         }
+
+        public async Task<GetPackageDto> UpdatePackageAsync(GetPackageDto dto)
+        {
+            var entity = await _packageRepository.GetById(dto.PackageID);
+            if (entity == null)
+                return null;
+
+            _mapper.Map(dto,entity);
+            _packageRepository.Update(entity);
+            await _packageRepository.Save();
+
+            // Return updated DTO
+            return _mapper.Map<GetPackageDto>(entity);
+        }
+
+
         public void Delete(int id)
         {
             _packageRepository.Delete(id);

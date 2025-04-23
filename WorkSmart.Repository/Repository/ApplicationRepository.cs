@@ -33,6 +33,8 @@ namespace WorkSmart.Repository.Repository
             return await _context.Applications
                 .Include(a => a.User)  
                 .Include(a => a.CV)
+                .Include(a => a.Job)
+                .Include(a => a.Job.User)
                 .Include(a => a.CV.User)
                 .Where(a => a.JobID == jobId)
                 .ToListAsync();
@@ -108,14 +110,13 @@ namespace WorkSmart.Repository.Repository
         public async Task<Application> GetApplicationDetailAsync(int applicationId, int jobId)
         {
             return await _context.Applications
-                .Include(a => a.User)
-                .Include(a => a.CV)
-                    .ThenInclude(cv => cv.Educations)
-                .Include(a => a.CV)
-                    .ThenInclude(cv => cv.Experiences)
-                .Include(a => a.CV)
-                    .ThenInclude(cv => cv.Skills)
-                .FirstOrDefaultAsync(a => a.ApplicationID == applicationId && a.JobID == jobId);
+                 .Include(a => a.User)
+                 .Include(a => a.CV)
+                 .Include(a => a.Job)
+                 .Include(a => a.Job.User)
+                 .Include(a => a.CV.User)
+                 .Where(a => a.JobID == jobId)
+                 .FirstOrDefaultAsync(a => a.ApplicationID == applicationId && a.JobID == jobId);
         }
 
         public string CheckApplyJob(int UserId, int JobId)

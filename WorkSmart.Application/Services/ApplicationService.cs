@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -153,5 +154,13 @@ namespace WorkSmart.Application.Services
 
             return applications.Count();
         }
+
+        // Thay thế phương thức hiện tại trong ApplicationService
+        public async Task<bool> UpdateInterviewDetailsAsync(int applicationId, InterviewInvitationRequestDto request)
+        {
+            return await _applicationRepository.UpdateInterviewDetailsAsync(applicationId, request);
+        }
+
+
     }
 }

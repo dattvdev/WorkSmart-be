@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using WorkSmart.Core.Dto.CVDtos;
+using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
 using WorkSmart.Core.Interface;
@@ -72,6 +74,102 @@ namespace WorkSmart.Repository.Repository
                 _dbSet.Update(cv);
                 _context.SaveChanges();
             }
+        }
+
+        public async Task<CVCreationLimitDto> GetRemainingCVCreationLimit(int userID)
+        {
+            var totalSystemCreatedCVs = await _context.CVs
+                .CountAsync(cv => cv.UserID == userID &&
+                                  string.IsNullOrEmpty(cv.FileName) &&
+                                  string.IsNullOrEmpty(cv.FilePath));
+
+            var user = await _context.Users.FindAsync(userID);
+            if (user == null)
+            {
+                throw new Exception($"User with ID {userID} not found");
+            }
+
+            var activeSubscriptions = await _context.Subscriptions
+                .Include(s => s.Package)
+                .Where(s => s.UserID == userID && s.ExpDate > DateTime.Now)
+                .ToListAsync();
+
+            int cvLimit;
+            string packageName = "Free Plan";
+
+            if (activeSubscriptions.Any())
+            {
+                var packagePriority = new Dictionary<string, int>();
+
+                if (user.Role == "Candidate")
+                {
+                    packagePriority = new Dictionary<string, int>
+            {
+                { "Candidate Pro", 3 },
+                { "Candidate Plus", 2 },
+                { "Candidate Basic", 1 }
+            };
+                }
+
+                var highestSubscription = activeSubscriptions
+                    .OrderByDescending(s => packagePriority.ContainsKey(s.Package.Name)
+                        ? packagePriority[s.Package.Name]
+                        : 0)
+                    .First();
+
+                if (highestSubscription.Package.CVLimit.HasValue)
+                {
+                    cvLimit = highestSubscription.Package.CVLimit.Value;
+                    packageName = highestSubscription.Package.Name;
+                }
+                else
+                {
+                    cvLimit = await GetMaxCVsFromSettings();
+                }
+            }
+            else
+            {
+                cvLimit = await GetMaxCVsFromSettings();
+            }
+
+            int remainingLimit = Math.Max(0, cvLimit - totalSystemCreatedCVs);
+
+            return new CVCreationLimitDto
+            {
+                RemainingLimit = remainingLimit,
+                TotalLimit = cvLimit,
+                UsedTotal = totalSystemCreatedCVs,
+                Message = $"User has {remainingLimit} CV creation attempts left. ({totalSystemCreatedCVs}/{cvLimit} used)",
+                PackageName = packageName
+            };
+        }
+
+        private async Task<int> GetMaxCVsFromSettings()
+        {
+            int defaultLimit = 1;
+            try
+            {
+                string currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string solutionDirectory = Path.GetFullPath(Path.Combine(currentDirectory, "..\\..\\..\\.."));
+                string settingsFilePath = Path.Combine(solutionDirectory, "WorkSmart.API", "freePlanSettings.json");
+                if (File.Exists(settingsFilePath))
+                {
+                    string jsonData = await File.ReadAllTextAsync(settingsFilePath);
+                    if (!string.IsNullOrWhiteSpace(jsonData))
+                    {
+                        var settings = JsonConvert.DeserializeObject<FreePlanSettings>(jsonData);
+                        if (settings != null && settings.candidateFreePlan != null)
+                        {
+                            defaultLimit = settings.candidateFreePlan.MaxCVsPerDay;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading CV limit settings: {ex.Message}");
+            }
+            return defaultLimit;
         }
     }
 }

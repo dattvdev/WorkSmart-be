@@ -363,6 +363,9 @@ namespace WorkSmart.Application.Services
             _recommendationService.DeleteCVEmbedding(cvId);
         }
 
-
+        public async Task<CVCreationLimitDto> GetRemainingCVCreationLimit(int userID)
+        {
+            return await _cvRepository.GetRemainingCVCreationLimit(userID);
+        }
     }
 }

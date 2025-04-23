@@ -384,35 +384,81 @@ namespace WorkSmart.Repository.Repository
 
         public async Task<bool> CheckLimitCreateJob(int userID, int? maxJobsPerDayFromClient = null)
         {
-            var today = DateTime.UtcNow.Date;
-            var jobCount = await _dbSet.CountAsync(u =>
-                u.UserID == userID && EF.Functions.DateDiffDay(u.CreatedAt, today) == 0);
+            var today = DateTime.Now.Date;
 
-            
-            var subscription = await _context.Subscriptions
-                                           .Include(p => p.Package)
-                                           .FirstOrDefaultAsync(u => u.UserID == userID);
+            var jobCount = await _dbSet
+                .Where(j => j.UserID == userID)
+                .Where(j => j.CreatedAt.Date == today)
+                .Where(j => j.Status == JobStatus.Active ||
+                           j.Status == JobStatus.Pending ||
+                           j.Status == JobStatus.Hidden ||
+                           j.Status == JobStatus.Rejected)
+                .CountAsync();
 
-            if (subscription != null)
+            var user = await _context.Users.FindAsync(userID);
+            if (user == null)
             {
-                return jobCount < subscription.Package.JobPostLimitPerDay;
+                throw new Exception($"User with ID {userID} not found");
             }
 
+            int jobLimit;
+            if (user.Role == "Employer")
+            {
+                var activeSubscriptions = await _context.Subscriptions
+                    .Include(s => s.Package)
+                    .Where(s => s.UserID == userID && s.ExpDate > DateTime.Now)
+                    .ToListAsync();
 
-            int defaultLimit = await GetMaxJobsPerDayFromSettings();
+                if (activeSubscriptions.Any())
+                {
+                    var packagePriority = new Dictionary<string, int>
+            {
+                { "Employer Premium", 3 },
+                { "Employer Standard", 2 },
+                { "Employer Basic", 1 }
+            };
 
+                    var highestSubscription = activeSubscriptions
+                        .OrderByDescending(s => packagePriority.ContainsKey(s.Package.Name)
+                            ? packagePriority[s.Package.Name]
+                            : 0)
+                        .First();
 
-            int limitToUse = maxJobsPerDayFromClient ?? defaultLimit;
+                    if (highestSubscription.Package.JobPostLimitPerDay.HasValue)
+                    {
+                        jobLimit = highestSubscription.Package.JobPostLimitPerDay.Value;
+                    }
+                    else
+                    {
+                        jobLimit = maxJobsPerDayFromClient ?? await GetMaxJobsPerDayFromSettings();
+                    }
+                }
+                else
+                {
+                    jobLimit = maxJobsPerDayFromClient ?? await GetMaxJobsPerDayFromSettings();
+                }
+            }
+            else
+            {
+                jobLimit = maxJobsPerDayFromClient ?? await GetMaxJobsPerDayFromSettings();
+            }
 
-            return jobCount < limitToUse;
+            return jobCount < jobLimit;
         }
 
         public async Task<JobCreationLimitDto> GetRemainingJobCreationLimit(int userID)
         {
-            var today = DateTime.UtcNow.Date;
+            var today = DateTime.Now.Date;
 
-            var jobsCreatedToday = await _dbSet.CountAsync(j =>
-                j.UserID == userID && EF.Functions.DateDiffDay(j.CreatedAt, today) == 0);
+            var jobsCreatedToday = await _dbSet
+                .Where(j => j.UserID == userID)
+                .Where(j => j.CreatedAt.Date == today)
+                .Where(j => j.Status == JobStatus.Active ||
+                           j.Status == JobStatus.Pending ||
+                           j.Status == JobStatus.Hidden ||
+                           j.Status == JobStatus.Rejected)
+                .CountAsync();
+
 
             var user = await _context.Users.FindAsync(userID);
             if (user == null)
@@ -426,12 +472,14 @@ namespace WorkSmart.Repository.Repository
                 .ToListAsync();
 
             int dailyLimit;
-            string packageName = "Free Plan";
+            string packageName = "Free";
 
             if (activeSubscriptions.Any())
             {
+                // Initialize packagePriority as an empty dictionary
                 var packagePriority = new Dictionary<string, int>();
 
+                // Only populate packagePriority if the user is an Employer
                 if (user.Role == "Employer")
                 {
                     packagePriority = new Dictionary<string, int>
@@ -442,13 +490,14 @@ namespace WorkSmart.Repository.Repository
             };
                 }
 
+                // If packagePriority is empty (non-Employer), this will just take the first subscription
                 var highestSubscription = activeSubscriptions
                     .OrderByDescending(s => packagePriority.ContainsKey(s.Package.Name)
                         ? packagePriority[s.Package.Name]
                         : 0)
-                    .First();
+                    .FirstOrDefault();
 
-                if (highestSubscription.Package.JobPostLimitPerDay.HasValue)
+                if (highestSubscription != null && highestSubscription.Package.JobPostLimitPerDay.HasValue)
                 {
                     dailyLimit = highestSubscription.Package.JobPostLimitPerDay.Value;
                     packageName = highestSubscription.Package.Name;

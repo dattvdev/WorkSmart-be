@@ -11,5 +11,6 @@ namespace WorkSmart.Core.Interface
         Task Delete(int id);
         void SetFeature(int cvId, int userId);
         void HideCV(int cvId);
+        Task<CVCreationLimitDto> GetRemainingCVCreationLimit(int userID);
     }
 }

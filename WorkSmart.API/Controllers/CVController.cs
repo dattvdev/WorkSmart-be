@@ -214,6 +214,13 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new { message = "Lỗi khi ẩn CV: " + ex.Message });
             }
         }
+
+        [HttpGet("getRemainingCVCreationLimit/{userID}")]
+        public async Task<ActionResult<CVCreationLimitDto>> GetRemainingCVCreationLimit(int userID)
+        {
+            var result = await _cvService.GetRemainingCVCreationLimit(userID);
+            return Ok(result);
+        }
     }
 }
 

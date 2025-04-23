@@ -361,5 +361,9 @@ namespace WorkSmart.Application.Services
             _cvRepository.HideCV(cvId);
         }
 
+        public async Task<CVCreationLimitDto> GetRemainingCVCreationLimit(int userID)
+        {
+            return await _cvRepository.GetRemainingCVCreationLimit(userID);
+        }
     }
 }

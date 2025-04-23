@@ -24,6 +24,7 @@ namespace WorkSmart.Core.Interface
         Task<bool> ApproveJobAsync(int jobId);
         Task<bool> RejectJobAsync(int jobId, string reason);
         Task<bool> CheckLimitCreateJob(int userID, int? maxJobsPerDayFromClient);
+        Task<JobCreationLimitDto> GetRemainingJobCreationLimit(int userID);
         Task<bool> CheckLimitCreateFeaturedJob(int userID);
         Task<bool> ToggleJobPriorityAsync(int jobId);
         Task<IEnumerable<object>> JobCategoryDashboard();

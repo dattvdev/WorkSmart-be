@@ -414,8 +414,9 @@ namespace WorkSmart.Api.Controllers
             var result = await _applicationService.ApplicationCountDashboard();
             return Ok(result);
         }
+
         [HttpGet("User/{userId}/applications")]
-        public async Task<IActionResult> GetApplicationsByUserId(int userId)
+        public async Task<IActionResult> GetApplicationsByUserIdAsync(int userId)
         {
             var applications = await _applicationService.GetApplicationsByUserIdAsync(userId);
 

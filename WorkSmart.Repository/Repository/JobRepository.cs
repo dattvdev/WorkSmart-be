@@ -724,5 +724,10 @@ namespace WorkSmart.Repository.Repository
                 .Where(j => j.Status == JobStatus.Active)
                 .ToListAsync();
         }
+
+        public Task<bool> IsDuplicateJobTitleForUpdate(int userID, int jobID, string normalizedTitle)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

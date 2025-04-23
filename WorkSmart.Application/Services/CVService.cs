@@ -70,7 +70,7 @@ namespace WorkSmart.Application.Services
             _cvRepository.Update(existingCv);
 
             // ✅ Cập nhật lại embedding vector
-            await _recommendationService.DeleteCVEmbedding(existingCv.CVID);
+             _recommendationService.DeleteCVEmbedding(existingCv.CVID);
             _recommendationService.ClearCVRecommendationCache(existingCv.CVID);
 
             return _mapper.Map<CVDto>(existingCv);  // Trả về CV được ánh xạ trở lại DTO
@@ -359,6 +359,8 @@ namespace WorkSmart.Application.Services
         public void HideCV(int cvId)
         {
             _cvRepository.HideCV(cvId);
+            _recommendationService.ClearCVRecommendationCache(cvId);
+            _recommendationService.DeleteCVEmbedding(cvId);
         }
 
         public async Task<CVCreationLimitDto> GetRemainingCVCreationLimit(int userID)

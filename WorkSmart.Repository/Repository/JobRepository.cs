@@ -333,7 +333,7 @@ namespace WorkSmart.Repository.Repository
 
             var jobTagIds = job.Tags.Select(t => t.TagID).ToList(); // Lấy danh sách TagID của job
 
-            var similarJobs = _dbSet.Include(j => j.Tags)
+            var similarJobs = _dbSet.Include(j => j.Tags).Include(u => u.User)
                 .Where(j => j.JobID != jobId)
                 .AsEnumerable() // Chuyển truy vấn về bộ nhớ
                 .Where(j => j.Tags.Any(t => jobTagIds.Contains(t.TagID))) // Lọc các job có Tag trùng

@@ -44,7 +44,8 @@ namespace WorkSmart.Repository.Repository
         {
             return await _context.Applications
                 .Include(a => a.Job)
-                .Include(a => a.Job.User)
+                    .ThenInclude(b => b.User)
+                .Include(c => c.User)
                 .Where(a => a.UserID == userId)
                 .OrderByDescending(a => a.CreatedAt)
                 .ToListAsync();

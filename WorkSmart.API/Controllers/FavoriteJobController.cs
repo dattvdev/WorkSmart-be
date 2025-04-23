@@ -59,5 +59,17 @@ namespace WorkSmart.API.Controllers
             await _favoriteJobService.DeleteAsync(id);
             return NoContent();
         }
+        [HttpGet("isfavorited/{userId}/{jobId}")]
+        public async Task<IActionResult> IsJobFavorited(int userId, int jobId)
+        {
+            var isFavorited = await _favoriteJobService.IsJobFavoritedAsync(userId, jobId);
+            return Ok(isFavorited);
+        }
+        [HttpDelete("delete-favorite-job/{userId}/{jobId}")]
+        public async Task<IActionResult> DeleteFavoriteJob(int userId, int jobId)
+        {
+            await _favoriteJobService.DeleteFavoriteJobAsync(userId, jobId);
+            return NoContent();
+        }
     }
 }

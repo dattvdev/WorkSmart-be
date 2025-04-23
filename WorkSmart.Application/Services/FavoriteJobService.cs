@@ -45,5 +45,13 @@ namespace WorkSmart.Application.Services
         {
             _favoriteJobRepository.Delete(id);
         }
+        public async Task DeleteFavoriteJobAsync(int userId, int jobId)
+        {
+            _favoriteJobRepository.DeleteFavoriteJob(userId, jobId);
+        }
+        public async Task<bool> IsJobFavoritedAsync(int userId, int jobId)
+        {
+            return await _favoriteJobRepository.IsJobFavoritedAsync(userId, jobId);
+        }
     }
 }

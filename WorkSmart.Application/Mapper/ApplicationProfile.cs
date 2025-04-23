@@ -29,6 +29,7 @@ namespace WorkSmart.Application.Mapper
                 .ForMember(dest => dest.ApplicationStatus, opt => opt.MapFrom(src => src.Status))
 
                 .ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src => src.Job.User.CompanyName))
+                .ForMember(dest => dest.CompanyAvatar, opt => opt.MapFrom(src => src.Job.User.Avatar))
                 .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Job.Title))
                 .ForMember(dest => dest.CategoryID, opt => opt.MapFrom(src => src.Job.CategoryID))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Job.Description))

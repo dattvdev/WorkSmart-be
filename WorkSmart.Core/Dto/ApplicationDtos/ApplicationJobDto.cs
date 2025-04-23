@@ -24,6 +24,7 @@ namespace WorkSmart.Core.Dto.ApplicationDtos
         public string? Avatar { get; set; }
         public string? ApplicationStatus { get; set; }
         //job
+        public string? CompanyAvatar { get; set; }
         public string? CompanyName { get; set; }
         public string? Title { get; set; }
         public string? CategoryID { get; set; }

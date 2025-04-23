@@ -434,5 +434,149 @@ namespace WorkSmart.Api.Controllers
             var applicationsCount = await _applicationService.GetApplicationsCountByUserIdAsync(userId);
             return Ok(new { totalApplications = applicationsCount });
         }
+
+        [HttpPost("send-invitation-for-applied-candidate")]
+        public async Task<IActionResult> SendInterviewInvitation([FromBody] InterviewInvitationRequestDto request)
+        {
+            if (request == null || request.ApplicationId <= 0)
+            {
+                return BadRequest("Invalid application information");
+            }
+
+            try
+            {
+                // Lấy thông tin application
+                var application = await _applicationService.GetCandidateByIdAsync(request.ApplicationId);
+                if (application == null)
+                {
+                    return NotFound($"Application with ID {request.ApplicationId} not found");
+                }
+
+                // Kiểm tra xem application có ở trạng thái Approved không
+                if (application.Status != "Approved")
+                {
+                    return BadRequest("Can only send interview invitations to approved candidates");
+                }
+
+                // Lấy thông tin job từ application
+                var jobDetails = await _applicationService.GetJobDetailForApplicationAsync(request.ApplicationId);
+                if (jobDetails == null)
+                {
+                    return NotFound($"Job details for application ID {request.ApplicationId} not found");
+                }
+
+                // Lấy cài đặt thông báo của candidate
+                var candidateSetting = (CandidateNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(
+                    application.UserID, application.User.Role);
+
+                // Tạo tiêu đề email
+                var subject = $"Interview Invitation: {jobDetails.Title}";
+
+                // Tạo nội dung email
+                var body = GenerateInterviewInvitationEmailBody(jobDetails, request.CompanyName, request.CompanyEmail, application, request);
+
+                // Gửi email
+                //if (candidateSetting?.EmailApplicationStatusUpdates == true)
+                //{
+                    var emailContent = new Core.Dto.MailDtos.MailContent
+                    {
+                        To = application.User.Email,
+                        Subject = subject,
+                        Body = body
+                    };
+
+                    await _sendMailService.SendMail(emailContent);
+                //}
+
+                // Gửi thông báo realtime
+                //if (candidateSetting?.ApplicationStatusUpdates == true)
+                //{
+                    await _signalRService.SendNotificationToUser(
+                        application.UserID,
+                        "Interview Invitation",
+                        $"You've been invited to interview for the position of {jobDetails.Title}",
+                        "/candidate/applied-jobs"
+                    );
+                //}
+
+                // Cập nhật trạng thái ứng dụng thành "InterviewInvited"
+                await _applicationService.UpdateApplicationStatusAsync(request.ApplicationId, "Interview Invited");
+
+                // Cập nhật thời gian phỏng vấn vào database
+                await _applicationService.UpdateInterviewDetailsAsync(request.ApplicationId, request);
+
+                return Ok(new { success = true, message = "Interview invitation sent successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Failed to send interview invitation", error = ex.Message });
+            }
+        }
+
+        // Helper method để tạo email mời phỏng vấn
+        private string GenerateInterviewInvitationEmailBody(WorkSmart.Core.Entity.Job job, string companyName, string companyEmail, WorkSmart.Core.Entity.Application application, InterviewInvitationRequestDto request)
+        {
+            string interviewType = request.InterviewType == 1 ? "In-Person" : "Virtual";
+            string interviewLocation = request.InterviewType == 1 ?
+                request.Location : $"Meeting Link: <a href='{request.MeetingLink}'>{request.MeetingLink}</a>";
+
+            string interviewDateStr = request.InterviewDate.ToString("dddd, MMMM dd, yyyy 'at' h:mm tt");
+
+            return $@"<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>Interview Invitation</title>
+</head>
+<body style=""font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f9f9f9;"">
+    <div style=""max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);"">
+        <div style=""background-color: #2196F3; color: white; padding: 20px; text-align: center;"">
+            <h2 style=""margin: 0; padding: 0;"">Interview Invitation</h2>
+        </div>
+        
+        <div style=""padding: 30px;"">
+            <h1 style=""color: #2196F3; text-align: center; margin-top: 0;"">You're Invited for an Interview!</h1>
+            
+            <div style=""background-color: #f0f8ff; border-left: 4px solid #2196F3; padding: 15px; margin-bottom: 20px; border-radius: 4px;"">
+                <p style=""margin-top: 0;"">Dear {application.User.FullName},</p>
+                <p>Thank you for applying to the <strong>{job.Title}</strong> position. We were impressed with your qualifications and would like to invite you for an interview.</p>
+            </div>
+            
+            <div style=""background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px;"">
+                <h3 style=""color: #2196F3; margin-top: 0;"">Interview Details:</h3>
+                <p><strong>Date & Time:</strong> {interviewDateStr}</p>
+                <p><strong>Interview Type:</strong> {interviewType}</p>
+                <p><strong>Location/Link:</strong> {interviewLocation}</p>
+                <p><strong>Duration:</strong> {request.Duration} minutes</p>
+                <p><strong>Interviewer:</strong> {request.InterviewerName}, {request.InterviewerPosition}</p>
+            </div>
+            
+            <p>Please confirm your attendance by responding to this email or contacting us at {companyEmail}.</p>
+            
+            <div style=""background-color: #fff9e6; border-left: 4px solid #FFC107; padding: 15px; margin: 25px 0; border-radius: 4px;"">
+                <h3 style=""color: #FFC107; margin-top: 0;"">Preparation Tips:</h3>
+                <ul style=""padding-left: 20px; margin-bottom: 0;"">
+                    <li>Research our company and understand our products/services</li>
+                    <li>Review the job description and prepare examples that demonstrate your relevant skills</li>
+                    <li>Prepare questions to ask the interviewer about the role and company</li>
+                    <li>Test your equipment in advance if this is a virtual interview</li>
+                    <li>Arrive 10-15 minutes early if this is an in-person interview</li>
+                </ul>
+            </div>
+            
+            <p>If you have any questions or need to reschedule, please don't hesitate to contact us.</p>
+            
+            <p style=""margin-top: 30px;"">Best regards,<br>{request.InterviewerName}<br>{request.InterviewerPosition}<br>{companyName}</p>
+        </div>
+        
+        <div style=""background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #777;"">
+            <p style=""margin: 0;"">© {DateTime.Now.Year} {companyName}. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>";
+        }
+
     }
 }

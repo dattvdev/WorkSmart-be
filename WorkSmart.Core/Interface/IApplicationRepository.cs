@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
 namespace WorkSmart.Core.Interface
 {
@@ -17,5 +18,6 @@ namespace WorkSmart.Core.Interface
         void ChangeCV(int applicationId, int cvId);
         Task<IEnumerable<object>> ApplicationCountDashboard();
         Task<IEnumerable<Application>> GetApplicationsByJobIdsAsync(IEnumerable<int> jobIds);
+        Task<bool> UpdateInterviewDetailsAsync(int applicationId, InterviewInvitationRequestDto request);
     }
 }

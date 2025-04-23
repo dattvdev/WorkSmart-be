@@ -135,6 +135,7 @@ namespace WorkSmart.Application.Services
         {
             throw new NotImplementedException();
         }
+
         //public async Task<bool> ApproveJobAsync(int jobId)
         //{
         //    return await _jobRepository.ApproveJobAsync(jobId);
@@ -145,14 +146,22 @@ namespace WorkSmart.Application.Services
             var jobs = await _jobRepository.GetJobsByEmployerId(userId);
             return _mapper.Map<IEnumerable<JobDto>>(jobs);
         }
+
         public async Task<bool> CheckLimitCreateJob(int userID, int? maxJobsPerDay = null)
         {
             return await _jobRepository.CheckLimitCreateJob(userID, maxJobsPerDay);
         }
+
+        public async Task<JobCreationLimitDto> GetRemainingJobCreationLimit(int userID)
+        {
+            return await _jobRepository.GetRemainingJobCreationLimit(userID);
+        }
+
         public async Task<bool> CheckLimitCreateFeaturedJob(int userID)
         {
             return await _jobRepository.CheckLimitCreateFeaturedJob(userID);
         }
+
         //public async Task<bool> ToggleJobPriorityAsync(int jobId)
         //{
         //    var job = await _jobRepository.GetByJobId(jobId);
@@ -169,6 +178,7 @@ namespace WorkSmart.Application.Services
 
         //    return await _jobRepository.ToggleJobPriorityAsync(jobId);
         //}
+
         public async Task<bool> ToggleJobPriorityAsync(int jobId)
         {
             var job = await _jobRepository.GetByJobId(jobId);
@@ -184,6 +194,7 @@ namespace WorkSmart.Application.Services
 
             return await _jobRepository.ToggleJobPriorityAsync(jobId);
         }
+
         public async Task<bool> IsDuplicateJobTitleAsync(int userID, string title)
         {
             if (string.IsNullOrWhiteSpace(title) || userID <= 0)
@@ -211,14 +222,17 @@ namespace WorkSmart.Application.Services
             // Check if any other job (excluding the current one) has the same title
             return await _jobRepository.IsDuplicateJobTitleForUpdate(userID, jobID, normalizedTitle);
         }
+
         public async Task<IEnumerable<object>> JobCategoryDashboard()
         {
             return await _jobRepository.JobCategoryDashboard();
         }
+
         public async Task<IEnumerable<object>> JobStatusDashboard()
         {
             return await _jobRepository.JobStatusDashboard();
         }
+
         public async Task<IEnumerable<object>> JobLocationDashboard()
         {
             return await _jobRepository.JobLocationDashboard();

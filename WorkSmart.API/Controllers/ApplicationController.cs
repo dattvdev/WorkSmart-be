@@ -644,11 +644,7 @@ namespace WorkSmart.Api.Controllers
         public async Task<IActionResult> CheckReApplyJob(int userId, int jobId)
         {
             var result = await _applicationService.CheckReApplyJob(userId, jobId);
-            if (result)
-            {
-                return Ok(new { message = "You can reapply for this job." });
-            }
-            return BadRequest(new { message = "You cannot reapply for this job." });
+            return Ok(result); // Trả ra đúng kiểu `true` hoặc `false`
         }
     }
 }

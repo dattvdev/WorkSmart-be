@@ -162,6 +162,11 @@ namespace WorkSmart.Application.Services
             return await _jobRepository.CheckLimitCreateFeaturedJob(userID);
         }
 
+        public async Task<JobPriorityLimitDto> GetRemainingJobPriorityLimit(int userID)
+        {
+            return await _jobRepository.GetRemainingJobPriorityLimit(userID);
+        }
+
         //public async Task<bool> ToggleJobPriorityAsync(int jobId)
         //{
         //    var job = await _jobRepository.GetByJobId(jobId);
@@ -236,6 +241,11 @@ namespace WorkSmart.Application.Services
         public async Task<IEnumerable<object>> JobLocationDashboard()
         {
             return await _jobRepository.JobLocationDashboard();
+        }
+
+        public async Task<bool> UnPriorityAsync(int jobId)
+        {
+            return await _jobRepository.UnPriorityAsync(jobId);
         }
     }
 }

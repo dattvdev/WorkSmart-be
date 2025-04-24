@@ -307,7 +307,42 @@ namespace WorkSmart.Api.Controllers
                 CandidateNotificationSettingsDto candidateSetting = (CandidateNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(userId, "candidate"); ;
                 EmployerNotificationSettingsDto employerSetting = (EmployerNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(jobDetail.UserID, "employer");
                 await _sendMailService.SendEmailAsync(email, "Thanks for your application",
-                $"Dear {fullname},\n\nYour application for the job has successfully.\n\nBest regards,\nYour Team");
+    $@"<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>Application Confirmation</title>
+</head>
+<body style=""font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f9f9f9;"">
+    <div style=""max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);"">
+        <div style=""background-color: #4CAF50; color: white; padding: 20px; text-align: center;"">
+            <h2 style=""margin: 0; padding: 0;"">Application Confirmation</h2>
+        </div>
+        
+        <div style=""padding: 30px;"">
+            <h1 style=""color: #4CAF50; text-align: center; margin-top: 0;"">Thank You for Your Application</h1>
+            
+            <div style=""background-color: #f5f0ff; border-left: 4px solid #4CAF50; padding: 15px; margin-bottom: 20px; border-radius: 4px;"">
+                <p style=""margin-top: 0;"">Dear {fullname},</p>
+                <p>Your application for the job <strong>{jobDetail.Title}</strong> has been successfully submitted.</p>
+            </div>
+            
+            <p>You can track the status of your application from your candidate dashboard.</p>
+            
+            <div style=""text-align: center; margin: 30px 0;"">
+                <a href=""#"" style=""display: inline-block; background-color: #4CAF50; color: white; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold;"">View My Applications</a>
+            </div>
+            
+            <p style=""margin-top: 30px;"">Best regards,<br>WorkSmart Team</p>
+        </div>
+        
+        <div style=""background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #777;"">
+            <p style=""margin: 0;"">© 2025 WorkSmart. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>");
 
                 if (employerSetting != null)
                 {
@@ -336,14 +371,14 @@ namespace WorkSmart.Api.Controllers
 </head>
 <body style=""font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f9f9f9;"">
     <div style=""max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);"">
-        <div style=""background-color: #673AB7; color: white; padding: 20px; text-align: center;"">
+        <div style=""background-color: #4CAF50; color: white; padding: 20px; text-align: center;"">
             <h2 style=""margin: 0; padding: 0;"">New Application Alert</h2>
         </div>
         
         <div style=""padding: 30px;"">
-            <h1 style=""color: #673AB7; text-align: center; margin-top: 0;"">New Candidate Application</h1>
+            <h1 style=""color: #4CAF50; text-align: center; margin-top: 0;"">New Candidate Application</h1>
             
-            <div style=""background-color: #f5f0ff; border-left: 4px solid #673AB7; padding: 15px; margin-bottom: 20px; border-radius: 4px;"">
+            <div style=""background-color: #f5f0ff; border-left: 4px solid #4CAF50; padding: 15px; margin-bottom: 20px; border-radius: 4px;"">
                 <p style=""margin-top: 0;"">Dear {jobDetail.User.FullName},</p>
                 <p>We are pleased to inform you that a new application has been received for the job <strong>{jobDetail.Title}</strong>.</p>
             </div>
@@ -351,7 +386,7 @@ namespace WorkSmart.Api.Controllers
             <p>You can review this application and all other candidates from your employer dashboard.</p>
             
             <div style=""text-align: center; margin: 30px 0;"">
-                <a href=""#"" style=""display: inline-block; background-color: #673AB7; color: white; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold;"">View Applications</a>
+                <a href=""#"" style=""display: inline-block; background-color: #4CAF50; color: white; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold;"">View Applications</a>
             </div>
             
             <p style=""margin-top: 30px;"">Best regards,<br>WorkSmart Team</p>

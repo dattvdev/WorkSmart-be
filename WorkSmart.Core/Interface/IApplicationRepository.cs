@@ -19,5 +19,8 @@ namespace WorkSmart.Core.Interface
         Task<IEnumerable<object>> ApplicationCountDashboard();
         Task<IEnumerable<Application>> GetApplicationsByJobIdsAsync(IEnumerable<int> jobIds);
         Task<bool> UpdateInterviewDetailsAsync(int applicationId, InterviewInvitationRequestDto request);
+        Task<bool> WithdrawApplicationAsync(int userId, int jobId);
+        Task<Application> GetApplicationDetails(int userId, int jobId);
+        Task<bool> CheckReApplyJob(int userId, int jobId);
     }
 }

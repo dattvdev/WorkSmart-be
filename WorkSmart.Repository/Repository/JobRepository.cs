@@ -526,21 +526,109 @@ namespace WorkSmart.Repository.Repository
 
         public async Task<bool> CheckLimitCreateFeaturedJob(int userID)
         {
+            var user = await _context.Users.FindAsync(userID); 
+
             var featuredJobCount = await _dbSet.CountAsync(u =>
                 u.UserID == userID && u.Priority == true);
 
-            var subscription = await _context.Subscriptions
-                                             .Include(p => p.Package)
-                                             .FirstOrDefaultAsync(u => u.UserID == userID);
+            var activeSubscriptions = await _context.Subscriptions
+                .Include(s => s.Package)
+                .Where(s => s.UserID == userID && s.ExpDate > DateTime.Now)
+                .ToListAsync();
 
-            if (subscription != null)
+            int dailyLimit;
+            string packageName = "Free";
+
+            if (activeSubscriptions.Any())
             {
-                return featuredJobCount < subscription.Package.FeaturedJobPostLimit;
+                // Initialize packagePriority as an empty dictionary
+                var packagePriority = new Dictionary<string, int>();
+
+                // Only populate packagePriority if the user is an Employer
+                if (user.Role == "Employer")
+                {
+                    packagePriority = new Dictionary<string, int>
+            {
+                { "Employer Premium", 3 },
+                { "Employer Standard", 2 },
+                { "Employer Basic", 1 }
+            };
+                }
+
+                // If packagePriority is empty (non-Employer), this will just take the first subscription
+                var highestSubscription = activeSubscriptions
+                    .OrderByDescending(s => packagePriority.ContainsKey(s.Package.Name)
+                        ? packagePriority[s.Package.Name]
+                        : 0)
+                    .FirstOrDefault();
+
+                if (highestSubscription != null)
+                {
+                    return featuredJobCount < highestSubscription.Package.FeaturedJobPostLimit;
+                }
+            }
+            int defaultFeaturedLimit = await GetDefaultFeaturedJobLimit();
+            return featuredJobCount < defaultFeaturedLimit;
+        }
+
+        public async Task<JobPriorityLimitDto> GetRemainingJobPriorityLimit(int userID)
+        {
+            var user = await _context.Users.FindAsync(userID);
+
+            var prioritiedJobCount = await _dbSet.CountAsync(u =>
+                u.UserID == userID && u.Priority == true);
+
+            var activeSubscription = await _context.Subscriptions
+                .Include(s => s.Package)
+                .Where(s => s.UserID == userID && s.ExpDate > DateTime.Now)
+                .ToListAsync();
+
+            int prioritiedJobLimit;
+            string packageName = "Free";
+
+            if (activeSubscription.Any())
+            {
+                var packagePriority = new Dictionary<string, int>();
+                if (user.Role == "Employer")
+                {
+                    packagePriority = new Dictionary<string, int>
+                    {
+                        { "Employer Premium", 3 },
+                        { "Employer Standard", 2 },
+                        { "Employer Basic", 1 }
+                    };
+                }
+
+                var highestSubscription = activeSubscription
+                    .OrderByDescending(s => packagePriority.ContainsKey(s.Package.Name)
+                        ? packagePriority[s.Package.Name] : 0)
+                    .FirstOrDefault();
+
+                if (highestSubscription != null && highestSubscription.Package.FeaturedJobPostLimit.HasValue)
+                {
+                    prioritiedJobLimit = highestSubscription.Package.FeaturedJobPostLimit.Value;
+                    packageName = highestSubscription.Package.Name;
+                }
+                else
+                {
+                    prioritiedJobLimit = await GetDefaultFeaturedJobLimit();
+                }
+            }
+            else
+            {
+                prioritiedJobLimit = await GetDefaultFeaturedJobLimit();
             }
 
-            int defaultFeaturedLimit = await GetDefaultFeaturedJobLimit();
+            int remainingLimit = Math.Max(0, prioritiedJobLimit - prioritiedJobCount);
 
-            return featuredJobCount < defaultFeaturedLimit;
+            return new JobPriorityLimitDto
+            {
+                RemainingLimit = remainingLimit,
+                TotalLimit = prioritiedJobLimit,
+                UsedToday = prioritiedJobCount,
+                Message = $"User has {remainingLimit} featured job slots remaining. ({prioritiedJobCount}/{prioritiedJobLimit} used)",
+                PackageName = packageName
+            };
         }
 
         private async Task<int> GetDefaultFeaturedJobLimit()
@@ -577,7 +665,10 @@ namespace WorkSmart.Repository.Repository
         // Set lai độ ưu tiên
         public async Task<bool> ToggleJobPriorityAsync(int jobId)
         {
-            var job = await _dbSet.FindAsync(jobId);
+            var job = await _dbSet
+                .Include(j => j.User)
+                .FirstOrDefaultAsync(j => j.JobID == jobId);
+
             if (job == null) return false;
             //Kiểm tra có đang ưu tiên không
             if (job.Priority)
@@ -612,12 +703,47 @@ namespace WorkSmart.Repository.Repository
             // Toggle the priority
             job.Priority = !job.Priority;
 
-            // Update the job's UpdatedAt timestamp
-            //job.UpdatedAt = DateTime.Now;
+            var activeSubscriptions = await _context.Subscriptions
+                .Include(s => s.Package)
+                .Where(s => s.UserID == job.UserID && s.ExpDate > DateTime.Now)
+                .ToListAsync();
 
-            await _context.SaveChangesAsync();
+            int dailyLimit;
+            string packageName = "Free";
+
+            if (activeSubscriptions.Any())
+            {
+                // Initialize packagePriority as an empty dictionary
+                var packagePriority = new Dictionary<string, int>();
+
+                // Only populate packagePriority if the user is an Employer
+                if (job.User.Role == "Employer")
+                {
+                    packagePriority = new Dictionary<string, int>
+            {
+                { "Employer Premium", 3 },
+                { "Employer Standard", 2 },
+                { "Employer Basic", 1 }
+            };
+                }
+
+                // If packagePriority is empty (non-Employer), this will just take the first subscription
+                var highestSubscription = activeSubscriptions
+                    .OrderByDescending(s => packagePriority.ContainsKey(s.Package.Name)
+                        ? packagePriority[s.Package.Name]
+                        : 0)
+                    .FirstOrDefault();
+                // Update the job's UpdatedAt timestamp
+                //job.UpdatedAt = DateTime.Now;
+
+                job.Level = highestSubscription == null ? "Free": highestSubscription.Package.Name;
+
+                await _context.SaveChangesAsync();
+            }
+
             return true;
         }
+
         public async Task<List<Job>> GetExpiringJobsAsync()
         {
             var today = DateTime.UtcNow.Date;
@@ -848,6 +974,19 @@ namespace WorkSmart.Repository.Repository
         public Task<bool> IsDuplicateJobTitleForUpdate(int userID, int jobID, string normalizedTitle)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<bool> UnPriorityAsync(int jobId)
+        {
+            var job = await _dbSet.FindAsync(jobId);
+
+            job.Priority = false;
+            job.Level = "";
+
+            _dbSet.Update(job);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
     }
 }

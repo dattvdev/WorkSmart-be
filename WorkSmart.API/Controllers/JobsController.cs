@@ -533,6 +533,14 @@ namespace WorkSmart.API.Controllers
             return check;
         }
 
+        [HttpGet("getRemainingJobPriorityLimit/{userId}")]
+        public async Task<ActionResult<JobPriorityLimitDto>> GetRemainingJobPriorityLimit(int userId)
+        {
+            var result = await _jobService.GetRemainingJobPriorityLimit(userId);
+
+            return Ok(result);
+        }
+
         [HttpPut("toggle-priority/{id}")]
         public async Task<IActionResult> ToggleJobPriority(int id)
         {
@@ -554,6 +562,29 @@ namespace WorkSmart.API.Controllers
             {
                 _logger.LogError("Error updating job priority for ID {JobID}: {Message}", id, ex.Message);
                 return StatusCode(500, new { message = "An error occurred while updating the job priority." });
+            }
+        }
+
+        [HttpPut("un-priority-jobs/{jobId}")]
+        public async Task<IActionResult> UnPriorityJob(int jobId)
+        {
+            try
+            {
+                var success = await _jobService.UnPriorityAsync(jobId);
+                if (!success)
+                {
+                    var job = await _jobService.GetJobById(jobId);
+                    if (job.Item1 == null)
+                        return NotFound(new { message = "Job not found." });
+                    else
+                        return BadRequest(new { message = "Fail to unset job priority" });
+                }
+
+                return Ok(new { message = "Job priority updated successfully.", id = jobId });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while unset the job priority." });
             }
         }
 

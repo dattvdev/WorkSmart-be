@@ -202,6 +202,40 @@ namespace WorkSmart.Repository.Repository
                 return false;
             }
         }
+        public async Task<bool> WithdrawApplicationAsync(int userId, int jobId)
+        {
+            var status = await GetApplicationDetails(userId, jobId);
+            if (status.Status == "Pending")
+            {
+                var application = await _context.Applications
+                    .FirstOrDefaultAsync(a => a.UserID == userId && a.JobID == jobId);
+                if (application == null)
+                    return false;
+                _dbSet.Remove(application);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                return false; // Không thể rút đơn nếu không phải trạng thái "Pending"
+            }
+            return true;
+        }
+        public async Task<Application> GetApplicationDetails(int userId, int jobId)
+        {
+            return await _context.Applications
+                .Where(a => a.UserID == userId && a.JobID == jobId)
+                .OrderByDescending(a => a.CreatedAt)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<bool> CheckReApplyJob(int userId, int jobId)
+        {
+            var application = await GetApplicationDetails(userId, jobId);
+            if (application == null) return true; // Chưa ứng tuyển
+            if (application.Status == "Approved") return false;
+            var applications = await _context.Applications.Where(Task => Task.UserID == userId && Task.JobID == jobId).ToListAsync();
+            return applications.Count() < 3;
+        }
 
     }
 }

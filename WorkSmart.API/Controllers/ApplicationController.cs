@@ -578,5 +578,42 @@ namespace WorkSmart.Api.Controllers
 </html>";
         }
 
+        [HttpDelete("withdraw/{userId}/{jobId}")]
+        public async Task<IActionResult> WithdrawApplication(int userId, int jobId)
+        {
+            var result = await _applicationService.WithdrawApplicationAsync(userId, jobId);
+            if (result)
+            {
+                return Ok(new { message = "Application withdrawn successfully." });
+            }
+            return BadRequest(new { message = "Failed to withdraw application." });
+        }
+        [HttpGet("application-details/{userId}/{jobId}")]
+        public async Task<IActionResult> GetApplicationDetails(int userId, int jobId)
+        {
+            try
+            {
+                var application = await _applicationService.GetApplicationDetails(userId, jobId);
+                return Ok(application);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+        [HttpGet("check-reapply/{userId}/{jobId}")]
+        public async Task<IActionResult> CheckReApplyJob(int userId, int jobId)
+        {
+            var result = await _applicationService.CheckReApplyJob(userId, jobId);
+            if (result)
+            {
+                return Ok(new { message = "You can reapply for this job." });
+            }
+            return BadRequest(new { message = "You cannot reapply for this job." });
+        }
     }
 }

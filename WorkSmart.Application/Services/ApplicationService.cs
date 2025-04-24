@@ -161,6 +161,23 @@ namespace WorkSmart.Application.Services
             return await _applicationRepository.UpdateInterviewDetailsAsync(applicationId, request);
         }
 
-
+        public async Task<bool> WithdrawApplicationAsync(int userId, int jobId)
+        {
+            return await _applicationRepository.WithdrawApplicationAsync(userId, jobId);
+        }
+        public async Task<ApplicationJobDto> GetApplicationDetails(int userId, int jobId)
+        {
+            var application = await _applicationRepository.GetApplicationDetails(userId, jobId);
+            if (application == null)
+            {
+                throw new KeyNotFoundException($"Application with User ID {userId} and Job ID {jobId} not found.");
+            }
+            var applicationDto = _mapper.Map<ApplicationJobDto>(application);
+            return applicationDto;
+        }
+        public async Task<bool> CheckReApplyJob(int userId, int jobId)
+        {
+            return await _applicationRepository.CheckReApplyJob(userId, jobId);
+        }
     }
 }

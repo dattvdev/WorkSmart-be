@@ -207,11 +207,9 @@ namespace WorkSmart.Repository.Repository
             var status = await GetApplicationDetails(userId, jobId);
             if (status.Status == "Pending")
             {
-                var application = await _context.Applications
-                    .FirstOrDefaultAsync(a => a.UserID == userId && a.JobID == jobId);
-                if (application == null)
+                if (status == null)
                     return false;
-                _dbSet.Remove(application);
+                _dbSet.Remove(status);
                 await _context.SaveChangesAsync();
             }
             else

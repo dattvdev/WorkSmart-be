@@ -662,6 +662,7 @@ namespace WorkSmart.Repository.Repository
 
             return defaultLimit;
         }
+
         // Set lai độ ưu tiên
         public async Task<bool> ToggleJobPriorityAsync(int jobId)
         {
@@ -673,23 +674,7 @@ namespace WorkSmart.Repository.Repository
             //Kiểm tra có đang ưu tiên không
             if (job.Priority)
             {
-                
-                //var subscription = await _context.Subscriptions
-                //    .Include(s => s.Package)
-                //    .FirstOrDefaultAsync(s => s.UserID == job.UserID);
-                ////kiểm tra gói
-                //if (subscription != null)
-                //{
-                //    // kiểm tra với gói có duration tới today đã 
-                //    var subscriptionStartDate = subscription.CreatedAt;
-                //    var durationInDays = subscription.Package.DurationInDays;
-                //    var expirationDate = subscriptionStartDate.AddDays(durationInDays);
-                //    // nếu current day đến ngày hết hạn thì không cho set lại
-                //    if (DateTime.Now < expirationDate)
-                //    {
-                //        return false;
-                //    }
-                //}
+
             }
             else
             {
@@ -738,8 +723,10 @@ namespace WorkSmart.Repository.Repository
 
                 job.Level = highestSubscription == null ? "Free": highestSubscription.Package.Name;
 
-                await _context.SaveChangesAsync();
             }
+
+            _dbSet.Update(job);
+            await _context.SaveChangesAsync();
 
             return true;
         }

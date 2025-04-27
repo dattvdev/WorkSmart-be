@@ -186,17 +186,6 @@ namespace WorkSmart.Application.Services
 
         public async Task<bool> ToggleJobPriorityAsync(int jobId)
         {
-            var job = await _jobRepository.GetByJobId(jobId);
-            if (job == null)
-                return false;
-
-            if (job.Status == JobStatus.Pending ||
-                job.Status == JobStatus.Rejected ||
-                (job.Deadline.HasValue && job.Deadline.Value < System.DateTime.Now))
-            {
-                return false;
-            }
-
             return await _jobRepository.ToggleJobPriorityAsync(jobId);
         }
 

@@ -21,7 +21,7 @@ namespace WorkSmart.Application.Services
         private readonly IMemoryCache _cache;
         private readonly IMapper _mapper;
         private readonly string _cohereKey;
-
+        private readonly FieldClassifierService _fieldClassifier;
         public JobRecommendationService(
             IJobRepository jobRepo,
             ICVRepository cvRepo,
@@ -29,7 +29,8 @@ namespace WorkSmart.Application.Services
             ICVEmbeddingRepository cvEmbedRepo,
             IMemoryCache cache,
             IConfiguration config,
-            IMapper mapper)
+            IMapper mapper,
+             FieldClassifierService fieldClassifier)
         {
             _jobRepo = jobRepo;
             _cvRepo = cvRepo;
@@ -38,6 +39,7 @@ namespace WorkSmart.Application.Services
             _cache = cache;
             _cohereKey = config["Cohere:Key"]!;
             _mapper = mapper;
+            _fieldClassifier = fieldClassifier;
         }
 
         public async Task<List<JobRecommendationDto>> GetRecommendedJobsForCV(int cvId)
@@ -116,36 +118,98 @@ namespace WorkSmart.Application.Services
             if (existing != null && (DateTime.Now - existing.UpdatedAt).TotalHours < 24)
                 return JsonConvert.DeserializeObject<List<float>>(existing.VectorJson);
 
-            var text = BuildCVText(cv);
+            var text = await BuildCVTextAsync(cv);
             var vector = await GetCohereEmbedding(text);
 
             await _cvEmbedRepo.SaveOrUpdate(cv.CVID, JsonConvert.SerializeObject(vector));
             return vector;
         }
 
-        private string BuildCVText(CV cv)
+        private async Task<string> BuildCVTextAsync(CV cv)
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"Job Position: {cv.JobPosition}");
+
+            sb.AppendLine($"Full Name: {cv.FirstName} {cv.LastName}");
+            sb.AppendLine($"Primary Job Position: {cv.JobPosition}");
             sb.AppendLine($"Work Type: {cv.WorkType}");
-            sb.AppendLine($"Education: {string.Join(", ", cv.Educations?.Select(e => e.Degree))}");
-            sb.AppendLine($"Experience: {string.Join(", ", cv.Experiences?.Select(e => e.JobPosition))}");
-            sb.AppendLine($"Skills: {string.Join(", ", cv.Skills?.Select(s => s.SkillName))}");
-            sb.AppendLine($"Summary: {cv.Summary}");
+
+            if (cv.Summary != null)
+                sb.AppendLine($"Summary: {cv.Summary}");
+
+            if (cv.Educations != null && cv.Educations.Any())
+            {
+                sb.AppendLine("Education:");
+                foreach (var edu in cv.Educations)
+                {
+                    sb.AppendLine($"- {edu.Degree} in {edu.Major} at {edu.SchoolName}");
+                }
+            }
+
+            if (cv.Experiences != null && cv.Experiences.Any())
+            {
+                sb.AppendLine("Professional Experiences:");
+                foreach (var exp in cv.Experiences)
+                {
+                    sb.AppendLine($"- {exp.JobPosition} at {exp.CompanyName}, focusing on {exp.Description}");
+                }
+            }
+
+            if (cv.Skills != null && cv.Skills.Any())
+            {
+                sb.AppendLine($"Skills: {string.Join(", ", cv.Skills.Select(s => s.SkillName))}");
+            }
+
+            if (cv.Certifications != null && cv.Certifications.Any())
+            {
+                sb.AppendLine("Certifications:");
+                foreach (var cert in cv.Certifications)
+                {
+                    sb.AppendLine($"- {cert.CertificateName}");
+                }
+            }
+
+            var rawText = sb.ToString();
+
+            // ✨ Gọi AI classification để enrich Field
+            var field = await _fieldClassifier.ClassifyFieldFromCV(rawText);
+
+            sb.AppendLine($"Field: {field}");
+
             return sb.ToString();
         }
+
+
 
         private string BuildJobText(Job job)
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"Title: {job.Title}");
-            sb.AppendLine($"Work Type: {job.WorkType}");
+
+            sb.AppendLine($"Job Title: {job.Title}");
             sb.AppendLine($"Location: {job.Location}");
-            sb.AppendLine($"Education: {job.Education}");
-            sb.AppendLine($"Experience Required: {job.Exp}");
-            sb.AppendLine($"Description: {job.Description}");
+            sb.AppendLine($"Work Type: {job.WorkType}");
+            sb.AppendLine($"Required Education: {job.Education}");
+            sb.AppendLine($"Required Experience (years): {job.Exp}");
+
+            if (!string.IsNullOrEmpty(job.Description))
+            {
+                var plainDescription = System.Text.RegularExpressions.Regex.Replace(job.Description, "<.*?>", String.Empty);
+                sb.AppendLine($"Job Description: {plainDescription}");
+            }
+
+            if (!string.IsNullOrEmpty(job.JobPosition))
+            {
+                sb.AppendLine($"Position Category: {job.JobPosition}");
+            }
+
+            if (!string.IsNullOrEmpty(job.Level))
+            {
+                sb.AppendLine($"Level: {job.Level}");
+            }
+
             return sb.ToString();
         }
+
+
 
         private async Task<List<float>> GetCohereEmbedding(string input)
         {

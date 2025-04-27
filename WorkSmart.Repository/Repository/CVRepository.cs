@@ -174,5 +174,10 @@ namespace WorkSmart.Repository.Repository
             }
             return defaultLimit;
         }
+        public async Task<bool> isCVApplied(int cvId)
+        {
+            return await _context.Applications.AnyAsync(a => a.CVID == cvId);
+        }
+
     }
 }

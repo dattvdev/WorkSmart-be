@@ -33,5 +33,10 @@ public class CVProfile : Profile
                 .ReverseMap();
 
         CreateMap<CV,CvUploadDto>().ReverseMap();
+        CreateMap<CV, CV>()
+        .ForMember(dest => dest.CVID, opt => opt.Ignore()) 
+        .ForMember(dest => dest.Applications, opt => opt.Ignore())
+        .ForMember(dest => dest.Embedding, opt => opt.Ignore());
+
     }
 }

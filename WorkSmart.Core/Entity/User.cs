@@ -49,8 +49,6 @@ namespace WorkSmart.Core.Entity
         public ICollection<Application>? Applications { get; set; }
         public ICollection<Transaction>? Transactions { get; set; }
         public ICollection<Subscription>? Subscriptions { get; set; }
-        public ICollection<ReportUser>? ReportsSent { get; set; }
-        public ICollection<ReportUser>? ReportsReceived { get; set; }
         public ICollection<PersonalMessage>? MessagesSent { get; set; }
         public ICollection<PersonalMessage>? MessagesReceived { get; set; }
         public ICollection<Job>? PostedJobs { get; set; }

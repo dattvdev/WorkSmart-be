@@ -128,7 +128,14 @@ namespace WorkSmart.Repository.Repository
             }
 
             // Đầu tiên sắp xếp theo Priority (true lên trước)
-            var orderedQuery = query.OrderByDescending(c => c.Priority);
+            var orderedQuery = query
+                .OrderByDescending(c => c.Priority)
+                .ThenByDescending(c =>
+                    c.Level == "Premium" ? 3 :
+                    c.Level == "Standard" ? 2 :
+                    c.Level == "Basic" ? 1 : 0
+                );
+
 
             // Sau đó sắp xếp theo UpdatedAt dựa vào MostRecent
             if (request.MostRecent)

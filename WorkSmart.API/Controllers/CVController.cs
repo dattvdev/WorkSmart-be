@@ -54,18 +54,18 @@ namespace WorkSmart.API.Controllers
             var cvs = await _cvService.GetAllCVsAsync(userId);
             return Ok(cvs);
         }
-
-        [HttpPut("{id}")]
-        public async Task<ActionResult<CVDto>> UpdateCV(int id,[FromBody] CVDto cvDto)
+        
+        [HttpPut("{cvId}/{userId}")]
+        public async Task<ActionResult<CVDto>> UpdateCV(int cvId,int userId,[FromBody] CVDto cvDto)
         {
-            if (id != cvDto.CVID)
+            if (cvId != cvDto.CVID)
             {
                 return BadRequest("CV ID mismatch.");
             }
 
             try
             {
-                var updatedCv = await _cvService.UpdateCVAsync(1,cvDto); // Giả định 1 là ID user
+                var updatedCv = await _cvService.UpdateCVAsync(userId, cvDto); // Giả định 1 là ID user
                 return Ok(updatedCv); // Trả về CV đã cập nhật
             }
             catch (UnauthorizedAccessException ex)

@@ -51,6 +51,7 @@ namespace WorkSmart.Application.Services
             if (request.PhoneNumber != null) user.PhoneNumber = request.PhoneNumber;
             if (request.Gender != null) user.Gender = request.Gender;
             if (request.Address != null) user.Address = request.Address;
+            if (request.IsPrivated != null) user.IsPrivated = (bool)request.IsPrivated;
             if (request.Avatar != null) user.Avatar = request.Avatar;
 
             user.UpdatedAt = DateTime.Now;

@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using WorkSmart.Core.Helpers;
 
 namespace WorkSmart.Core.Dto.CVDtos
 {
@@ -23,8 +24,8 @@ namespace WorkSmart.Core.Dto.CVDtos
         public string? FileName { get; set; }
         public string? FilePath { get; set; }
         public bool? IsHidden { get; set; } = false;
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = TimeHelper.GetVietnamTime();
+        public DateTime UpdatedAt { get; set; } = TimeHelper.GetVietnamTime();
         public ICollection<CVExperienceDto>? Experiences { get; set; }
         public ICollection<CVCertificationDto>? Certifications { get; set; }
         public ICollection<CVSkillDto>? Skills { get; set; }

@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using WorkSmart.Core.Dto.CVDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Interface;
+using WorkSmart.Core.Helpers;
 
 namespace WorkSmart.Application.Services
 {
@@ -67,7 +68,7 @@ namespace WorkSmart.Application.Services
                     // 🚀 1. Clone bản mới trước
                     var newCv = _mapper.Map<CV>(existingCv);
                     newCv.CVID = 0; // Reset ID để EF hiểu là CV mới
-                    newCv.UpdatedAt = DateTime.Now;
+                    newCv.UpdatedAt = TimeHelper.GetVietnamTime();
 
                     // Clone bảng con:
                     if (existingCv.Skills != null)
@@ -113,7 +114,7 @@ namespace WorkSmart.Application.Services
                     // 🚀 2. Hide CV cũ sau khi clone
                     existingCv.IsHidden = true;
                     existingCv.IsFeatured = false;
-                    existingCv.UpdatedAt = DateTime.Now;
+                    existingCv.UpdatedAt = TimeHelper.GetVietnamTime();
                     _cvRepository.Update(existingCv);
                     await _cvRepository.Save();
 
@@ -121,7 +122,7 @@ namespace WorkSmart.Application.Services
                     var oldCVID = newCv.CVID; // Lưu lại ID mới sinh ra
                     _mapper.Map(cvDto, newCv);
                     newCv.CVID = oldCVID; // Gán lại ID mới đúng
-                    newCv.UpdatedAt = DateTime.Now;
+                    newCv.UpdatedAt = TimeHelper.GetVietnamTime();
                     _cvRepository.Update(newCv);
                     await _cvRepository.Save();
 
@@ -131,7 +132,7 @@ namespace WorkSmart.Application.Services
                 {
                     // 🚀 Nếu CV chưa Apply, update trực tiếp
                     _mapper.Map(cvDto, existingCv);
-                    existingCv.UpdatedAt = DateTime.Now;
+                    existingCv.UpdatedAt = TimeHelper.GetVietnamTime();
                     _cvRepository.Update(existingCv);
                     await _cvRepository.Save();
 
@@ -173,8 +174,8 @@ namespace WorkSmart.Application.Services
                     UserID = userId,
                     FilePath = filePath,
                     FileName = fileName,
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = TimeHelper.GetVietnamTime(),
+                    UpdatedAt = TimeHelper.GetVietnamTime()
                 };
 
                 //// Điền thông tin Summary nếu có

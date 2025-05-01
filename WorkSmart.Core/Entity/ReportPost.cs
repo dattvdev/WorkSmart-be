@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WorkSmart.Core.Helpers;
 
 namespace WorkSmart.Core.Entity
 {
@@ -13,7 +14,7 @@ namespace WorkSmart.Core.Entity
         public int JobID { get; set; }
         public string? Content { get; set; }
         public string Status { get; set; } = "Pending"; // Pending, Completed, Rejected
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = TimeHelper.GetVietnamTime();
         public User Sender { get; set; }
         public Job Job { get; set; }
     }

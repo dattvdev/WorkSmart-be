@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WorkSmart.Core.Entity;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Core.Interface;
 
 namespace WorkSmart.Repository.Repository
@@ -25,7 +26,7 @@ namespace WorkSmart.Repository.Repository
                 Title = notification.Title,
                 Message = notification.Message,
                 Link = notification.Link,
-                CreatedAt = DateTime.Now
+                CreatedAt = TimeHelper.GetVietnamTime()
             };
             _dbSet.Add(addNoti);
             await _context.SaveChangesAsync();

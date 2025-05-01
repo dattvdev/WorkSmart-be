@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Core.Interface;
 
 namespace WorkSmart.Repository.Repository
@@ -95,7 +96,7 @@ namespace WorkSmart.Repository.Repository
             }
 
             application.RejectionReason = rejectionReason?.Trim();
-            application.UpdatedAt = DateTime.Now;
+            application.UpdatedAt = TimeHelper.GetVietnamTime();
 
             try
             {
@@ -186,7 +187,7 @@ namespace WorkSmart.Repository.Repository
                 return false;
             }
 
-            application.UpdatedAt = DateTime.Now;
+            application.UpdatedAt = TimeHelper.GetVietnamTime();
 
             // Lưu thông tin phỏng vấn
             // Nếu có bảng Interview riêng, bạn có thể tạo và lưu thông tin ở đây

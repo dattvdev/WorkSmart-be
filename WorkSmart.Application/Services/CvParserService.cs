@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WorkSmart.Core.Dto;
 using WorkSmart.Core.Entity;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository;
 
@@ -167,8 +168,8 @@ namespace WorkSmart.Application.Services
                 Email = parsedData.Email,
                 Link = filePath,
                 Title = fileName,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now,
+                CreatedAt = TimeHelper.GetVietnamTime(),
+                UpdatedAt = TimeHelper.GetVietnamTime(),
                 IsHidden = false
             };
 

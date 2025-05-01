@@ -4,6 +4,7 @@ using WorkSmart.Core.Dto.CVDtos;
 using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Core.Interface;
 
 namespace WorkSmart.Repository.Repository
@@ -94,7 +95,7 @@ namespace WorkSmart.Repository.Repository
 
             var activeSubscriptions = await _context.Subscriptions
                 .Include(s => s.Package)
-                .Where(s => s.UserID == userID && s.ExpDate > DateTime.Now)
+                .Where(s => s.UserID == userID && s.ExpDate > TimeHelper.GetVietnamTime())
                 .ToListAsync();
 
             int cvLimit;

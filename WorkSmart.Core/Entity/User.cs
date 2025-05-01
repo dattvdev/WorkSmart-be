@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
 using System.Transactions;
+using WorkSmart.Core.Helpers;
 
 namespace WorkSmart.Core.Entity
 {
@@ -30,8 +31,8 @@ namespace WorkSmart.Core.Entity
         public string? CompanyName { get; set; } //employer
         public string? CompanyDescription { get; set; }
         public string? WorkLocation {  get; set; } //employer
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = TimeHelper.GetVietnamTime();
+        public DateTime UpdatedAt { get; set; } = TimeHelper.GetVietnamTime();
         public int VerificationLevel { get; set; } = 1; // Cấp độ xác thực 1/2/3
         public string? TaxId { get; set; } // Mã số thuế
         public string? Industry { get; set; } // Lĩnh vực hoạt động

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository.Repository;
 
@@ -20,7 +21,7 @@ namespace WorkSmart.Application.Services
         public async Task<bool> CreateJobAlert(JobAlertCreateDto request)
         {
             var entity = _mapper.Map<JobAlert>(request);
-            entity.CreatedAt = DateTime.Now;
+            entity.CreatedAt = TimeHelper.GetVietnamTime();
 
             await _jobAlertRepo.Add(entity);
             await _jobAlertRepo.Save();

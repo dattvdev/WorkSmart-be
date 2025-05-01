@@ -8,6 +8,7 @@ using WorkSmart.Core.Enums;
 using WorkSmart.Core.Interface;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
+using WorkSmart.Core.Helpers;
 namespace WorkSmart.Repository.Repository
 {
     public class JobRepository : BaseRepository<Job>, IJobRepository
@@ -26,7 +27,7 @@ namespace WorkSmart.Repository.Repository
             if (job == null) return false;
 
             job.Status = JobStatus.Active;
-            //job.UpdatedAt = DateTime.Now;
+            //job.UpdatedAt = TimeHelper.GetVietnamTime();
 
             await _context.SaveChangesAsync();
             return true;
@@ -38,7 +39,7 @@ namespace WorkSmart.Repository.Repository
 
             job.Status = JobStatus.Rejected;
             job.ReasonRejectedJob = reason; // Store the rejection reason
-            job.UpdatedAt = DateTime.Now;
+            job.UpdatedAt = TimeHelper.GetVietnamTime();
 
             await _context.SaveChangesAsync();
             return true;
@@ -84,7 +85,7 @@ namespace WorkSmart.Repository.Repository
             if (job == null) return false;
 
             job.Status = JobStatus.Hidden;
-            job.UpdatedAt = DateTime.Now;
+            job.UpdatedAt = TimeHelper.GetVietnamTime();
 
             await _context.SaveChangesAsync();
             return true;
@@ -100,7 +101,7 @@ namespace WorkSmart.Repository.Repository
 
             var query = _JobdbSet.Include(c => c.User).AsQueryable();
             query = query.Where(c => c.Status == JobStatus.Active);
-            query = query.Where(c => c.Deadline > DateTime.Now);
+            query = query.Where(c => c.Deadline > TimeHelper.GetVietnamTime());
             if (!string.IsNullOrWhiteSpace(request.Category) && !request.Category.Equals("All Categories"))
             {
                 query = query.Where(c => c.CategoryID.Contains(request.Category)); 
@@ -275,7 +276,7 @@ namespace WorkSmart.Repository.Repository
 
             // Revert to previous status or set to Active
             job.Status = JobStatus.Active;
-            job.UpdatedAt = DateTime.Now;
+            job.UpdatedAt = TimeHelper.GetVietnamTime();
 
             await _context.SaveChangesAsync();
             return true;
@@ -297,7 +298,7 @@ namespace WorkSmart.Repository.Repository
         }
         public async Task<List<Job>> GetExpiredJobsAsync()
         {
-            var currentDate = DateTime.Now;
+            var currentDate = TimeHelper.GetVietnamTime();
             return await _dbSet
                 .Where(j => j.Deadline < currentDate)
                 .ToListAsync();
@@ -391,7 +392,7 @@ namespace WorkSmart.Repository.Repository
 
         public async Task<bool> CheckLimitCreateJob(int userID, int? maxJobsPerDayFromClient = null)
         {
-            var today = DateTime.Now.Date;
+            var today = TimeHelper.GetVietnamTime().Date;
 
             var jobCount = await _dbSet
                 .Where(j => j.UserID == userID)
@@ -413,7 +414,7 @@ namespace WorkSmart.Repository.Repository
             {
                 var activeSubscriptions = await _context.Subscriptions
                     .Include(s => s.Package)
-                    .Where(s => s.UserID == userID && s.ExpDate > DateTime.Now)
+                    .Where(s => s.UserID == userID && s.ExpDate > TimeHelper.GetVietnamTime())
                     .ToListAsync();
 
                 if (activeSubscriptions.Any())
@@ -455,7 +456,7 @@ namespace WorkSmart.Repository.Repository
 
         public async Task<JobCreationLimitDto> GetRemainingJobCreationLimit(int userID)
         {
-            var today = DateTime.Now.Date;
+            var today = TimeHelper.GetVietnamTime().Date;
 
             var jobsCreatedToday = await _dbSet
                 .Where(j => j.UserID == userID)
@@ -475,7 +476,7 @@ namespace WorkSmart.Repository.Repository
 
             var activeSubscriptions = await _context.Subscriptions
                 .Include(s => s.Package)
-                .Where(s => s.UserID == userID && s.ExpDate > DateTime.Now)
+                .Where(s => s.UserID == userID && s.ExpDate > TimeHelper.GetVietnamTime())
                 .ToListAsync();
 
             int dailyLimit;
@@ -540,7 +541,7 @@ namespace WorkSmart.Repository.Repository
 
             var activeSubscriptions = await _context.Subscriptions
                 .Include(s => s.Package)
-                .Where(s => s.UserID == userID && s.ExpDate > DateTime.Now)
+                .Where(s => s.UserID == userID && s.ExpDate > TimeHelper.GetVietnamTime())
                 .ToListAsync();
 
             int dailyLimit;
@@ -587,7 +588,7 @@ namespace WorkSmart.Repository.Repository
 
             var activeSubscription = await _context.Subscriptions
                 .Include(s => s.Package)
-                .Where(s => s.UserID == userID && s.ExpDate > DateTime.Now)
+                .Where(s => s.UserID == userID && s.ExpDate > TimeHelper.GetVietnamTime())
                 .ToListAsync();
 
             int prioritiedJobLimit;
@@ -697,7 +698,7 @@ namespace WorkSmart.Repository.Repository
 
             var activeSubscriptions = await _context.Subscriptions
                 .Include(s => s.Package)
-                .Where(s => s.UserID == job.UserID && s.ExpDate > DateTime.Now)
+                .Where(s => s.UserID == job.UserID && s.ExpDate > TimeHelper.GetVietnamTime())
                 .ToListAsync();
 
             int dailyLimit;
@@ -726,7 +727,7 @@ namespace WorkSmart.Repository.Repository
                         : 0)
                     .FirstOrDefault();
                 // Update the job's UpdatedAt timestamp
-                //job.UpdatedAt = DateTime.Now;
+                //job.UpdatedAt = TimeHelper.GetVietnamTime();
 
                 job.Level = highestSubscription == null ? "Free": highestSubscription.Package.Name;
 
@@ -792,7 +793,7 @@ namespace WorkSmart.Repository.Repository
 
         public async Task<IEnumerable<object>> JobStatusDashboard()
         {
-            var currentYear = DateTime.Now.Year;
+            var currentYear = TimeHelper.GetVietnamTime().Year;
 
             // Lấy danh sách số lượng job được đăng trong tháng
             var jobCountsByMonth = await _context.Jobs

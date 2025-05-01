@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Core.Interface;
 
 namespace WorkSmart.Repository.Repository
@@ -54,7 +55,7 @@ namespace WorkSmart.Repository.Repository
         public async Task<IEnumerable<object>> UserDashboard()
         {
             var userCountsByMonth = await _context.Users
-                .Where(u => u.CreatedAt.Year == DateTime.Now.Year) // Chỉ lấy dữ liệu năm hiện tại
+                .Where(u => u.CreatedAt.Year == TimeHelper.GetVietnamTime().Year) // Chỉ lấy dữ liệu năm hiện tại
                 .GroupBy(u => new { u.CreatedAt.Month }) // Nhóm theo tháng
                 .Select(g => new
                 {

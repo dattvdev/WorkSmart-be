@@ -13,6 +13,7 @@ using WorkSmart.Core.Interface;
 using WorkSmart.Repository.Repository;
 using WorkSmart.Core.Dto.ReportDtos;
 using WorkSmart.Core.Dto.AccountDtos;
+using WorkSmart.Core.Helpers;
 
 namespace WorkSmart.API.Controllers
 {
@@ -526,7 +527,7 @@ namespace WorkSmart.API.Controllers
                 await _sendMailService.SendMail(emailContent);
             }
 
-            user.UpdatedAt = DateTime.Now;
+            user.UpdatedAt = TimeHelper.GetVietnamTime();
             _accountRepository.Update(user);
             await _accountRepository.Save();
 
@@ -739,7 +740,7 @@ namespace WorkSmart.API.Controllers
             }
 
             //Gửi mail cho employer sau khi đã approve/reject license
-            user.UpdatedAt = DateTime.Now;
+            user.UpdatedAt = TimeHelper.GetVietnamTime();
             _accountRepository.Update(user);
             await _accountRepository.Save();
 
@@ -936,7 +937,7 @@ namespace WorkSmart.API.Controllers
                                             <a href='#'>Facebook</a> |
                                             <a href='#'>LinkedIn</a>
                                         </div>
-                                        <p>© {DateTime.Now.Year} {job.Item1.CompanyName}. All rights reserved.</p>
+                                        <p>© {TimeHelper.GetVietnamTime().Year} {job.Item1.CompanyName}. All rights reserved.</p>
                                     </div>
                                 </div>
                             </body>
@@ -1183,7 +1184,7 @@ namespace WorkSmart.API.Controllers
                 await _sendMailService.SendMail(rejectedEmailContent);
             }
 
-            report.CreatedAt = DateTime.Now;
+            report.CreatedAt = TimeHelper.GetVietnamTime();
             _reportRepository.Update(report);
             await _reportRepository.Save();
 

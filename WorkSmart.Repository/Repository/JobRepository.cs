@@ -887,6 +887,7 @@ namespace WorkSmart.Repository.Repository
 
             return result;
         }
+
         public async Task<IEnumerable<object>> JobLocationDashboard()
         {
             var jobs = await _context.Jobs
@@ -915,27 +916,30 @@ namespace WorkSmart.Repository.Repository
             // Tính tổng số lượng các thành phố còn lại
             var otherCount = locationCounts.Skip(4).Sum(l => l.Value);
 
-            // Chuyển đổi sang phần trăm
-            var locationPercentages = topLocations
+            // Tạo danh sách kết quả với cả số lượng công việc và phần trăm
+            var result = topLocations
                 .Select(l => new
                 {
-                    Name = l.Name,
-                    Value = Math.Round((double)l.Value / totalJobs * 100, 2) // Tính % & làm tròn 2 chữ số
+                    name = l.Name,
+                    value = Math.Round((double)l.Value / totalJobs * 100, 2), // Tính % & làm tròn 2 chữ số
+                    jobCount = l.Value // Thêm số lượng công việc thực tế
                 })
                 .ToList();
 
             // Nếu có thành phố khác ngoài top 4, thêm vào "Others"
             if (otherCount > 0)
             {
-                locationPercentages.Add(new
+                result.Add(new
                 {
-                    Name = "Others",
-                    Value = Math.Round((double)otherCount / totalJobs * 100, 2)
+                    name = "Others",
+                    value = Math.Round((double)otherCount / totalJobs * 100, 2),
+                    jobCount = otherCount
                 });
             }
 
-            return locationPercentages;
+            return result;
         }
+
         public async Task<bool> IsDuplicateJobTitle(int userID, string normalizedTitle)
         {
             return await _context.Jobs
@@ -962,6 +966,13 @@ namespace WorkSmart.Repository.Repository
         {
             return await _dbSet.Include(j => j.User)
                 .Where(j => j.Status == JobStatus.Active)
+                .ToListAsync();
+        }
+
+        public async Task<List<Job>> GetAllJob()
+        {
+            return await _dbSet
+                .Include(j => j.User)
                 .ToListAsync();
         }
 

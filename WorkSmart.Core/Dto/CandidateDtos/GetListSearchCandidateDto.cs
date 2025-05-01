@@ -17,6 +17,7 @@ namespace WorkSmart.Core.Dto.CandidateDtos
         public string? ConfirmationCode { get; set; }
         public bool IsEmailConfirmed { get; set; }
         public bool IsBanned { get; set; } = false;
+        public bool? IsPrivated { get; set; };
         public double Amount { get; set; } = 0;
         public string? BankName { get; set; }
         public string? BankNumber { get; set; }

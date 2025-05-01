@@ -1045,5 +1045,20 @@ namespace WorkSmart.API.Controllers
         </html>
     ";
         }
+        [HttpGet("getTopCategoryJob")]
+        public async Task<IActionResult> GetTopCategoryJob()
+        {
+            try
+            {
+                var result = await _jobService.TopCategoryJob();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error fetching top category jobs: {Message}", ex.Message);
+                return StatusCode(500, new { message = "An error occurred while fetching top category jobs." });
+            }
+        }
     }
+    
 }

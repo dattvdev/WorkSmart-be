@@ -982,5 +982,33 @@ namespace WorkSmart.Repository.Repository
 
             return true;
         }
+        public async Task<object> TopCategoryJob()
+        {
+            var topCategories = await _context.Jobs
+                .Where(j => j.Status == JobStatus.Active) 
+                .GroupBy(j => j.CategoryID)
+                .Select(g => new
+                {
+                    CategoryName = g.Key,
+                    Count = g.Count()
+                })
+                .OrderByDescending(x => x.Count)
+                .Take(4)
+                .ToListAsync();
+
+            var result = new Dictionary<string, object>();
+            for (int i = 0; i < topCategories.Count; i++)
+            {
+                result.Add($"top{i + 1}", new
+                {
+                    categoryname = topCategories[i].CategoryName,
+                    count = topCategories[i].Count
+                });
+            }
+
+            return result;
+        }
+
+
     }
 }

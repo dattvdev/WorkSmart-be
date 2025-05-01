@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WorkSmart.Core.Helpers;
 
 namespace WorkSmart.Core.Entity
 {
@@ -14,7 +15,7 @@ namespace WorkSmart.Core.Entity
         public string? Message { get; set; }
         public bool IsRead { get; set; } = false;
         public string? Link { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = TimeHelper.GetVietnamTime();
 
         public User User { get; set; }
 

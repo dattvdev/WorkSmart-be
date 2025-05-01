@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WorkSmart.Core.Enums;
+using WorkSmart.Core.Helpers;
 
 namespace WorkSmart.Core.Dto.AdminDtos
 {
@@ -26,8 +27,8 @@ namespace WorkSmart.Core.Dto.AdminDtos
         public DateTime? Deadline { get; set; }
         public JobStatus? Status { get; set; }
         //public bool? IsHidden { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = TimeHelper.GetVietnamTime();
+        public DateTime UpdatedAt { get; set; } = TimeHelper.GetVietnamTime();
         public string? ReasonRejectedJob { get; set; }
         public string? CategoryID { get; set; }
     }

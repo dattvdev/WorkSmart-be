@@ -13,6 +13,7 @@ using WorkSmart.Core.Dto.CandidateDtos;
 using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Core.Interface;
 
 namespace WorkSmart.API.Controllers
@@ -490,7 +491,7 @@ namespace WorkSmart.API.Controllers
                                             <a href='#'>Facebook</a> |
                                             <a href='#'>LinkedIn</a>
                                         </div>
-                                        <p>© {DateTime.Now.Year} {job.Item1.CompanyName}. All rights reserved.</p>
+                                        <p>© {TimeHelper.GetVietnamTime().Year} {job.Item1.CompanyName}. All rights reserved.</p>
                                     </div>
                                 </div>
                             </body>
@@ -639,13 +640,13 @@ namespace WorkSmart.API.Controllers
                 employerFreePlan = new EmployerFreePlan
                 {
                     MaxJobsPerDay = 1,
-                    UpdatedAt = DateTime.Now.ToString(),
+                    UpdatedAt = TimeHelper.GetVietnamTime().ToString(),
                     DefaultFeaturedJob = 0
                 },
                 candidateFreePlan = new CandidateFreePlan
                 {
                     MaxCVsPerDay = 1,
-                    UpdatedAt = DateTime.Now.ToString()
+                    UpdatedAt = TimeHelper.GetVietnamTime().ToString()
                 }
             };
         }
@@ -701,7 +702,7 @@ namespace WorkSmart.API.Controllers
                 }
 
                 // Add timestamp
-                employerFreePlan.UpdatedAt = DateTime.Now.ToString();
+                employerFreePlan.UpdatedAt = TimeHelper.GetVietnamTime().ToString();
 
                 FreePlanSettings settings;
                 if (System.IO.File.Exists(filePath))
@@ -743,7 +744,7 @@ namespace WorkSmart.API.Controllers
                 }
 
                 // Add timestamp
-                candidateFreePlan.UpdatedAt = DateTime.Now.ToString();
+                candidateFreePlan.UpdatedAt = TimeHelper.GetVietnamTime().ToString();
 
                 FreePlanSettings settings;
                 if (System.IO.File.Exists(filePath))
@@ -1037,7 +1038,7 @@ namespace WorkSmart.API.Controllers
                         {job.CompanyName}</p>
                     </div>
                     <div class='footer'>
-                        <p>© {DateTime.Now.Year} {job.CompanyName}. All rights reserved.</p>
+                        <p>© {TimeHelper.GetVietnamTime().Year} {job.CompanyName}. All rights reserved.</p>
                         <p>This email was sent to you because your profile matches our job requirements.</p>
                     </div>
                 </div>
@@ -1045,5 +1046,20 @@ namespace WorkSmart.API.Controllers
         </html>
     ";
         }
+        [HttpGet("getTopCategoryJob")]
+        public async Task<IActionResult> GetTopCategoryJob()
+        {
+            try
+            {
+                var result = await _jobService.TopCategoryJob();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error fetching top category jobs: {Message}", ex.Message);
+                return StatusCode(500, new { message = "An error occurred while fetching top category jobs." });
+            }
+        }
     }
+    
 }

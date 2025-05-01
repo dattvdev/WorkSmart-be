@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WorkSmart.Core.Entity;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Core.Interface;
 
 namespace WorkSmart.Repository.Repository
@@ -25,7 +26,7 @@ namespace WorkSmart.Repository.Repository
         }
         public async Task<IEnumerable<object>> SubscriptionRevenueDashboard()
         {
-            var currentYear = DateTime.Now.Year;
+            var currentYear = TimeHelper.GetVietnamTime().Year;
 
             // Lấy danh sách tất cả gói package hiện có
             var packages = await _context.Packages

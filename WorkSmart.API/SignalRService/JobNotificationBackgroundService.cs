@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using WorkSmart.API.SignalRService;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.JobDtos;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Core.Interface;
 
 public class JobNotificationBackgroundService : BackgroundService
@@ -35,7 +36,7 @@ public class JobNotificationBackgroundService : BackgroundService
         {
             try
             {
-                var now = DateTime.Now;
+                var now = TimeHelper.GetVietnamTime();
                 var scheduledTime = new DateTime(now.Year, now.Month, now.Day, 8, 0, 0);
 
                 if (now > scheduledTime)
@@ -50,7 +51,7 @@ public class JobNotificationBackgroundService : BackgroundService
                     delay = TimeSpan.FromDays(1);  // set thời gian chạy ở đây (sau bao nhiêu phút gửi lại 1 lần )
                 }
 
-                _logger.LogInformation("Next job notification check scheduled at: {time}", DateTime.Now + delay);
+                _logger.LogInformation("Next job notification check scheduled at: {time}", TimeHelper.GetVietnamTime() + delay);
 
                 await Task.Delay(delay, stoppingToken);
 

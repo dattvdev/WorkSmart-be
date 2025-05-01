@@ -3,6 +3,7 @@ using WorkSmart.Core.Dto.ReportDtos;
 using WorkSmart.Core.Dto.AdminDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Interface;
+using WorkSmart.Core.Helpers;
 
 namespace WorkSmart.Application.Services
 {
@@ -37,7 +38,7 @@ namespace WorkSmart.Application.Services
                 JobID = reportDto.JobId,
                 Content = reportDto.Content,
                 Status = "Pending",
-                CreatedAt = DateTime.Now
+                CreatedAt = TimeHelper.GetVietnamTime()
             };
 
             await _reportRepository.CreateReport(reportPost);
@@ -63,7 +64,7 @@ namespace WorkSmart.Application.Services
                 return false;
 
             report.Status = status;
-            report.CreatedAt = DateTime.Now;
+            report.CreatedAt = TimeHelper.GetVietnamTime();
 
             _reportRepository.Update(report);
             await _reportRepository.Save();

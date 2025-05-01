@@ -39,5 +39,6 @@ namespace WorkSmart.Core.Interface
         Task<List<Job>> GetAllJobActive();
         Task<bool> IsDuplicateJobTitle(int userID, string normalizedTitle);
         Task<bool> IsDuplicateJobTitleForUpdate(int userID, int jobID, string normalizedTitle);
+        Task<object> TopCategoryJob();
     }
 }

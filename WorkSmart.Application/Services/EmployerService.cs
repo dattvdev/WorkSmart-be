@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WorkSmart.Core.Dto.CandidateDtos;
 using WorkSmart.Core.Dto.EmployerDtos;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Core.Interface;
 
 namespace WorkSmart.Application.Services
@@ -40,7 +41,7 @@ namespace WorkSmart.Application.Services
             if (request.Address != null) user.Address = request.Address;
             if (request.Avatar != null) user.Avatar = request.Avatar;
 
-            user.UpdatedAt = DateTime.Now;
+            user.UpdatedAt = TimeHelper.GetVietnamTime();
             _accountRepository.Update(user);
             await _accountRepository.Save();
 
@@ -76,7 +77,7 @@ namespace WorkSmart.Application.Services
             user.CompanyWebsite = request.CompanyWebsite;
             user.TaxVerificationStatus = "Pending";
             user.TaxVerificationReason = null;
-            user.UpdatedAt = DateTime.Now;
+            user.UpdatedAt = TimeHelper.GetVietnamTime();
 
             _accountRepository.Update(user);
             await _accountRepository.Save();
@@ -116,7 +117,7 @@ namespace WorkSmart.Application.Services
             user.BusinessLicenseImage = imageUrl;
             user.LicenseVerificationStatus = "Pending";
             user.LicenseVerificationReason = null;
-            user.UpdatedAt = DateTime.Now;
+            user.UpdatedAt = TimeHelper.GetVietnamTime();
 
             _accountRepository.Update(user);
             await _accountRepository.Save();

@@ -12,6 +12,7 @@ using WorkSmart.Repository;
 using Microsoft.EntityFrameworkCore;
 using WorkSmart.Application.Services;
 using WorkSmart.API.SignalRService;
+using WorkSmart.Core.Helpers;
 
 namespace WorkSmart.API.Controllers
 {
@@ -67,7 +68,7 @@ namespace WorkSmart.API.Controllers
                     Content = $"Pay {package.Name}",
                     Price = package.Price,
                     Status = "PENDING",
-                    CreatedAt = DateTime.Now
+                    CreatedAt = TimeHelper.GetVietnamTime()
                 };
 
                 _context.Transactions.Add(transaction);
@@ -178,7 +179,7 @@ namespace WorkSmart.API.Controllers
                 {
                     // Cập nhật trạng thái thanh toán
                     existingTransaction.Status = status == "FAILED" ? "FAILED" : "CANCELLED";
-                    existingTransaction.UpdatedAt = DateTime.Now;
+                    existingTransaction.UpdatedAt = TimeHelper.GetVietnamTime();
                     await _context.SaveChangesAsync();
 
                     string notificationTitle = status == "FAILED" ? "Payment Failed" : "Payment Cancelled";
@@ -328,7 +329,7 @@ namespace WorkSmart.API.Controllers
                     if (existingSubscription != null)
                     {
                         // Cập nhật subscription hiện có - cộng dồn thời hạn
-                        if (existingSubscription.ExpDate > DateTime.Now)
+                        if (existingSubscription.ExpDate > TimeHelper.GetVietnamTime())
                         {
                             // Nếu subscription vẫn còn hạn, cộng thêm vào thời hạn hiện tại
                             newExpDate = existingSubscription.ExpDate.AddDays(package.DurationInDays);
@@ -336,7 +337,7 @@ namespace WorkSmart.API.Controllers
                         else
                         {
                             // Nếu subscription đã hết hạn, tính từ hiện tại
-                            newExpDate = DateTime.Now.AddDays(package.DurationInDays);
+                            newExpDate = TimeHelper.GetVietnamTime().AddDays(package.DurationInDays);
                         }
 
                         existingSubscription.ExpDate = newExpDate;
@@ -349,15 +350,15 @@ namespace WorkSmart.API.Controllers
                         {
                             PackageID = package.PackageID,
                             UserID = existingTransaction.UserID,
-                            ExpDate = DateTime.Now.AddDays(package.DurationInDays),
-                            CreatedAt = DateTime.Now
+                            ExpDate = TimeHelper.GetVietnamTime().AddDays(package.DurationInDays),
+                            CreatedAt = TimeHelper.GetVietnamTime()
                         };
 
                         _context.Subscriptions.Add(newSubscription);
                     }
 
                     existingTransaction.Status = "PAID";
-                    existingTransaction.UpdatedAt = DateTime.Now;
+                    existingTransaction.UpdatedAt = TimeHelper.GetVietnamTime();
 
                     await _context.SaveChangesAsync();
 
@@ -445,7 +446,7 @@ namespace WorkSmart.API.Controllers
                 <p><strong>Date:</strong> {existingTransaction.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")}</p>
                 <p><strong>Status:</strong> Paid</p>
                 <p><strong>Package:</strong> {packageName}</p>
-                <p><strong>Subscription Period:</strong> {(existingSubscription != null && existingSubscription.ExpDate > DateTime.Now ? "Extended until" : "Valid until")}</p>
+                <p><strong>Subscription Period:</strong> {(existingSubscription != null && existingSubscription.ExpDate > TimeHelper.GetVietnamTime() ? "Extended until" : "Valid until")}</p>
             </div>
             <p>You now have full access to all the features included in your package. Visit your dashboard to start using the service.</p>
         </div>
@@ -534,7 +535,7 @@ namespace WorkSmart.API.Controllers
                 }
 
                 existingTransaction.Status = "CANCELLED";
-                existingTransaction.UpdatedAt = DateTime.Now;
+                existingTransaction.UpdatedAt = TimeHelper.GetVietnamTime();
                 await _context.SaveChangesAsync();
 
                 await _signalRService.SendNotificationToUser(
@@ -595,8 +596,8 @@ namespace WorkSmart.API.Controllers
         //                {
         //                    UserID = transaction.UserID,
         //                    PackageID = package.PackageID,
-        //                    ExpDate = DateTime.Now.AddDays(30), // Mặc định 30 ngày
-        //                    CreatedAt = DateTime.Now
+        //                    ExpDate = TimeHelper.GetVietnamTime().AddDays(30), // Mặc định 30 ngày
+        //                    CreatedAt = TimeHelper.GetVietnamTime()
         //                };
 
         //                _context.Subscriptions.Add(subscription);

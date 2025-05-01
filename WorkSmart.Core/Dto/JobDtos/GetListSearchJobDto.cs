@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
+using WorkSmart.Core.Helpers;
 
 namespace WorkSmart.Core.Dto.JobDtos
 {
@@ -30,8 +31,8 @@ namespace WorkSmart.Core.Dto.JobDtos
 
         public DateTime? Deadline { get; set; }
         public JobStatus? Status { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = TimeHelper.GetVietnamTime();
+        public DateTime UpdatedAt { get; set; } = TimeHelper.GetVietnamTime();
 
         public ICollection<FavoriteJob>? FavoriteJobs { get; set; }
         public ICollection<Tag>? Tags { get; set; }

@@ -236,5 +236,9 @@ namespace WorkSmart.Application.Services
         {
             return await _jobRepository.UnPriorityAsync(jobId);
         }
+        public async Task<object> TopCategoryJob()
+        {
+            return await _jobRepository.TopCategoryJob();
+        }
     }
 }

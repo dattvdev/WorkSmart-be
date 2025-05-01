@@ -4,6 +4,7 @@ using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.PackageDtos;
 using WorkSmart.Core.Dto.SubscriptionDtos;
 using WorkSmart.Core.Entity;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository.Repository;
 
@@ -132,7 +133,7 @@ namespace WorkSmart.API.Controllers
                 var subscriptionsWithPackages = await _subscriptionService.GetByUserId(userId);
                 // Lọc ra các subscription vẫn còn hiệu lực
                 var activeSubscriptions = subscriptionsWithPackages
-                    .Where(item => item.subscription.ExpDate > DateTime.Now)
+                    .Where(item => item.subscription.ExpDate > TimeHelper.GetVietnamTime())
                     .ToList();
 
                 if (activeSubscriptions.Any())

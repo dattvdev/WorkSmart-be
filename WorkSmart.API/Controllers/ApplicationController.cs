@@ -7,6 +7,7 @@ using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.ApplicationDtos;
 using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Dto.NotificationSettingDtos;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Core.Interface;
 using static iTextSharp.text.pdf.qrcode.Version;
 
@@ -606,7 +607,7 @@ namespace WorkSmart.Api.Controllers
         </div>
         
         <div style=""background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #777;"">
-            <p style=""margin: 0;"">© {DateTime.Now.Year} {companyName}. All rights reserved.</p>
+            <p style=""margin: 0;"">© {TimeHelper.GetVietnamTime().Year} {companyName}. All rights reserved.</p>
         </div>
     </div>
 </body>

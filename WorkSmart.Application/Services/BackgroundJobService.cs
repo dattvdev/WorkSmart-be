@@ -2,6 +2,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using WorkSmart.Core.Helpers;
 
 public class BackgroundJobService : BackgroundService
 {
@@ -9,7 +10,7 @@ public class BackgroundJobService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            Console.WriteLine($"Công việc chạy nền lúc: {DateTime.Now}");
+            Console.WriteLine($"Công việc chạy nền lúc: {TimeHelper.GetVietnamTime()}");
             await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken); // Chạy mỗi 1 phút
         }
     }

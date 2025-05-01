@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
+using WorkSmart.Core.Helpers;
 
 namespace WorkSmart.Core.Dto.JobDtos
 {
@@ -26,7 +27,7 @@ namespace WorkSmart.Core.Dto.JobDtos
         public bool Priority { get; set; } = false;
         public DateTime? Deadline { get; set; }
         public JobStatus? Status { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = TimeHelper.GetVietnamTime();
         public int? MaxJobsPerDay { get; set; }
     }
 }

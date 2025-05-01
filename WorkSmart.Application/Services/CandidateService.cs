@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WorkSmart.Core.Dto.CandidateDtos;
 using WorkSmart.Core.Entity;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Core.Interface;
 
 namespace WorkSmart.Application.Services
@@ -54,7 +55,7 @@ namespace WorkSmart.Application.Services
             if (request.IsPrivated != null) user.IsPrivated = (bool)request.IsPrivated;
             if (request.Avatar != null) user.Avatar = request.Avatar;
 
-            user.UpdatedAt = DateTime.Now;
+            user.UpdatedAt = TimeHelper.GetVietnamTime();
             _candidateRepository.Update(user);
             await _candidateRepository.Save();
 

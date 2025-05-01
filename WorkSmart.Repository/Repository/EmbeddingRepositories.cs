@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WorkSmart.Core.Entity;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Repository;
 
 public interface ICVEmbeddingRepository
@@ -35,7 +36,7 @@ public class CVEmbeddingRepository : ICVEmbeddingRepository
         else
         {
             entity.VectorJson = vectorJson;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = TimeHelper.GetVietnamTime();
         }
         await _context.SaveChangesAsync();
     }
@@ -69,7 +70,7 @@ public class JobEmbeddingRepository : IJobEmbeddingRepository
         else
         {
             entity.VectorJson = vectorJson;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = TimeHelper.GetVietnamTime();
         }
         await _context.SaveChangesAsync();
     }

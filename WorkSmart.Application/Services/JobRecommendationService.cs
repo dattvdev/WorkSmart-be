@@ -7,6 +7,7 @@ using System.Text;
 using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository;
 
@@ -115,7 +116,7 @@ namespace WorkSmart.Application.Services
         private async Task<List<float>> GetCVEmbedding(CV cv)
         {
             var existing = await _cvEmbedRepo.GetByCVId(cv.CVID);
-            if (existing != null && (DateTime.Now - existing.UpdatedAt).TotalHours < 24)
+            if (existing != null && (TimeHelper.GetVietnamTime() - existing.UpdatedAt).TotalHours < 24)
                 return JsonConvert.DeserializeObject<List<float>>(existing.VectorJson);
 
             var text = await BuildCVTextAsync(cv);

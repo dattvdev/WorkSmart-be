@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WorkSmart.Core.Dto.CandidateDtos;
 using WorkSmart.Core.Entity;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Core.Interface;
 
 namespace WorkSmart.Repository.Repository
@@ -28,7 +29,7 @@ namespace WorkSmart.Repository.Repository
             if (!string.IsNullOrWhiteSpace(request.JobPosition) && request.Exp > 0)
             {
                 query = query.Where(c => c.Experiences.Any(e =>
-                    ((e.EndedAt ?? DateTime.Now).Year - e.StartedAt.Value.Year) >= request.Exp &&
+                    ((e.EndedAt ?? TimeHelper.GetVietnamTime()).Year - e.StartedAt.Value.Year) >= request.Exp &&
                     e.JobPosition.ToLower() == request.JobPosition.ToLower()
                 ));
             }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WorkSmart.Core.Entity;
+using WorkSmart.Core.Helpers;
 
 namespace WorkSmart.Core.Dto.TransactionDtos
 {
@@ -15,8 +16,8 @@ namespace WorkSmart.Core.Dto.TransactionDtos
         public string Content { get; set; }
         public double Price { get; set; }
         public string Status { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = TimeHelper.GetVietnamTime();
+        public DateTime UpdatedAt { get; set; } = TimeHelper.GetVietnamTime();
 
         public string UserName { get; set; }
         public string UserEmail { get; set; }

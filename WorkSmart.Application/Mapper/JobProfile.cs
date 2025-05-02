@@ -3,6 +3,7 @@ using WorkSmart.Core.Dto.CandidateDtos;
 using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
+using WorkSmart.Core.Helpers;
 
 namespace WorkSmart.Application.Mapper
 {
@@ -32,7 +33,7 @@ namespace WorkSmart.Application.Mapper
 
             // Mapping UpdateJobDto,Job
             CreateMap<UpdateJobDto, Job>()
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => TimeHelper.GetVietnamTime()))
                 .ForMember(dest => dest.Tags, opt => opt.MapFrom((src, dest, destMember, context) =>
         context.Items.ContainsKey("Tags") ? context.Items["Tags"] as ICollection<Tag> : new List<Tag>()
     ));
@@ -40,7 +41,7 @@ namespace WorkSmart.Application.Mapper
                 .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.User.Avatar))
                 .ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src => src.User.CompanyName));
             CreateMap<Job, ExpiredJobDto>()
-                .ForMember(dest => dest.HiddenAt, opt => opt.MapFrom(src => DateTime.Now));
+                .ForMember(dest => dest.HiddenAt, opt => opt.MapFrom(src => TimeHelper.GetVietnamTime()));
 
             CreateMap<Job, JobActiveDto>()
             .ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src => src.User.CompanyName));

@@ -57,6 +57,20 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<GetPackageDto>> Update(int id,GetPackageDto dto)
+        {
+            if (id != dto.PackageID)
+                return BadRequest();
+
+            var updatedPackage = await _packageService.UpdatePackageAsync(dto);
+            if (updatedPackage == null)
+                return NotFound();
+
+            return Ok(updatedPackage);
+        }
+
         [HttpDelete("delete/{id}")]
         public IActionResult Delete(int id)
         {

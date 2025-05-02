@@ -10,6 +10,7 @@ using System.Text;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.AccountDtos;
 using WorkSmart.Core.Entity;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Core.Interface;
 using WorkSmart.Repository;
 using WorkSmart.Repository.Repository;
@@ -71,7 +72,7 @@ namespace WorkSmart.API.Controllers
                     IsEmailConfirmed = false,
                     Avatar = request.Avatar,
                     NotificationSetting = notificationSetting,
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = TimeHelper.GetVietnamTime(),
                 };
 
                 if(request.Role == "Employer")
@@ -355,7 +356,8 @@ namespace WorkSmart.API.Controllers
                         user.Email,
                         user.FullName,
                         user.Avatar,
-                        user.Role
+                        user.Role,
+                        user.CompanyName
                     }
                 });
             }
@@ -388,7 +390,7 @@ namespace WorkSmart.API.Controllers
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword(googleLoginRequest.Email),
                         IsEmailConfirmed = true,
                         NotificationSetting = notificationSetting,
-                        CreatedAt = DateTime.Now,
+                        CreatedAt = TimeHelper.GetVietnamTime(),
                     };
 
                     if(googleLoginRequest.Role == "Employer")
@@ -516,13 +518,14 @@ namespace WorkSmart.API.Controllers
                         user.Email,
                         user.FullName,
                         user.Avatar,
-                        user.Role
+                        user.Role,
+                        user.CompanyName
                     }
                 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Error = "An error occurred while processing your request." });
+                return StatusCode(500, new { Error = ex });
             }
         }
 
@@ -977,7 +980,7 @@ namespace WorkSmart.API.Controllers
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddHours(99),
+                expires: TimeHelper.GetVietnamTime().AddHours(99),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

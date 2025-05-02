@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using WorkSmart.API.SignalRService;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.JobDtos;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Core.Interface;
 
 public class JobNotificationBackgroundService : BackgroundService
@@ -12,17 +13,19 @@ public class JobNotificationBackgroundService : BackgroundService
     private readonly ILogger<JobNotificationBackgroundService> _logger;
     private readonly ISendMailService _sendMailService;
     private readonly IHostEnvironment _environment;
+    private readonly string baseUrl;
 
     public JobNotificationBackgroundService(
         IServiceScopeFactory scopeFactory,
         ILogger<JobNotificationBackgroundService> logger,
         ISendMailService sendMailService,
-        IHostEnvironment environment)
+        IHostEnvironment environment, IConfiguration config)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
         _sendMailService = sendMailService;
         _environment = environment;
+        baseUrl = config["FrontendUrl:BaseUrl"]!;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -33,8 +36,7 @@ public class JobNotificationBackgroundService : BackgroundService
         {
             try
             {
-                // Tính toán thời gian đến 8 giờ sáng hôm sau
-                var now = DateTime.Now;
+                var now = TimeHelper.GetVietnamTime();
                 var scheduledTime = new DateTime(now.Year, now.Month, now.Day, 8, 0, 0);
 
                 if (now > scheduledTime)
@@ -44,13 +46,12 @@ public class JobNotificationBackgroundService : BackgroundService
 
                 var delay = scheduledTime - now;
 
-                // Trong môi trường dev, sử dụng thời gian ngắn hơn để test
                 if (_environment.IsDevelopment())
                 {
                     delay = TimeSpan.FromDays(1);  // set thời gian chạy ở đây (sau bao nhiêu phút gửi lại 1 lần )
                 }
 
-                _logger.LogInformation("Next job notification check scheduled at: {time}", DateTime.Now + delay);
+                _logger.LogInformation("Next job notification check scheduled at: {time}", TimeHelper.GetVietnamTime() + delay);
 
                 await Task.Delay(delay, stoppingToken);
 
@@ -71,25 +72,32 @@ public class JobNotificationBackgroundService : BackgroundService
 
             using var scope = _scopeFactory.CreateScope();
             var jobRepository = scope.ServiceProvider.GetRequiredService<IJobRepository>();
+            var jobService = scope.ServiceProvider.GetRequiredService<JobService>(); // Thêm JobService
             var notificationService = scope.ServiceProvider.GetRequiredService<NotificationService>();
             var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-            var signalRService = scope.ServiceProvider.GetRequiredService<SignalRNotificationService>(); // Lấy từ scope
+            var signalRService = scope.ServiceProvider.GetRequiredService<SignalRNotificationService>();
 
             var expiringJobs = await jobRepository.GetExpiringJobsAsync();
             _logger.LogInformation("Found {Count} expiring jobs", expiringJobs.Count);
 
-            foreach (var job in expiringJobs)
+            var result = await jobService.HideExpiredJobsAsync();
+            _logger.LogInformation("Automatically hid {Count} expired jobs", result.HiddenCount);
+
+            foreach (var expiredJob in result.HiddenJobs)
             {
                 try
                 {
-                    var today = DateTime.UtcNow.Date;
-                    int daysRemaining = job.Deadline.HasValue ? (job.Deadline.Value.Date - today).Days : 0;
+                    
+                    var jobId = expiredJob.JobID;
+                    var job = await jobRepository.GetById(jobId);
 
-                    var user = await userRepository.GetById(job.UserID);
-                    if (user != null && !string.IsNullOrEmpty(user.Email))
+                    if (job != null)
                     {
-                        string subject = $"Job #{job.Title} Is About To Expire";
-                        string body = $@"
+                        var user = await userRepository.GetById(job.UserID);
+                        if (user != null && !string.IsNullOrEmpty(user.Email))
+                        {
+                            string subject = $"Job #{job.Title} Has Expired";
+                            string body = $@"
                             <html>
                             <head>
                                 <style>
@@ -100,59 +108,7 @@ public class JobNotificationBackgroundService : BackgroundService
                                         margin: 0;
                                         padding: 0;
                                     }}
-                                    .container {{
-                                        max-width: 600px;
-                                        margin: 0 auto;
-                                        padding: 20px;
-                                    }}
-                                    .header {{
-                                        background-color: #0078d4;
-                                        color: white;
-                                        padding: 20px;
-                                        text-align: center;
-                                        border-radius: 5px 5px 0 0;
-                                    }}
-                                    .content {{
-                                        padding: 20px;
-                                        border: 1px solid #dddddd;
-                                        border-top: none;
-                                        border-radius: 0 0 5px 5px;
-                                    }}
-                                    .job-details {{
-                                        background-color: #f5f5f5;
-                                        padding: 15px;
-                                        margin: 15px 0;
-                                        border-left: 4px solid #0078d4;
-                                    }}
-                                    .btn {{
-                                        display: inline-block;
-                                        background-color: #4CAF50;
-                                        color: white;
-                                        padding: 12px 30px;
-                                        text-decoration: none;
-                                        border-radius: 30px;
-                                        font-weight: bold;
-                                        margin: 20px 0;
-                                        text-align: center;
-                                    }}
-                                    .footer {{
-                                        margin-top: 20px;
-                                        text-align: center;
-                                        color: #777777;
-                                        font-size: 12px;
-                                    }}
-                                    .tags {{
-                                        margin-top: 15px;
-                                    }}
-                                    .tag {{
-                                        display: inline-block;
-                                        background-color: #f0f8ff;
-                                        padding: 5px 10px;
-                                        margin-right: 5px;
-                                        border-radius: 15px;
-                                        font-size: 12px;
-                                        color: #4285f4;
-                                    }}
+                                    /* CSS styles khác... */
                                 </style>
                             </head>
                             <body>
@@ -162,23 +118,22 @@ public class JobNotificationBackgroundService : BackgroundService
                                     </div>
                                     <div class=""content"">
                                         <p>Hello,</p>
-            
-                                        <p>We wanted to let you know that your job posting is about to expire.</p>
-            
+    
+                                        <p>We wanted to let you know that your job posting has expired and has been automatically hidden.</p>
+    
                                         <div class=""job-details"">
                                             <h3>{job.Title}</h3>
-                                            <p><strong>Days Remaining:</strong> {daysRemaining}</p>
-                
+                                            <p><strong>Status:</strong> Hidden (Expired)</p>
                                         </div>
-            
-                                        <p>To extend the posting period or make any changes, please visit your dashboard.</p>
-            
+    
+                                        <p>If you wish to extend the posting period, please visit your dashboard.</p>
+    
                                         <div style=""text-align: center;"">
-                                            <a href=""http://localhost:5173/employer/manage-jobs"" class=""btn"">Manage Job Posting</a>
+                                            <a href=""{baseUrl}"" class=""btn"">Manage Job Posting</a>
                                         </div>
-            
+    
                                         <p>If you have any questions, please don't hesitate to contact us.</p>
-            
+    
                                         <p>Best regards,<br>
                                         Recruitment Team</p>
                                     </div>
@@ -189,21 +144,22 @@ public class JobNotificationBackgroundService : BackgroundService
                             </body>
                             </html>";
 
-                        await _sendMailService.SendEmailAsync(user.Email, subject, body);
-                        await signalRService.SendNotificationToUser( // Sử dụng từ scope
-                           job.UserID,
-                           $"Job {job.Title} sắp hết hạn",
-                           $"Job sẽ hết hạn trong {daysRemaining} ngày.",
-                           $"jobs/detail/{job.JobID}"
-                       );
-                        _logger.LogInformation("Sent email to {Email} for expiring Job {JobID}", user.Email, job.JobID);
-                    }
+                            await _sendMailService.SendEmailAsync(user.Email, subject, body);
 
-                    _logger.LogInformation("Created expiring notification for Job {JobID}", job.JobID);
+                            await signalRService.SendNotificationToUser(
+                                job.UserID,
+                                "Job Expired and Hidden",
+                                $"Your job posting '{job.Title}' has expired and been hidden.",
+                                $"/employer/manage-jobs"
+                            );
+
+                            _logger.LogInformation("Sent expiration and hiding notification for Job {JobID}", jobId);
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error processing expiring job {JobID}", job.JobID);
+                    _logger.LogError(ex, "Error sending notification for hidden job {JobID}", expiredJob.JobID);
                 }
             }
         }
@@ -212,5 +168,5 @@ public class JobNotificationBackgroundService : BackgroundService
             _logger.LogError(ex, "Error in ProcessJobNotifications");
         }
     }
-
 }
+

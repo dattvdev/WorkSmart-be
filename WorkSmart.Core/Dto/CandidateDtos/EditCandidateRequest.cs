@@ -22,6 +22,8 @@ namespace WorkSmart.Core.Dto.CandidateDtos
 
         //public DateTime? DateOfBirth { get; set; }
 
+        public bool? IsPrivated { get; set; }
+
         public string? Avatar { get; set; }
     }
 }

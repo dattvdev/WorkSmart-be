@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using WorkSmart.Core.Dto.CVDtos;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Interface;
+using WorkSmart.Core.Helpers;
 
 namespace WorkSmart.Application.Services
 {
@@ -49,33 +50,98 @@ namespace WorkSmart.Application.Services
             return result;
         }
 
-        
-        public async Task<CVDto> UpdateCVAsync(int userId, CVDto cvDto)
-        {
-            var existingCv = await _cvRepository.GetCVWithDetails(cvDto.CVID);
-
-            if (existingCv == null)
+            public async Task<CVDto> UpdateCVAsync(int userId, CVDto cvDto)
             {
-                throw new KeyNotFoundException($"CV with ID {cvDto.CVID} not found.");
+                var existingCv = await _cvRepository.GetCVWithDetails(cvDto.CVID);
+
+                if (existingCv == null)
+                    throw new KeyNotFoundException($"CV with ID {cvDto.CVID} not found.");
+
+                if (existingCv.UserID != userId)
+                    throw new UnauthorizedAccessException("You do not have permission to update this CV.");
+
+                // ✅ Check nếu CV đã Apply
+                bool isApplied = await _cvRepository.isCVApplied(existingCv.CVID);
+
+                if (isApplied)
+                {
+                    // 🚀 1. Clone bản mới trước
+                    var newCv = _mapper.Map<CV>(existingCv);
+                    newCv.CVID = 0; // Reset ID để EF hiểu là CV mới
+                    newCv.UpdatedAt = TimeHelper.GetVietnamTime();
+
+                    // Clone bảng con:
+                    if (existingCv.Skills != null)
+                        newCv.Skills = existingCv.Skills.Select(s => new CV_Skill
+                        {
+                            SkillName = s.SkillName,
+                            Description = s.Description
+                        }).ToList();
+
+                    if (existingCv.Experiences != null)
+                        newCv.Experiences = existingCv.Experiences.Select(e => new CV_Experience
+                        {
+                            JobPosition = e.JobPosition,
+                            CompanyName = e.CompanyName,
+                            Address = e.Address,
+                            Description = e.Description,
+                            StartedAt = e.StartedAt,
+                            EndedAt = e.EndedAt
+                        }).ToList();
+
+                    if (existingCv.Educations != null)
+                        newCv.Educations = existingCv.Educations.Select(edu => new CV_Education
+                        {
+                            Major = edu.Major,
+                            SchoolName = edu.SchoolName,
+                            Degree = edu.Degree,
+                            Description = edu.Description,
+                            StartedAt = edu.StartedAt,
+                            EndedAt = edu.EndedAt
+                        }).ToList();
+
+                    if (existingCv.Certifications != null)
+                        newCv.Certifications = existingCv.Certifications.Select(c => new CV_Certification
+                        {
+                            CertificateName = c.CertificateName,
+                            Description = c.Description,
+                            CreateAt = c.CreateAt
+                        }).ToList();
+
+                    await _cvRepository.Add(newCv);
+                    await _cvRepository.Save();
+
+                    // 🚀 2. Hide CV cũ sau khi clone
+                    existingCv.IsHidden = true;
+                    existingCv.IsFeatured = false;
+                    existingCv.UpdatedAt = TimeHelper.GetVietnamTime();
+                    _cvRepository.Update(existingCv);
+                    await _cvRepository.Save();
+
+                    // 🚀 3. Map dữ liệu update vào bản CV mới
+                    var oldCVID = newCv.CVID; // Lưu lại ID mới sinh ra
+                    _mapper.Map(cvDto, newCv);
+                    newCv.CVID = oldCVID; // Gán lại ID mới đúng
+                    newCv.UpdatedAt = TimeHelper.GetVietnamTime();
+                    _cvRepository.Update(newCv);
+                    await _cvRepository.Save();
+
+                    return _mapper.Map<CVDto>(newCv);
+                }
+                else
+                {
+                    // 🚀 Nếu CV chưa Apply, update trực tiếp
+                    _mapper.Map(cvDto, existingCv);
+                    existingCv.UpdatedAt = TimeHelper.GetVietnamTime();
+                    _cvRepository.Update(existingCv);
+                    await _cvRepository.Save();
+
+                    _recommendationService.DeleteCVEmbedding(existingCv.CVID);
+                    _recommendationService.ClearCVRecommendationCache(existingCv.CVID);
+
+                    return _mapper.Map<CVDto>(existingCv);
+                }
             }
-            
-
-            if (existingCv.UserID != cvDto.UserID)
-            {
-                throw new UnauthorizedAccessException("You do not have permission to update this CV.");
-            }
-
-            
-            _mapper.Map(cvDto,existingCv); // Ánh xạ tất cả thuộc tính từ DTO vào entity
-            existingCv.UpdatedAt = DateTime.Now;
-            _cvRepository.Update(existingCv);
-
-            // ✅ Cập nhật lại embedding vector
-            await _recommendationService.DeleteCVEmbedding(existingCv.CVID);
-            _recommendationService.ClearCVRecommendationCache(existingCv.CVID);
-
-            return _mapper.Map<CVDto>(existingCv);  // Trả về CV được ánh xạ trở lại DTO
-        }
 
         public async Task DeleteCVAsync(int id)
         {
@@ -108,8 +174,8 @@ namespace WorkSmart.Application.Services
                     UserID = userId,
                     FilePath = filePath,
                     FileName = fileName,
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    CreatedAt = TimeHelper.GetVietnamTime(),
+                    UpdatedAt = TimeHelper.GetVietnamTime()
                 };
 
                 //// Điền thông tin Summary nếu có
@@ -357,30 +423,20 @@ namespace WorkSmart.Application.Services
             return certifications;
         }
 
-        public string ExtractCvContent(string filePath)
-        {
-            StringBuilder text = new StringBuilder();
-
-            using (PdfReader reader = new PdfReader(filePath))
-            {
-                for (int i = 1; i <= reader.NumberOfPages; i++)
-                {
-                    text.Append(PdfTextExtractor.GetTextFromPage(reader, i));
-                }
-            }
-
-            string content = text.ToString();
-
-            // Loại bỏ ký tự Unicode đặc biệt, khoảng trắng thừa
-            content = Regex.Replace(content, @"[\uE000-\uF8FF]", ""); // Loại bỏ ký tự đặc biệt
-            content = Regex.Replace(content, @"\s{2,}", " "); // Chuẩn hóa khoảng trắng
-
-            return content;
-        }
-
         public void HideCV(int cvId)
         {
             _cvRepository.HideCV(cvId);
+            _recommendationService.ClearCVRecommendationCache(cvId);
+            _recommendationService.DeleteCVEmbedding(cvId);
+        }
+
+        public async Task<CVCreationLimitDto> GetRemainingCVCreationLimit(int userID)
+        {
+            return await _cvRepository.GetRemainingCVCreationLimit(userID);
+        }
+        public async Task<bool> IsCVApplied(int cvId)
+        {
+            return await _cvRepository.isCVApplied(cvId);
         }
     }
 }

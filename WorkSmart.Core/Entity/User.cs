@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
 using System.Transactions;
+using WorkSmart.Core.Helpers;
 
 namespace WorkSmart.Core.Entity
 {
@@ -22,9 +23,6 @@ namespace WorkSmart.Core.Entity
         public bool IsEmailConfirmed { get; set; } //candidate and employer
         public bool IsBanned { get; set; } = false;
         public bool IsPrivated { get; set; } = false;
-        public double Amount { get; set; } = 0;
-        public string? BankName { get; set; }
-        public string? BankNumber { get; set; }
         public string FullName { get; set; } //candidate and employer
         public string? PhoneNumber { get; set; } //employer
         public string? Gender { get; set; } //employer & candidate
@@ -33,8 +31,8 @@ namespace WorkSmart.Core.Entity
         public string? CompanyName { get; set; } //employer
         public string? CompanyDescription { get; set; }
         public string? WorkLocation {  get; set; } //employer
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = TimeHelper.GetVietnamTime();
+        public DateTime UpdatedAt { get; set; } = TimeHelper.GetVietnamTime();
         public int VerificationLevel { get; set; } = 1; // Cấp độ xác thực 1/2/3
         public string? TaxId { get; set; } // Mã số thuế
         public string? Industry { get; set; } // Lĩnh vực hoạt động
@@ -52,10 +50,6 @@ namespace WorkSmart.Core.Entity
         public ICollection<Application>? Applications { get; set; }
         public ICollection<Transaction>? Transactions { get; set; }
         public ICollection<Subscription>? Subscriptions { get; set; }
-        public ICollection<Feedback>? FeedbacksSent { get; set; }
-        public ICollection<Feedback>? FeedbacksReceived { get; set; }
-        public ICollection<ReportUser>? ReportsSent { get; set; }
-        public ICollection<ReportUser>? ReportsReceived { get; set; }
         public ICollection<PersonalMessage>? MessagesSent { get; set; }
         public ICollection<PersonalMessage>? MessagesReceived { get; set; }
         public ICollection<Job>? PostedJobs { get; set; }

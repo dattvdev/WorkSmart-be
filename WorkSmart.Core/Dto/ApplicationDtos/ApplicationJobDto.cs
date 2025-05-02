@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WorkSmart.Core.Entity;
 using WorkSmart.Core.Enums;
+using WorkSmart.Core.Helpers;
 
 namespace WorkSmart.Core.Dto.ApplicationDtos
 {
@@ -24,6 +25,7 @@ namespace WorkSmart.Core.Dto.ApplicationDtos
         public string? Avatar { get; set; }
         public string? ApplicationStatus { get; set; }
         //job
+        public string? CompanyAvatar { get; set; }
         public string? CompanyName { get; set; }
         public string? Title { get; set; }
         public string? CategoryID { get; set; }
@@ -40,7 +42,7 @@ namespace WorkSmart.Core.Dto.ApplicationDtos
         public DateTime? Deadline { get; set; }
         public JobStatus? Status { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime UpdatedAt { get; set; } = TimeHelper.GetVietnamTime();
         public int? MaxJobsPerDay { get; set; }
 
         //public ICollection<CV_Education> CV_Educations { get; set; }

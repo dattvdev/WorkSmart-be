@@ -1,4 +1,6 @@
-﻿namespace WorkSmart.Core.Entity
+﻿using WorkSmart.Core.Helpers;
+
+namespace WorkSmart.Core.Entity
 {
     public class JobAlert
     {
@@ -16,7 +18,7 @@
         public string? Frequency { get; set; } // daily / weekly
         public string NotificationMethod { get; set; } // email / app / both
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = TimeHelper.GetVietnamTime();
     }
 
 }

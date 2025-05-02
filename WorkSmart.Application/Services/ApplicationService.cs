@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -106,10 +107,7 @@ namespace WorkSmart.Application.Services
             {
                 throw new KeyNotFoundException($"Application with ID {applicationId} for job {jobId} not found.");
             }
-            //Console.WriteLine($"Before mapping: User.Avatar = {application.User.Avatar}");
             var applicationDto = _mapper.Map<ApplicationJobDto>(application);
-            //Console.WriteLine($"After mapping: DTO.Avatar = {applicationDto.Avatar}");
-            //var applicationDto = _mapper.Map<ApplicationJobDto>(application);
             return applicationDto;
         }
         public async Task<(string email, string fullname)> ApplyToJob(int userId, int jobId)
@@ -155,6 +153,31 @@ namespace WorkSmart.Application.Services
             var applications = await _applicationRepository.GetApplicationsByJobIdsAsync(jobIds);
 
             return applications.Count();
+        }
+
+        // Thay thế phương thức hiện tại trong ApplicationService
+        public async Task<bool> UpdateInterviewDetailsAsync(int applicationId, InterviewInvitationRequestDto request)
+        {
+            return await _applicationRepository.UpdateInterviewDetailsAsync(applicationId, request);
+        }
+
+        public async Task<bool> WithdrawApplicationAsync(int userId, int jobId)
+        {
+            return await _applicationRepository.WithdrawApplicationAsync(userId, jobId);
+        }
+        public async Task<ApplicationJobDto> GetApplicationDetails(int userId, int jobId)
+        {
+            var application = await _applicationRepository.GetApplicationDetails(userId, jobId);
+            if (application == null)
+            {
+                throw new KeyNotFoundException($"Application with User ID {userId} and Job ID {jobId} not found.");
+            }
+            var applicationDto = _mapper.Map<ApplicationJobDto>(application);
+            return applicationDto;
+        }
+        public async Task<bool> CheckReApplyJob(int userId, int jobId)
+        {
+            return await _applicationRepository.CheckReApplyJob(userId, jobId);
         }
     }
 }

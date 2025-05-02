@@ -1,12 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using WorkSmart.Core.Entity;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Repository;
 
 public interface ICVEmbeddingRepository
 {
     Task<CVEmbedding?> GetByCVId(int cvId);
     Task SaveOrUpdate(int cvId, string vectorJson);
-    Task Delete(int cvId);
+    void Delete(int cvId);
 }
 
 public interface IJobEmbeddingRepository
@@ -35,18 +36,18 @@ public class CVEmbeddingRepository : ICVEmbeddingRepository
         else
         {
             entity.VectorJson = vectorJson;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = TimeHelper.GetVietnamTime();
         }
         await _context.SaveChangesAsync();
     }
 
-    public async Task Delete(int cvId)
+    public void Delete(int cvId)
     {
-        var entity = await _context.CVEmbeddings.FindAsync(cvId);
+        var entity =  _context.CVEmbeddings.Find(cvId);
         if (entity != null)
         {
             _context.CVEmbeddings.Remove(entity);
-            await _context.SaveChangesAsync();
+             _context.SaveChanges();
         }
     }
 }
@@ -69,7 +70,7 @@ public class JobEmbeddingRepository : IJobEmbeddingRepository
         else
         {
             entity.VectorJson = vectorJson;
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = TimeHelper.GetVietnamTime();
         }
         await _context.SaveChangesAsync();
     }

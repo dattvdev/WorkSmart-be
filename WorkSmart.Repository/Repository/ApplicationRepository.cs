@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using WorkSmart.Core.Dto.JobDtos;
 using WorkSmart.Core.Entity;
+using WorkSmart.Core.Helpers;
 using WorkSmart.Core.Interface;
 
 namespace WorkSmart.Repository.Repository
@@ -33,6 +34,9 @@ namespace WorkSmart.Repository.Repository
             return await _context.Applications
                 .Include(a => a.User)  
                 .Include(a => a.CV)
+                .Include(a => a.Job)
+                .Include(a => a.Job.User)
+                .Include(a => a.CV.User)
                 .Where(a => a.JobID == jobId)
                 .ToListAsync();
         }
@@ -41,8 +45,10 @@ namespace WorkSmart.Repository.Repository
         {
             return await _context.Applications
                 .Include(a => a.Job)
-                .Include(a => a.Job.User)
-                .Where(a => a.UserID == userId)  // Lọc theo UserID
+                    .ThenInclude(b => b.User)
+                .Include(c => c.User)
+                .Where(a => a.UserID == userId)
+                .OrderByDescending(a => a.CreatedAt)
                 .ToListAsync();
         }
 
@@ -90,7 +96,7 @@ namespace WorkSmart.Repository.Repository
             }
 
             application.RejectionReason = rejectionReason?.Trim();
-            application.UpdatedAt = DateTime.Now;
+            application.UpdatedAt = TimeHelper.GetVietnamTime();
 
             try
             {
@@ -106,14 +112,13 @@ namespace WorkSmart.Repository.Repository
         public async Task<Application> GetApplicationDetailAsync(int applicationId, int jobId)
         {
             return await _context.Applications
-                .Include(a => a.User)
-                .Include(a => a.CV)
-                    .ThenInclude(cv => cv.Educations)
-                .Include(a => a.CV)
-                    .ThenInclude(cv => cv.Experiences)
-                .Include(a => a.CV)
-                    .ThenInclude(cv => cv.Skills)
-                .FirstOrDefaultAsync(a => a.ApplicationID == applicationId && a.JobID == jobId);
+                 .Include(a => a.User)
+                 .Include(a => a.CV)
+                 .Include(a => a.Job)
+                 .Include(a => a.Job.User)
+                 .Include(a => a.CV.User)
+                 .Where(a => a.JobID == jobId)
+                 .FirstOrDefaultAsync(a => a.ApplicationID == applicationId && a.JobID == jobId);
         }
 
         public string CheckApplyJob(int UserId, int JobId)
@@ -172,5 +177,64 @@ namespace WorkSmart.Repository.Repository
                 .Where(a => jobIds.Contains(a.JobID))
                 .ToListAsync();
         }
+        public async Task<bool> UpdateInterviewDetailsAsync(int applicationId, InterviewInvitationRequestDto request)
+        {
+            var application = await _context.Applications
+                .FirstOrDefaultAsync(a => a.ApplicationID == applicationId);
+
+            if (application == null)
+            {
+                return false;
+            }
+
+            application.UpdatedAt = TimeHelper.GetVietnamTime();
+
+            // Lưu thông tin phỏng vấn
+            // Nếu có bảng Interview riêng, bạn có thể tạo và lưu thông tin ở đây
+            // Hoặc có thể lưu metadata dưới dạng JSON thông qua một trường mở rộng
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        public async Task<bool> WithdrawApplicationAsync(int userId, int jobId)
+        {
+            var status = await GetApplicationDetails(userId, jobId);
+            if (status.Status == "Pending")
+            {
+                if (status == null)
+                    return false;
+                _dbSet.Remove(status);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                return false; // Không thể rút đơn nếu không phải trạng thái "Pending"
+            }
+            return true;
+        }
+        public async Task<Application> GetApplicationDetails(int userId, int jobId)
+        {
+            return await _context.Applications
+                .Where(a => a.UserID == userId && a.JobID == jobId)
+                .OrderByDescending(a => a.CreatedAt)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<bool> CheckReApplyJob(int userId, int jobId)
+        {
+            var application = await GetApplicationDetails(userId, jobId);
+            if (application == null) return true; // Chưa ứng tuyển
+            if (application.Status == "Approved") return false;
+            var applications = await _context.Applications.Where(Task => Task.UserID == userId && Task.JobID == jobId).ToListAsync();
+            return applications.Count() < 3;
+        }
+
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WorkSmart.Core.Entity;
+using WorkSmart.Core.Helpers;
 
 namespace WorkSmart.Core.Dto.CandidateDtos
 {
@@ -25,7 +26,7 @@ namespace WorkSmart.Core.Dto.CandidateDtos
         public string? Address { get; set; }
         public double? Exp { get; set; }
         public string? Skills { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = TimeHelper.GetVietnamTime();
 
         public ICollection<Tag>? Tags { get; set; }
     }

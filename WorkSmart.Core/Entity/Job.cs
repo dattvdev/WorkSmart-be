@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
 using WorkSmart.Core.Enums;
+using WorkSmart.Core.Helpers;
 
 namespace WorkSmart.Core.Entity
 {
@@ -21,15 +22,14 @@ namespace WorkSmart.Core.Entity
         public string? WorkType { get; set; }
         public string? Location { get; set; }
         public string? JobPosition { get; set; }
-        //public double? Salary { get; set; }
         public string? Salary { get; set; }
         public int? Exp { get; set; }
         public bool Priority { get; set; } = false;
         public DateTime? Deadline { get; set; }
         public JobStatus? Status { get; set; }
         //public bool? IsHidden { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = TimeHelper.GetVietnamTime();
+        public DateTime UpdatedAt { get; set; } = TimeHelper.GetVietnamTime();
         public string? ReasonRejectedJob { get; set; }
         public string? CategoryID { get; set; }
         public JobEmbedding? Embedding { get; set; }

@@ -15,5 +15,21 @@ namespace WorkSmart.Repository.Repository
         {
             return await _context.FavoriteJobs.Where(fj => fj.UserID == userId).ToListAsync();
         }
+
+        public async Task<bool> IsJobFavoritedAsync(int userId, int jobId)
+        {
+            return await _context.FavoriteJobs
+                .AnyAsync(fj => fj.UserID == userId && fj.JobID == jobId);
+        }
+        public void DeleteFavoriteJob(int userId, int jobId)
+        {
+            var favoriteJob = _context.FavoriteJobs
+                .FirstOrDefault(fj => fj.UserID == userId && fj.JobID == jobId);
+            if (favoriteJob != null)
+            {
+                _context.FavoriteJobs.Remove(favoriteJob);
+                _context.SaveChanges();
+            }
+        }
     }
 }

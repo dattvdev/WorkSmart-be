@@ -135,6 +135,7 @@ namespace WorkSmart.Application.Services
         {
             throw new NotImplementedException();
         }
+
         //public async Task<bool> ApproveJobAsync(int jobId)
         //{
         //    return await _jobRepository.ApproveJobAsync(jobId);
@@ -145,14 +146,27 @@ namespace WorkSmart.Application.Services
             var jobs = await _jobRepository.GetJobsByEmployerId(userId);
             return _mapper.Map<IEnumerable<JobDto>>(jobs);
         }
+
         public async Task<bool> CheckLimitCreateJob(int userID, int? maxJobsPerDay = null)
         {
             return await _jobRepository.CheckLimitCreateJob(userID, maxJobsPerDay);
         }
+
+        public async Task<JobCreationLimitDto> GetRemainingJobCreationLimit(int userID)
+        {
+            return await _jobRepository.GetRemainingJobCreationLimit(userID);
+        }
+
         public async Task<bool> CheckLimitCreateFeaturedJob(int userID)
         {
             return await _jobRepository.CheckLimitCreateFeaturedJob(userID);
         }
+
+        public async Task<JobPriorityLimitDto> GetRemainingJobPriorityLimit(int userID)
+        {
+            return await _jobRepository.GetRemainingJobPriorityLimit(userID);
+        }
+
         //public async Task<bool> ToggleJobPriorityAsync(int jobId)
         //{
         //    var job = await _jobRepository.GetByJobId(jobId);
@@ -169,33 +183,62 @@ namespace WorkSmart.Application.Services
 
         //    return await _jobRepository.ToggleJobPriorityAsync(jobId);
         //}
+
         public async Task<bool> ToggleJobPriorityAsync(int jobId)
         {
-            var job = await _jobRepository.GetByJobId(jobId);
-            if (job == null)
-                return false;
+            return await _jobRepository.ToggleJobPriorityAsync(jobId);
+        }
 
-            if (job.Status == JobStatus.Pending ||
-                job.Status == JobStatus.Rejected ||
-                (job.Deadline.HasValue && job.Deadline.Value < System.DateTime.Now))
+        public async Task<bool> IsDuplicateJobTitleAsync(int userID, string title)
+        {
+            if (string.IsNullOrWhiteSpace(title) || userID <= 0)
             {
                 return false;
             }
 
-            return await _jobRepository.ToggleJobPriorityAsync(jobId);
+            // Normalize the title for comparison (trim and convert to lowercase)
+            string normalizedTitle = title.Trim().ToLower();
+
+            // Check if a job with this title already exists for this user
+            return await _jobRepository.IsDuplicateJobTitle(userID, normalizedTitle);
+        }
+
+        public async Task<bool> IsDuplicateJobTitleForUpdateAsync(int userID, int jobID, string title)
+        {
+            if (string.IsNullOrWhiteSpace(title) || userID <= 0 || jobID <= 0)
+            {
+                return false;
+            }
+
+            // Normalize the title for comparison
+            string normalizedTitle = title.Trim().ToLower();
+
+            // Check if any other job (excluding the current one) has the same title
+            return await _jobRepository.IsDuplicateJobTitleForUpdate(userID, jobID, normalizedTitle);
         }
 
         public async Task<IEnumerable<object>> JobCategoryDashboard()
         {
             return await _jobRepository.JobCategoryDashboard();
         }
+
         public async Task<IEnumerable<object>> JobStatusDashboard()
         {
             return await _jobRepository.JobStatusDashboard();
         }
+
         public async Task<IEnumerable<object>> JobLocationDashboard()
         {
             return await _jobRepository.JobLocationDashboard();
+        }
+
+        public async Task<bool> UnPriorityAsync(int jobId)
+        {
+            return await _jobRepository.UnPriorityAsync(jobId);
+        }
+        public async Task<object> TopCategoryJob()
+        {
+            return await _jobRepository.TopCategoryJob();
         }
     }
 }

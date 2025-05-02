@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Net.payOS;
+using System.Collections;
 using System.Text;
 using WorkSmart.API.Extension;
 using WorkSmart.API.Hubs;
@@ -12,6 +13,10 @@ using WorkSmart.Core.Interface;
 using WorkSmart.Repository.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true) // cho phép không có file này
+    .AddEnvironmentVariables();
 
 // Add services to the container.
 builder.Services.AddCors(options =>
@@ -19,7 +24,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAll",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173","http://localhost:7141") // Thay bằng origin thực tế của client, không sử dụng all vì không đi chung được  với AllowCredentials (bắt buộc) 
+            policy.WithOrigins("http://localhost:5173", "https://worksmart-fe.vercel.app") // Thay bằng origin thực tế của client, không sử dụng all vì không đi chung được  với AllowCredentials (bắt buộc) 
                   .AllowAnyMethod()
                   .AllowAnyHeader()
                   .AllowCredentials(); // Quan trọng cho SignalR
@@ -28,7 +33,10 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 
+// Truyền ConnectionString vào
 builder.Services.AddScopeCollection(builder.Configuration.GetConnectionString("DefaultConnection").ToString());
+
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -71,22 +79,35 @@ builder.Services.AddSingleton<PayOS>(provider =>
 });
 
 var app = builder.Build();
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "text/plain";
+
+        var error = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+        if (error != null)
+        {
+            var ex = error.Error;
+            await context.Response.WriteAsync($"Unhandled error: {ex.Message}\n{ex.StackTrace}");
+        }
+    });
+});
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 //app.UseCors("AllowAll"); // Áp dụng chính sách AllowAll
 app.UseCors("AllowAll"); // Áp dụng chính sách AllowAll
 
-
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
 app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

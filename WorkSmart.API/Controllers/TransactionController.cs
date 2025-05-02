@@ -40,5 +40,22 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        [HttpGet("getAll")]
+        public async Task<IActionResult> GetAll()
+        {
+            try
+            {
+                var transactions = await _transactionService.GetAll();
+                if (transactions == null || !transactions.Any())
+                    return NotFound(new { message = "No transactions found" });
+
+                return Ok(transactions);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 }

@@ -12,7 +12,7 @@ namespace WorkSmart.Application.Services
         private readonly IJobAlertRepository _jobAlertRepo;
         private readonly IMapper _mapper;
 
-        public JobAlertService(IJobAlertRepository jobAlertRepo,IMapper mapper)
+        public JobAlertService(IJobAlertRepository jobAlertRepo, IMapper mapper)
         {
             _jobAlertRepo = jobAlertRepo;
             _mapper = mapper;
@@ -23,6 +23,9 @@ namespace WorkSmart.Application.Services
             var entity = _mapper.Map<JobAlert>(request);
             entity.CreatedAt = TimeHelper.GetVietnamTime();
 
+            entity.JobPosition = null;
+            entity.Frequency = null;
+
             await _jobAlertRepo.Add(entity);
             await _jobAlertRepo.Save();
             return true;
@@ -31,20 +34,33 @@ namespace WorkSmart.Application.Services
         public async Task<List<JobAlertDto>> GetAlertsByUser(int userId)
         {
             var data = await _jobAlertRepo.GetJobAlertsByUserId(userId);
-            return _mapper.Map<List<JobAlertDto>>(data);
+            var dtos = _mapper.Map<List<JobAlertDto>>(data);
+
+            // Set Frequency to null for all returned DTOs
+            foreach (var dto in dtos)
+            {
+                dto.JobPosition = null;
+                dto.Frequency = null;
+            }
+
+            return dtos;
         }
-        public async Task<bool> DeleteAlert(int alertId,int userId)
+        public async Task<bool> DeleteAlert(int alertId, int userId)
         {
             var alert = await _jobAlertRepo.GetById(alertId);
             if (alert == null || alert.UserId != userId)
                 return false;
 
-            _jobAlertRepo.Delete(alert.JobAlertId); 
+            _jobAlertRepo.Delete(alert.JobAlertId);
             await _jobAlertRepo.Save();
 
             return true;
         }
 
 
+        public async Task<List<JobAlert>> GetJobAlertsByJobId(int jobId)
+        {
+            return await _jobAlertRepo.GetJobAlertsByJobId(jobId);
+        }
     }
 }

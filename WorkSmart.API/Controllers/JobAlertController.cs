@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WorkSmart.Application.Services;
 using WorkSmart.Core.Dto.JobDtos;
+using WorkSmart.Core.Entity;
 
 namespace WorkSmart.API.Controllers
 {
@@ -35,13 +36,26 @@ namespace WorkSmart.API.Controllers
 
         // DELETE: api/JobAlert/5/user/1
         [HttpDelete("{alertId}/user/{userId}")]
-        public async Task<IActionResult> Delete(int alertId,int userId)
+        public async Task<IActionResult> Delete(int alertId, int userId)
         {
-            var result = await _jobAlertService.DeleteAlert(alertId,userId);
+            var result = await _jobAlertService.DeleteAlert(alertId, userId);
             if (result)
                 return Ok(new { message = "Xóa cảnh báo thành công" });
             return NotFound(new { message = "Không tìm thấy hoặc không có quyền xóa" });
         }
+
+        [HttpGet("alerts/{jobId}")]
+        public async Task<IActionResult> GetJobAlertsByJobId(int jobId)
+        {
+            var alerts = await _jobAlertService.GetJobAlertsByJobId(jobId);
+            if (alerts == null || !alerts.Any())
+            {
+                return NotFound(new { message = "No job alerts found for this job." });
+            }
+
+            return Ok(alerts);
+        }
+
     }
 }
 

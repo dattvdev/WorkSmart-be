@@ -364,9 +364,7 @@ namespace WorkSmart.Repository.Repository
 
             try
             {
-                string currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                string solutionDirectory = Path.GetFullPath(Path.Combine(currentDirectory, "..\\..\\..\\.."));
-                string settingsFilePath = Path.Combine(solutionDirectory, "WorkSmart.API", "freePlanSettings.json");
+                string settingsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "freePlanSettings.json");
 
                 if (File.Exists(settingsFilePath))
                 {
@@ -374,7 +372,7 @@ namespace WorkSmart.Repository.Repository
                     if (!string.IsNullOrWhiteSpace(jsonData))
                     {
                         var settings = JsonConvert.DeserializeObject<FreePlanSettings>(jsonData);
-                        if (settings != null && settings.employerFreePlan != null)
+                        if (settings?.employerFreePlan?.MaxJobsPerDay != null)
                         {
                             defaultLimit = settings.employerFreePlan.MaxJobsPerDay;
                         }
@@ -383,12 +381,12 @@ namespace WorkSmart.Repository.Repository
             }
             catch (Exception ex)
             {
-                
-                Console.WriteLine($"Error reading job limit settings: {ex.Message}");
+                Console.WriteLine($"[Error] Reading MaxJobsPerDay from settings: {ex.Message}");
             }
 
             return defaultLimit;
         }
+
 
         public async Task<bool> CheckLimitCreateJob(int userID, int? maxJobsPerDayFromClient = null)
         {
@@ -641,13 +639,11 @@ namespace WorkSmart.Repository.Repository
 
         private async Task<int> GetDefaultFeaturedJobLimit()
         {
-            int defaultLimit = 0; // Default to 0 instead of 1
+            int defaultLimit = 0; // Default to 0
 
             try
             {
-                string currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                string solutionDirectory = Path.GetFullPath(Path.Combine(currentDirectory, "..\\..\\..\\.."));
-                string settingsFilePath = Path.Combine(solutionDirectory, "WorkSmart.API", "freePlanSettings.json");
+                string settingsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "freePlanSettings.json");
 
                 if (File.Exists(settingsFilePath))
                 {
@@ -655,7 +651,7 @@ namespace WorkSmart.Repository.Repository
                     if (!string.IsNullOrWhiteSpace(jsonData))
                     {
                         var settings = JsonConvert.DeserializeObject<FreePlanSettings>(jsonData);
-                        if (settings != null && settings.employerFreePlan != null)
+                        if (settings?.employerFreePlan?.DefaultFeaturedJob != null)
                         {
                             defaultLimit = settings.employerFreePlan.DefaultFeaturedJob;
                         }
@@ -664,12 +660,12 @@ namespace WorkSmart.Repository.Repository
             }
             catch (Exception ex)
             {
-                // Log lỗi nếu cần thiết
-                Console.WriteLine($"Error reading job limit settings: {ex.Message}");
+                Console.WriteLine($"[Error] Reading job limit settings: {ex.Message}");
             }
 
             return defaultLimit;
         }
+
 
         // Set lai độ ưu tiên
         public async Task<bool> ToggleJobPriorityAsync(int jobId)

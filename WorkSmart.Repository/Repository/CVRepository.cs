@@ -153,16 +153,15 @@ namespace WorkSmart.Repository.Repository
             int defaultLimit = 1;
             try
             {
-                string currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                string solutionDirectory = Path.GetFullPath(Path.Combine(currentDirectory, "..\\..\\..\\.."));
-                string settingsFilePath = Path.Combine(solutionDirectory, "WorkSmart.API", "freePlanSettings.json");
+                string settingsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "freePlanSettings.json");
+
                 if (File.Exists(settingsFilePath))
                 {
                     string jsonData = await File.ReadAllTextAsync(settingsFilePath);
                     if (!string.IsNullOrWhiteSpace(jsonData))
                     {
                         var settings = JsonConvert.DeserializeObject<FreePlanSettings>(jsonData);
-                        if (settings != null && settings.candidateFreePlan != null)
+                        if (settings?.candidateFreePlan?.MaxCVsPerDay != null)
                         {
                             defaultLimit = settings.candidateFreePlan.MaxCVsPerDay;
                         }
@@ -171,10 +170,12 @@ namespace WorkSmart.Repository.Repository
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error reading CV limit settings: {ex.Message}");
+                Console.WriteLine($"[Error] Reading CV limit from settings: {ex.Message}");
             }
+
             return defaultLimit;
         }
+
         public async Task<bool> isCVApplied(int cvId)
         {
             return await _context.Applications.AnyAsync(a => a.CVID == cvId);

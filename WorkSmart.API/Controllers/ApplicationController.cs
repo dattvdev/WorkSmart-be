@@ -305,10 +305,16 @@ namespace WorkSmart.Api.Controllers
             if (email != null)
             {
                 var jobDetail = await _jobRepository.GetById(jobId);
-                CandidateNotificationSettingsDto candidateSetting = (CandidateNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(userId, "candidate"); ;
+                CandidateNotificationSettingsDto candidateSetting = (CandidateNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(userId, "candidate");
                 EmployerNotificationSettingsDto employerSetting = (EmployerNotificationSettingsDto)await _notificationSettingService.GetByIdAsync(jobDetail.UserID, "employer");
-                await _sendMailService.SendEmailAsync(email, "Thanks for your application",
-    $@"<!DOCTYPE html>
+
+                // Xử lý thông báo cho ứng viên
+                if (candidateSetting != null)
+                {
+                    if ((bool)candidateSetting.EmailApplicationApply)
+                    {
+                        await _sendMailService.SendEmailAsync(email, "Thanks for your application",
+        $@"<!DOCTYPE html>
 <html lang=""en"">
 <head>
     <meta charset=""UTF-8"">
@@ -344,19 +350,32 @@ namespace WorkSmart.Api.Controllers
     </div>
 </body>
 </html>");
+                    }
 
+                    if ((bool)candidateSetting.ApplicationApply)
+                    {
+                        await _signalRService.SendNotificationToUser(
+                            userId,
+                            "Application Notification",
+                            $"Your Apply to \"{jobDetail.Title}\" has been applied",
+                            $"/candidate/applied-jobs"
+                        );
+                    }
+                }
+
+                // Xử lý thông báo cho nhà tuyển dụng
                 if (employerSetting != null)
                 {
-
                     if ((bool)employerSetting.NewApplications)
                     {
                         await _signalRService.SendNotificationToUser(
-                           jobDetail.UserID,
-                           "New Application",
-                           $"Your application for \"{jobDetail.Title}\" job has new Application.",
-                           $"/employer/manage-jobs/applied-candidates/{jobDetail.JobID}"
+                            jobDetail.UserID,
+                            "New Application",
+                            $"Your job \"{jobDetail.Title}\" has a new application.",
+                            $"/employer/manage-jobs/applied-candidates/{jobDetail.JobID}"
                         );
                     }
+
                     if ((bool)employerSetting.EmailNewApplications)
                     {
                         var employerEmailContent = new Core.Dto.MailDtos.MailContent
@@ -402,18 +421,7 @@ namespace WorkSmart.Api.Controllers
                         };
                         await _sendMailService.SendMail(employerEmailContent);
                     }
-                    if ((bool)candidateSetting.ApplicationApply)
-                    {
-                        await _signalRService.SendNotificationToUser(
-                          userId,
-                          "Application Notification",
-                          $"Your Apply to \"{jobDetail.Title}\" has been applied",
-                          $"/candidate/applied-jobs"
-                      );
-                    }
-                    
                 }
-                    
             }
 
             return Ok("Application submitted successfully.");

@@ -240,5 +240,10 @@ namespace WorkSmart.Application.Services
         {
             return await _jobRepository.TopCategoryJob();
         }
+        public async Task<JobDetailDto> GetRandomPremiumJob()
+        {
+            var job = await _jobRepository.GetRandomPremiumJob();
+            return _mapper.Map<JobDetailDto>(job);
+        }
     }
 }

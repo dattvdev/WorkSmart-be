@@ -724,9 +724,16 @@ namespace WorkSmart.Repository.Repository
                     .FirstOrDefault();
                 // Update the job's UpdatedAt timestamp
                 //job.UpdatedAt = TimeHelper.GetVietnamTime();
-
-                job.Level = highestSubscription == null ? "Free": highestSubscription.Package.Name;
-
+                string name = highestSubscription == null ? "Free" : highestSubscription.Package.Name;
+                if (name != "Free")
+                {
+                    var splitname = name.Split(' ');
+                    job.Level = splitname[1];
+                }
+                else
+                {
+                    job.Level = "Free";
+                }
             }
 
             _dbSet.Update(job);
@@ -962,7 +969,7 @@ namespace WorkSmart.Repository.Repository
         public async Task<List<Job>> GetAllJobActive()
         {
             return await _dbSet.Include(j => j.User)
-                .Where(j => j.Status == JobStatus.Active)
+                .Where(j => j.Status == JobStatus.Active && j.Deadline> TimeHelper.GetVietnamTime())
                 .ToListAsync();
         }
 
@@ -1015,6 +1022,14 @@ namespace WorkSmart.Repository.Repository
             }
 
             return result;
+        }
+        public async Task<Job> GetRandomPremiumJob()
+        {
+            var job = await _dbSet.Include(j => j.User)
+                .Where(j => j.Status == JobStatus.Active && j.Level == "Premium")
+                .OrderBy(j => Guid.NewGuid()) // Sắp xếp ngẫu nhiên
+                .FirstOrDefaultAsync(); // Lấy 1 phần tử duy nhất hoặc null nếu không có
+            return job;
         }
 
 

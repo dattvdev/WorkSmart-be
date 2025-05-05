@@ -1060,6 +1060,20 @@ namespace WorkSmart.API.Controllers
                 return StatusCode(500, new { message = "An error occurred while fetching top category jobs." });
             }
         }
+        [HttpGet("getRandomPremiumJob")]
+        public async Task<IActionResult> GetRandomPremiumJob()
+        {
+            try
+            {
+                var result = await _jobService.GetRandomPremiumJob();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error fetching random premium jobs: {Message}", ex.Message);
+                return StatusCode(500, new { message = "An error occurred while fetching random premium jobs." });
+            }
+        }
     }
-    
+
 }

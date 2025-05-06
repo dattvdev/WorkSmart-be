@@ -45,13 +45,7 @@ namespace WorkSmart.API.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst("UserId");
-                if (userIdClaim == null)
-                {
-                    return Unauthorized(new { Error = "UserId không tìm thấy trong token" });
-                }
-
-                var userId = int.Parse(userIdClaim.Value);
+                var userId = int.Parse(User.FindFirst("UserId")?.Value);
 
                 var candidateProfile = await _candidateService.GetCandidateProfile(userId);
 

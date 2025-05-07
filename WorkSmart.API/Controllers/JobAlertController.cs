@@ -22,8 +22,8 @@ namespace WorkSmart.API.Controllers
         {
             var result = await _jobAlertService.CreateJobAlert(dto);
             if (result)
-                return Ok(new { message = "Tạo cảnh báo công việc thành công" });
-            return BadRequest(new { message = "Tạo thất bại" });
+                return Ok(new { message = "Create job alert successfully" });
+            return BadRequest(new { message = "Failed to create job alert" });
         }
 
         // GET: api/JobAlert/user/5

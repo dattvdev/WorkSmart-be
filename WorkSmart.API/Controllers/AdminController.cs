@@ -33,6 +33,7 @@ namespace WorkSmart.API.Controllers
         private readonly NotificationSettingService _notificationSettingService;
         private readonly ReportService _reportService;
         private readonly UserService _userService;
+        private readonly JobAlertService _jobAlertService;
         public AdminController(IAccountRepository accountRepository
             , AdminService adminService, IMapper mapper
             , SendMailService sendMailService
@@ -43,7 +44,8 @@ namespace WorkSmart.API.Controllers
             , NotificationJobTagService notificationJobTagService
             , NotificationSettingService notificationSettingService
             , ReportService reportService
-            , UserService userService)
+            , UserService userService
+            , JobAlertService jobAlertService)
         {
             _accountRepository = accountRepository;
             _adminService = adminService;
@@ -57,6 +59,7 @@ namespace WorkSmart.API.Controllers
             _notificationSettingService = notificationSettingService;
             _reportService = reportService;
             _userService = userService;
+            _jobAlertService = jobAlertService;
         }
 
         [HttpGet("test-auth")]
@@ -769,7 +772,179 @@ namespace WorkSmart.API.Controllers
             var listUserId = _notificationJobTagService.GetNotiUserByListTagID(listTagIds);
             var subject = "There is a new job that you might be interested in";
             string baseUrl = HttpContext.RequestServices.GetRequiredService<IConfiguration>()["FrontendUrl:BaseUrl"];
+            var listJobAlert = _jobAlertService.GetJobAlertsByJobId(jobId);
+            for (int i = 0; i < listJobAlert.Result.Count; i++)
+            {
+                var jobAlert = listJobAlert.Result[i];
+                var userId = jobAlert.UserId;
+                var User = await _accountRepository.GetById(userId);
+                var body = $@"
+                         <html>
+                            <head>
+                                <style>
+                                    body {{
+                                        font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+                                        background-color: #f7f9fc;
+                                        margin: 0;
+                                        padding: 0;
+                                        color: #333;
+                                    }}
+                                    .email-container {{
+                                        max-width: 600px;
+                                        margin: 30px auto;
+                                        background: #ffffff;
+                                        padding: 0;
+                                        border-radius: 12px;
+                                        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
+                                        overflow: hidden;
+                                    }}
+                                    .header {{
+                                        background: linear-gradient(135deg, #0062cc, #1e90ff);
+                                        color: white;
+                                        padding: 25px 20px;
+                                        font-size: 22px;
+                                        font-weight: bold;
+                                        text-align: center;
+                                        letter-spacing: 0.5px;
+                                    }}
+                                    .logo {{
+                                        text-align: center;
+                                        margin-top: -10px;
+                                        margin-bottom: 15px;
+                                    }}
+                                    .logo img {{
+                                        height: 40px;
+                                    }}
+                                    .content {{
+                                        padding: 30px 25px;
+                                        font-size: 16px;
+                                        line-height: 1.6;
+                                        color: #444;
+                                    }}
+                                    .job-title {{
+                                        font-size: 20px;
+                                        font-weight: bold;
+                                        color: #0062cc;
+                                        margin: 15px 0;
+                                        padding-bottom: 10px;
+                                        border-bottom: 1px solid #eaeaea;
+                                    }}
+                                    .job-info {{
+                                        background-color: #f8f9fa;
+                                        border-left: 4px solid #0062cc;
+                                        padding: 15px;
+                                        margin: 20px 0;
+                                        border-radius: 0 6px 6px 0;
+                                    }}
+                                    .tags {{
+                                        font-size: 14px;
+                                        color: #555;
+                                        margin: 15px 0;
+                                        display: flex;
+                                        flex-wrap: wrap;
+                                    }}
+                                    .tag {{
+                                        background-color: #e6f2ff;
+                                        color: #0062cc;
+                                        padding: 5px 10px;
+                                        border-radius: 50px;
+                                        margin-right: 8px;
+                                        margin-bottom: 8px;
+                                        display: inline-block;
+                                    }}
+                                    .button-container {{
+                                        text-align: center;
+                                        margin: 30px 0 20px;
+                                    }}
+                                    .button {{
+                                        display: inline-block;
+                                        padding: 14px 30px;
+                                        font-size: 16px;
+                                        font-weight: bold;
+                                        color: #fff;
+                                        background-color: #28a745;
+                                        text-decoration: none;
+                                        border-radius: 50px;
+                                        transition: all 0.3s ease;
+                                        box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
+                                    }}
+                                    .button:hover {{
+                                        background-color: #218838;
+                                        transform: translateY(-2px);
+                                        box-shadow: 0 6px 12px rgba(40, 167, 69, 0.3);
+                                    }}
+                                    .footer {{
+                                        background-color: #f8f9fa;
+                                        padding: 20px;
+                                        font-size: 13px;
+                                        color: #777;
+                                        text-align: center;
+                                        border-top: 1px solid #eaeaea;
+                                    }}
+                                    .social-links {{
+                                        margin: 15px 0;
+                                    }}
+                                    .social-links a {{
+                                        display: inline-block;
+                                        margin: 0 10px;
+                                        color: #0062cc;
+                                        text-decoration: none;
+                                    }}
+                                    @media only screen and (max-width: 600px) {{
+                                        .email-container {{
+                                            width: 100%;
+                                            margin: 0;
+                                            border-radius: 0;
+                                        }}
+                                        .content {{
+                                            padding: 20px 15px;
+                                        }}
+                                    }}
+                                </style>
+                            </head>
+                            <body>
+                                <div class='email-container'>
+                                    <div class='header'>
+                                        New Job Opportunity
+                                    </div>
+                                    <div class='content'>
+                                        <p>Hello {User.FullName},</p>
+                                        <p>We have found a new job opportunity that matches your skills and interests.</p>
+                
+                                        <div class='job-info'>
+                                            <p class='job-title'>{job.Item1.Title}</p>
+                                            <p><strong>Company:</strong> {job.Item1.CompanyName}</p>
+                                            <p><strong>Location:</strong> {job.Item1.Location}</p>
+                                            <p><strong>Salary:</strong> {job.Item1.Salary}</p>
+                                        </div>
+                
+                                        <p>Click the button below to view job details and apply now:</p>
+                
+                                        <div class='button-container'>
+                                            <a href='{baseUrl}/{job.Item1.JobID}' class='button'>View Job Details</a>
+                                        </div>
+                
+                                        <p>If you have any questions, please don't hesitate to contact us.</p>
+                
+                                        <p>Best regards,<br>
+                                        Recruitment Team {job.Item1.CompanyName}</p>
+                                    </div>
+                                    <div class='footer'>
+                                        <p>This is an automated email. Please do not reply.</p>
+                                        <div class='social-links'>
+                                            <a href='#'>Website</a> |
+                                            <a href='#'>Facebook</a> |
+                                            <a href='#'>LinkedIn</a>
+                                        </div>
+                                        <p>© {TimeHelper.GetVietnamTime().Year} {job.Item1.CompanyName}. All rights reserved.</p>
+                                    </div>
+                                </div>
+                            </body>
+                        </html>
+                ";
 
+                await _sendMailService.SendEmailAsync(User.Email, subject, body);
+            }
 
             foreach (var userId in listUserId.Result)
             {

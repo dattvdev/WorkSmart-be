@@ -57,6 +57,19 @@ namespace WorkSmart.Application.Services
             return true;
         }
 
+        public async Task<List<JobAlertDto>> GetAllJobAlertsAsync()
+        {
+            var allAlerts = await _jobAlertRepo.GetAll(); 
+            var dtos = _mapper.Map<List<JobAlertDto>>(allAlerts);
+
+            foreach (var dto in dtos)
+            {
+                dto.JobPosition = null;
+                dto.Frequency = null;
+            }
+
+            return dtos;
+        }
 
         public async Task<List<JobAlert>> GetJobAlertsByJobId(int jobId)
         {

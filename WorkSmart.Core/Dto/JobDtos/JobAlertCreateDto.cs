@@ -4,7 +4,7 @@
     {
         public string Keyword { get; set; }
         public string Province { get; set; }
-        public string District { get; set; }
+        public string? District { get; set; }
         public string SalaryRange { get; set; }
         public string? JobPosition { get; set; }
         public string Experience { get; set; }

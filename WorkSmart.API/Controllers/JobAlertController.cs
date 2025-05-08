@@ -16,6 +16,21 @@ namespace WorkSmart.API.Controllers
             _jobAlertService = jobAlertService;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAllJobAlert()
+        {
+            try
+            {
+                var jobAlerts = await _jobAlertService.GetAllJobAlertsAsync();
+                return Ok(jobAlerts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500,new { message = "An error occurred while retrieving job alerts." });
+            }
+        }
+
+
         // POST: api/JobAlert
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] JobAlertCreateDto dto)

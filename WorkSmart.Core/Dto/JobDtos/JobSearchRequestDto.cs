@@ -11,6 +11,7 @@ namespace WorkSmart.Core.Dto.JobDtos
     {
         public int PageIndex { get; set; } = 1;
         public int PageSize { get; set; }
+        public int Exp { get; set; } = 0;
         public string? Title { get; set; }
         public string? JobPosition { get; set; }
         public List<string>? WorkTypes { get; set; }

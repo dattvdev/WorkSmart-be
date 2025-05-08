@@ -105,8 +105,11 @@ namespace WorkSmart.Repository.Repository
             if (!string.IsNullOrWhiteSpace(request.Category) && !request.Category.Equals("All Categories"))
             {
                 query = query.Where(c => c.CategoryID.Contains(request.Category)); 
-            }    
-
+            }
+            if (request.Exp > 0)
+            {
+                query = query.Where(c => c.Exp >= request.Exp);
+            }
             if (!string.IsNullOrWhiteSpace(request.JobPosition))
             {
                 query = query.Where(c => c.JobPosition.ToLower().Contains(request.JobPosition.ToLower()));
